@@ -21,8 +21,10 @@ import { Route as EntregadorRouteImport } from './routes/entregador'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 import { Route as AdminCategoriasRouteImport } from './routes/admin.categorias'
 import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
+import { Route as AdminEntregaRouteImport } from './routes/admin.entrega'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPromocoesRouteImport } from './routes/admin.promocoes'
@@ -90,6 +92,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBannersRoute = AdminBannersRouteImport.update({
+  id: '/banners',
+  path: '/banners',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCategoriasRoute = AdminCategoriasRouteImport.update({
   id: '/categorias',
   path: '/categorias',
@@ -98,6 +105,11 @@ const AdminCategoriasRoute = AdminCategoriasRouteImport.update({
 const AdminCuponsRoute = AdminCuponsRouteImport.update({
   id: '/cupons',
   path: '/cupons',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEntregaRoute = AdminEntregaRouteImport.update({
+  id: '/entrega',
+  path: '/entrega',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPedidosRoute = AdminPedidosRouteImport.update({
@@ -143,8 +155,10 @@ export interface FileRoutesByFullPath {
   '/entregador': typeof EntregadorRoute
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
+  '/admin/banners': typeof AdminBannersRoute
   '/admin/categorias': typeof AdminCategoriasRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/entrega': typeof AdminEntregaRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
@@ -164,8 +178,10 @@ export interface FileRoutesByTo {
   '/entregador': typeof EntregadorRoute
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
+  '/admin/banners': typeof AdminBannersRoute
   '/admin/categorias': typeof AdminCategoriasRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/entrega': typeof AdminEntregaRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
@@ -187,8 +203,10 @@ export interface FileRoutesById {
   '/entregador': typeof EntregadorRoute
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
+  '/admin/banners': typeof AdminBannersRoute
   '/admin/categorias': typeof AdminCategoriasRoute
   '/admin/cupons': typeof AdminCuponsRoute
+  '/admin/entrega': typeof AdminEntregaRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
@@ -211,8 +229,10 @@ export interface FileRouteTypes {
     | '/entregador'
     | '/favoritos'
     | '/pedidos'
+    | '/admin/banners'
     | '/admin/categorias'
     | '/admin/cupons'
+    | '/admin/entrega'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
@@ -232,8 +252,10 @@ export interface FileRouteTypes {
     | '/entregador'
     | '/favoritos'
     | '/pedidos'
+    | '/admin/banners'
     | '/admin/categorias'
     | '/admin/cupons'
+    | '/admin/entrega'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
@@ -254,8 +276,10 @@ export interface FileRouteTypes {
     | '/entregador'
     | '/favoritos'
     | '/pedidos'
+    | '/admin/banners'
     | '/admin/categorias'
     | '/admin/cupons'
+    | '/admin/entrega'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
@@ -368,6 +392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/banners': {
+      id: '/admin/banners'
+      path: '/banners'
+      fullPath: '/admin/banners'
+      preLoaderRoute: typeof AdminBannersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/categorias': {
       id: '/admin/categorias'
       path: '/categorias'
@@ -380,6 +411,13 @@ declare module '@tanstack/react-router' {
       path: '/cupons'
       fullPath: '/admin/cupons'
       preLoaderRoute: typeof AdminCuponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/entrega': {
+      id: '/admin/entrega'
+      path: '/entrega'
+      fullPath: '/admin/entrega'
+      preLoaderRoute: typeof AdminEntregaRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/pedidos': {
@@ -428,8 +466,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminBannersRoute: typeof AdminBannersRoute
   AdminCategoriasRoute: typeof AdminCategoriasRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
+  AdminEntregaRoute: typeof AdminEntregaRoute
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
   AdminPromocoesRoute: typeof AdminPromocoesRoute
@@ -437,8 +477,10 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBannersRoute: AdminBannersRoute,
   AdminCategoriasRoute: AdminCategoriasRoute,
   AdminCuponsRoute: AdminCuponsRoute,
+  AdminEntregaRoute: AdminEntregaRoute,
   AdminPedidosRoute: AdminPedidosRoute,
   AdminProdutosRoute: AdminProdutosRoute,
   AdminPromocoesRoute: AdminPromocoesRoute,
