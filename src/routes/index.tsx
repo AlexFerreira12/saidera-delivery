@@ -95,21 +95,20 @@ function Home() {
 
   return (
     <AppShell>
-      <header className="brand-gradient hairline-gold border-x-0 border-t-0 px-4 pb-5 pt-5 text-foreground">
+      <header className="brand-gradient safe-top px-4 pb-5 pt-5 text-primary-foreground">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-display text-2xl font-bold tracking-[0.18em] text-primary">
-              SAIDERA
-            </p>
-            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+            {/* Wordmark temporário em sans — substituir pelo logo oficial quando o asset existir. */}
+            <p className="text-xl font-extrabold tracking-[0.22em] text-accent">SAIDERA</p>
+            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-primary-foreground/55">
               Adega e Distribuidora
             </p>
             <button
               type="button"
               onClick={() => navigate({ to: user ? "/enderecos" : "/auth" })}
-              className="mt-2 flex max-w-[220px] items-center gap-1 text-xs text-muted-foreground"
+              className="mt-2 flex max-w-[220px] items-center gap-1 text-xs text-primary-foreground/70"
             >
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" />
               <span className="truncate">
                 {address ? `${address.street}, ${address.number}` : "Escolher endereço de entrega"}
               </span>
@@ -119,18 +118,18 @@ function Home() {
             <Link
               to="/conta"
               aria-label="Minha conta"
-              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card/70 text-foreground"
+              className="grid h-10 w-10 place-items-center rounded-full border border-primary-foreground/20 bg-primary-foreground/5 text-primary-foreground"
             >
               <User className="h-5 w-5" />
             </Link>
             <Link
               to="/carrinho"
               aria-label="Carrinho"
-              className="relative grid h-10 w-10 place-items-center rounded-full border border-border bg-card/70 text-foreground"
+              className="relative grid h-10 w-10 place-items-center rounded-full border border-primary-foreground/20 bg-primary-foreground/5 text-primary-foreground"
             >
               <ShoppingBag className="h-5 w-5" />
               {cart.count > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
                   {cart.count}
                 </span>
               )}
@@ -138,8 +137,8 @@ function Home() {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 rounded-xl border border-border bg-card/70 px-3 py-2.5 text-foreground">
-          <Search className="h-4 w-4 text-muted-foreground" />
+        <div className="shadow-card mt-4 flex h-12 items-center gap-2 rounded-xl bg-card px-4 text-foreground">
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -150,37 +149,35 @@ function Home() {
       </header>
 
       {!search && (
-        <section className="px-4 pt-5">
-          <div className="brand-gradient hairline-gold relative overflow-hidden rounded-2xl p-5">
-            <div className="h-px w-10 bg-primary/70" aria-hidden />
-            <h1 className="mt-3 font-display text-2xl font-bold leading-tight">
-              Bebidas selecionadas,
-              <br />
-              entrega rápida.
+        <section className="px-4 pt-4">
+          <div className="brand-gradient relative overflow-hidden rounded-2xl p-5 text-primary-foreground">
+            <div className="h-px w-10 bg-accent" aria-hidden />
+            <h1 className="mt-3 text-xl font-extrabold leading-snug tracking-tight">
+              Bebidas selecionadas, entrega rápida.
             </h1>
-            <p className="mt-2 max-w-[240px] text-xs leading-relaxed text-muted-foreground">
+            <p className="mt-1.5 max-w-[260px] text-xs leading-relaxed text-primary-foreground/65">
               Adega completa com preço de distribuidora, entregue gelada na sua porta.
             </p>
             <a
               href="#catalogo"
-              className="shadow-gold mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-accent-foreground transition-opacity hover:opacity-90"
             >
               Explorar produtos
               <ArrowDown className="h-4 w-4" />
             </a>
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-medium">
-              <span
-                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 ${
-                  isOpen ? "border-success/40 text-success" : "border-warning/40 text-warning"
-                }`}
-              >
-                <Store className="h-3.5 w-3.5" />
-                {isOpen ? "Loja aberta" : "Loja fechada"}
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" /> {store?.avg_delivery_minutes ?? 35} min
-              </span>
-            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-medium">
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border bg-card px-2.5 py-1 ${
+                isOpen ? "border-success/40 text-success" : "border-warning/40 text-warning"
+              }`}
+            >
+              <Store className="h-3.5 w-3.5" />
+              {isOpen ? "Loja aberta" : "Loja fechada"}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-muted-foreground">
+              <Clock className="h-3.5 w-3.5" /> {store?.avg_delivery_minutes ?? 35} min
+            </span>
           </div>
         </section>
       )}
@@ -204,10 +201,10 @@ function Home() {
               {(banners ?? []).map((b) => (
                 <div
                   key={b.id}
-                  className="brand-gradient hairline-gold min-w-[80%] rounded-2xl p-4"
+                  className="brand-gradient min-w-[80%] rounded-2xl p-4 text-primary-foreground"
                 >
-                  <p className="font-display text-base font-bold text-primary">{b.title}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{b.subtitle}</p>
+                  <p className="text-base font-extrabold text-accent">{b.title}</p>
+                  <p className="mt-1 text-xs text-primary-foreground/60">{b.subtitle}</p>
                 </div>
               ))}
             </div>
@@ -219,7 +216,7 @@ function Home() {
                 key={c.id}
                 to="/categoria/$slug"
                 params={{ slug: c.slug }}
-                className="whitespace-nowrap rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                className="shadow-card whitespace-nowrap rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent/70"
               >
                 {c.name}
               </Link>
@@ -261,8 +258,8 @@ export function Section({ title, children }: { title: string; children: React.Re
   return (
     <section className="mt-6 px-4">
       <div className="mb-3 flex items-baseline gap-2">
-        <span className="h-3.5 w-px bg-primary/70" aria-hidden />
-        <h2 className="font-display text-base font-bold">{title}</h2>
+        <span className="h-3.5 w-0.5 rounded-full bg-accent" aria-hidden />
+        <h2 className="text-base font-extrabold tracking-tight">{title}</h2>
       </div>
       {children}
     </section>
