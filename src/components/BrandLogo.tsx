@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -50,6 +50,16 @@ export function BrandLogo({
   className,
 }: BrandLogoProps) {
   const [assetMissing, setAssetMissing] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Com SSR, o erro de carregamento pode acontecer antes da hidratação
+  // anexar o onError — confere o estado real da imagem após montar.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) {
+      setAssetMissing(true);
+    }
+  }, []);
 
   if (assetMissing) {
     // Fallback discreto: wordmark sans temporário (não é o logo oficial).
