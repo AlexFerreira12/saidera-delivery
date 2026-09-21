@@ -35,6 +35,7 @@ import { Route as AdminPromocoesRouteImport } from './routes/admin.promocoes'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
+import { Route as ApiPublicWebhooksPagarmeRouteImport } from './routes/api/public/webhooks/pagarme'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -166,6 +167,12 @@ const ProdutoSlugRoute = ProdutoSlugRouteImport.update({
   path: '/produto/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksPagarmeRoute =
+  ApiPublicWebhooksPagarmeRouteImport.update({
+    id: '/api/public/webhooks/pagarme',
+    path: '/api/public/webhooks/pagarme',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/webhooks/pagarme': typeof ApiPublicWebhooksPagarmeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -221,6 +229,7 @@ export interface FileRoutesByTo {
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/webhooks/pagarme': typeof ApiPublicWebhooksPagarmeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -250,6 +259,7 @@ export interface FileRoutesById {
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/webhooks/pagarme': typeof ApiPublicWebhooksPagarmeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/pedido/$id'
     | '/produto/$slug'
     | '/admin/'
+    | '/api/public/webhooks/pagarme'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/pedido/$id'
     | '/produto/$slug'
     | '/admin'
+    | '/api/public/webhooks/pagarme'
   id:
     | '__root__'
     | '/'
@@ -335,6 +347,7 @@ export interface FileRouteTypes {
     | '/pedido/$id'
     | '/produto/$slug'
     | '/admin/'
+    | '/api/public/webhooks/pagarme'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -352,6 +365,7 @@ export interface RootRouteChildren {
   CategoriaSlugRoute: typeof CategoriaSlugRoute
   PedidoIdRoute: typeof PedidoIdRoute
   ProdutoSlugRoute: typeof ProdutoSlugRoute
+  ApiPublicWebhooksPagarmeRoute: typeof ApiPublicWebhooksPagarmeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -538,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/pagarme': {
+      id: '/api/public/webhooks/pagarme'
+      path: '/api/public/webhooks/pagarme'
+      fullPath: '/api/public/webhooks/pagarme'
+      preLoaderRoute: typeof ApiPublicWebhooksPagarmeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -588,6 +609,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoriaSlugRoute: CategoriaSlugRoute,
   PedidoIdRoute: PedidoIdRoute,
   ProdutoSlugRoute: ProdutoSlugRoute,
+  ApiPublicWebhooksPagarmeRoute: ApiPublicWebhooksPagarmeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
