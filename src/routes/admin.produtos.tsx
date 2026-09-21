@@ -11,6 +11,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { applyProductImage, previewProductImage } from "@/lib/product-image.functions";
 import { isValidGtin, normalizeGtin } from "@/lib/gtin";
 import type { ImageCandidate, ImageSearchResult } from "@/lib/product-image-types";
+import { imageApplyMessage, imageSearchMessage } from "@/lib/product-image-messages";
 
 export const Route = createFileRoute("/admin/produtos")({
   component: AdminProducts,
@@ -22,30 +23,20 @@ type ImageSearchState = {
   result: ImageSearchResult | null;
 };
 
-type BatchSummary = { applied: number; notFound: number; invalidGtin: number; errors: number };
+type BatchFailure = { name: string; reason: string };
+type BatchSummary = {
+  applied: number;
+  notFound: number;
+  invalidGtin: number;
+  errors: number;
+  failures: BatchFailure[];
+};
 type BatchState = {
   running: boolean;
   current: number;
   total: number;
   summary: BatchSummary | null;
 };
-
-function imageSearchMessage(result: ImageSearchResult): string {
-  switch (result.status) {
-    case "invalid_gtin":
-      return "Este produto não tem um código de barras (GTIN/EAN) válido cadastrado.";
-    case "not_found":
-      return "Nenhum produto encontrado para este código no Open Food Facts.";
-    case "gtin_mismatch":
-      return "O código retornado não confere exatamente com o cadastrado. Busca rejeitada por segurança.";
-    case "no_image":
-      return "Produto encontrado, mas sem imagem disponível na fonte.";
-    case "error":
-      return "Não foi possível buscar a imagem agora. Tente novamente.";
-    default:
-      return "";
-  }
-}
 
 function AdminProducts() {
   const qc = useQueryClient();
