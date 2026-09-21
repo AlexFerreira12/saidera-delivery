@@ -29,11 +29,9 @@ async function call(
   if (init.body !== undefined) headers["Content-Type"] = "application/json";
   if (init.idempotencyKey) headers["Idempotency-Key"] = init.idempotencyKey;
 
-  const res = await fetch(`${base}${path}`, {
-    method: init.method,
-    headers,
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
-  });
+  const requestInit: RequestInit = { method: init.method, headers };
+  if (init.body !== undefined) requestInit.body = JSON.stringify(init.body);
+  const res = await fetch(`${base}${path}`, requestInit);
 
   const text = await res.text();
   let json: unknown = null;

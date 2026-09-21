@@ -35,7 +35,7 @@ async function applyFromProvider(db: any, chargeId: string, eventId: string | nu
     p_status: status,
     p_amount_cents: Number(charge?.["amount"] ?? 0),
     p_currency: String(charge?.["currency"] ?? "BRL").toUpperCase(),
-    p_event_id: eventId,
+    ...(eventId ? { p_event_id: eventId } : {}),
     p_event_type: eventType,
     p_summary: {
       id: charge?.["id"] ?? null,

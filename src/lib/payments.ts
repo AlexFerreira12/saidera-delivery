@@ -34,10 +34,8 @@ export async function fetchAdminPayments(filters: {
   method?: string | null;
 }) {
   const { data, error } = await supabase.rpc("admin_payments", {
-    p_status: filters.status || null,
-    p_method: filters.method || null,
-    p_from: null,
-    p_to: null,
+    ...(filters.status ? { p_status: filters.status } : {}),
+    ...(filters.method ? { p_method: filters.method } : {}),
     p_limit: 100,
     p_offset: 0,
   });
