@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useAdminPrompt } from "@/components/admin/PromptDialog";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -32,6 +33,7 @@ const STATUSES = [
 const METHODS = ["", "pix", "dinheiro", "cartao_entrega"];
 
 function AdminPayments() {
+  const { ask, dialog } = useAdminPrompt();
   const qc = useQueryClient();
   const sync = useServerFn(adminSyncPayment);
   const refund = useServerFn(adminRefundPayment);
@@ -62,7 +64,13 @@ function AdminPayments() {
   };
 
   const manualSettle = async (id: string) => {
-    const reason = window.prompt("Motivo da baixa manual (obrigatório):");
+    const reason = await ask({
+      title: "Baixa manual do pagamento",
+      description: "Registre por que este pagamento está sendo baixado sem o provedor.",
+      placeholder: "Motivo",
+      confirmLabel: "Confirmar baixa",
+      required: true,
+    });
     if (!reason?.trim()) return;
     await run(
       id,
@@ -156,13 +164,21 @@ function AdminPayments() {
                 <GhostButton
                   disabled={busy === p.id}
                   onClick={() => {
-                    const reason = window.prompt("Motivo do estorno (obrigatório):");
-                    if (!reason?.trim()) return;
-                    void run(
-                      p.id,
-                      () => refund({ data: { paymentId: p.id, reason: reason.trim() } }),
-                      "Estorno solicitado.",
-                    );
+                    void (async () => {
+                      const reason = await ask({
+                        title: "Estornar pagamento",
+                        description: "O motivo fica registrado na auditoria.",
+                        placeholder: "Motivo",
+                        confirmLabel: "Estornar",
+                        required: true,
+                      });
+                      if (!reason?.trim()) return;
+                      await run(
+                        p.id,
+                        () => refund({ data: { paymentId: p.id, reason: reason.trim() } }),
+                        "Estorno solicitado.",
+                      );
+                    })();
                   }}
                 >
                   Estornar
@@ -177,6 +193,8 @@ function AdminPayments() {
           </Card>
         ))}
       </div>
+      {/* diálogo acessível no lugar de prompt() */}
+      {dialog}
     </AdminPage>
   );
 }
