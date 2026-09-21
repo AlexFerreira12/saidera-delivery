@@ -59,8 +59,13 @@ function CartPage() {
         <PageHeader title="Carrinho" />
         <div className="flex flex-col items-center gap-3 px-6 py-20 text-center">
           <p className="font-display text-lg font-bold">Seu carrinho está vazio</p>
-          <p className="text-sm text-muted-foreground">Adicione bebidas geladas e receba em minutos.</p>
-          <Link to="/" className="mt-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground">
+          <p className="text-sm text-muted-foreground">
+            Adicione bebidas geladas e receba em minutos.
+          </p>
+          <Link
+            to="/"
+            className="mt-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground"
+          >
             Ver produtos
           </Link>
         </div>
@@ -77,7 +82,13 @@ function CartPage() {
           return (
             <div key={item.id} className="surface-card flex gap-3 p-3">
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
-                {item.image_url && <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />}
+                {item.image_url && (
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="h-full w-full object-cover"
+                  />
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-sm font-semibold">{item.name}</p>
@@ -91,7 +102,9 @@ function CartPage() {
                     onIncrement={() => cart.increment(item.id)}
                     onDecrement={() => cart.decrement(item.id)}
                   />
-                  <span className="font-display text-sm font-bold">{brl(unit * item.quantity)}</span>
+                  <span className="font-display text-sm font-bold">
+                    {brl(unit * item.quantity)}
+                  </span>
                 </div>
               </div>
               <button
@@ -126,12 +139,21 @@ function CartPage() {
 
         <div className="surface-card space-y-2 p-4 text-sm">
           <Row label="Subtotal" value={brl(cart.subtotal)} />
-          {discount > 0 && <Row label={`Desconto (${coupon?.code})`} value={`- ${brl(discount)}`} highlight />}
+          {discount > 0 && (
+            <Row
+              label={`Desconto estimado (${coupon?.code})`}
+              value={`- ${brl(discount)}`}
+              highlight
+            />
+          )}
           <Row label="Taxa de entrega" value="calculada no checkout" muted />
           <div className="mt-2 flex justify-between border-t border-border pt-2 font-display text-base font-bold">
-            <span>Total</span>
+            <span>Total estimado</span>
             <span>{brl(total)}</span>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Valores e cupom são confirmados no momento de finalizar o pedido.
+          </p>
         </div>
       </div>
 
@@ -162,7 +184,15 @@ function Row({
   return (
     <div className="flex justify-between">
       <span className="text-muted-foreground">{label}</span>
-      <span className={highlight ? "font-semibold text-success" : muted ? "text-muted-foreground" : "font-semibold"}>
+      <span
+        className={
+          highlight
+            ? "font-semibold text-success"
+            : muted
+              ? "text-muted-foreground"
+              : "font-semibold"
+        }
+      >
         {value}
       </span>
     </div>

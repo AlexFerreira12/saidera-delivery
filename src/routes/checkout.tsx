@@ -8,38 +8,49 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { brl } from "@/lib/format";
-import { unitPriceFor } from "@/lib/pricing";
+import { checkoutErrorMessage, COUPON_STORAGE_KEY } from "@/lib/checkout";
 import { fetchAddresses, useZones, type Address } from "@/routes/enderecos";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
       { title: "Finalizar pedido — Bebidas Guariba" },
-      { name: "description", content: "Escolha endereço, pagamento e confirme sua entrega em Guariba/SP." },
+      {
+        name: "description",
+        content: "Escolha endereço, pagamento e confirme sua entrega em Guariba/SP.",
+      },
       { property: "og:title", content: "Finalizar pedido — Bebidas Guariba" },
-      { property: "og:description", content: "Endereço, pagamento e confirmação em poucos toques." },
+      {
+        property: "og:description",
+        content: "Endereço, pagamento e confirmação em poucos toques.",
+      },
     ],
   }),
   component: CheckoutPage,
 });
 
 const PAYMENTS = [
-  { id: "pix", label: "PIX", hint: "Aprovação imediata" },
-  { id: "dinheiro", label: "Dinheiro na entrega", hint: "Informe o troco" },
-  { id: "cartao_entrega", label: "Cartão na entrega", hint: "Débito ou crédito" },
+  { id: "pix", label: "PIX", hint: "Indisponível — integração pendente", disabled: true },
+  { id: "dinheiro", label: "Dinheiro na entrega", hint: "Informe o troco", disabled: false },
+  { id: "cartao_entrega", label: "Cartão na entrega", hint: "Débito ou crédito", disabled: false },
 ] as const;
 
 function CheckoutPage() {
-  const { session, profile, loading } = useAuth();
+  const { session, loading } = useAuth();
   const navigate = useNavigate();
   const cart = useCart();
   const zones = useZones();
 
   const [addressId, setAddressId] = useState<string | null>(null);
-  const [payment, setPayment] = useState<string>("pix");
+  const [payment, setPayment] = useState<string>("dinheiro");
   const [changeFor, setChangeFor] = useState("");
   const [notes, setNotes] = useState("");
   const [placing, setPlacing] = useState(false);
+  const [coupon, setCoupon] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCoupon(localStorage.getItem(COUPON_STORAGE_KEY));
+  }, []);
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
@@ -75,54 +86,28 @@ function CheckoutPage() {
       toast.error("Seu carrinho está vazio.");
       return;
     }
-    if (zone && cart.subtotal < Number(zone.min_order)) {
-      toast.error(`Pedido mínimo de ${brl(Number(zone.min_order))} para ${zone.neighborhood}.`);
-      return;
-    }
     setPlacing(true);
     try {
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: session!.user.id,
-          address_id: address.id,
-          payment_method: payment,
-          subtotal: cart.subtotal,
-          delivery_fee: deliveryFee,
-          discount: 0,
-          total,
-          notes: [notes, payment === "dinheiro" && changeFor ? `Troco para ${changeFor}` : ""]
-            .filter(Boolean)
-            .join(" · ") || null,
-          address_snapshot: JSON.parse(JSON.stringify(address)),
-          customer_name: profile?.full_name ?? null,
-          customer_phone: profile?.phone ?? null,
-          eta_minutes: zone?.eta_minutes ?? 40,
-        })
-        .select("id")
-        .single();
+      const trimmedNotes = notes.trim();
+      const trimmedChange = payment === "dinheiro" ? changeFor.trim() : "";
+      const { data, error } = await supabase.rpc("create_order", {
+        p_address_id: address.id,
+        p_payment_method: payment,
+        p_items: cart.items.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+        ...(trimmedNotes ? { p_notes: trimmedNotes } : {}),
+        ...(trimmedChange ? { p_change_for: trimmedChange } : {}),
+        ...(coupon ? { p_coupon_code: coupon } : {}),
+      });
+
       if (error) throw error;
 
-      const items = cart.items.map((item) => {
-        const unit = unitPriceFor(item, item.quantity);
-        return {
-          order_id: order.id,
-          product_id: item.id,
-          product_name: item.name,
-          image_url: item.image_url,
-          quantity: item.quantity,
-          unit_price: unit,
-          total_price: unit * item.quantity,
-        };
-      });
-      const { error: itemsError } = await supabase.from("order_items").insert(items);
-      if (itemsError) throw itemsError;
-
+      const result = data as { order_id: string; total: number };
       cart.clear();
-      toast.success("Pedido confirmado!");
-      void navigate({ to: "/pedido/$id", params: { id: order.id } });
-    } catch {
-      toast.error("Não foi possível finalizar o pedido.");
+      localStorage.removeItem(COUPON_STORAGE_KEY);
+      toast.success(`Pedido confirmado! Total ${brl(Number(result.total))}`);
+      void navigate({ to: "/pedido/$id", params: { id: result.order_id } });
+    } catch (err) {
+      toast.error(checkoutErrorMessage(err));
     } finally {
       setPlacing(false);
     }
@@ -167,7 +152,8 @@ function CheckoutPage() {
           )}
           {zone && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Entrega em ~{zone.eta_minutes} min · taxa {brl(Number(zone.fee))} · mínimo {brl(Number(zone.min_order))}
+              Entrega em ~{zone.eta_minutes} min · taxa {brl(Number(zone.fee))} · mínimo{" "}
+              {brl(Number(zone.min_order))}
             </p>
           )}
         </section>
@@ -179,10 +165,11 @@ function CheckoutPage() {
               <button
                 key={p.id}
                 type="button"
-                onClick={() => setPayment(p.id)}
+                disabled={p.disabled}
+                onClick={() => !p.disabled && setPayment(p.id)}
                 className={`flex w-full items-center justify-between rounded-xl border p-3 text-left text-sm ${
                   payment === p.id ? "border-primary bg-primary/5" : "border-border"
-                }`}
+                } ${p.disabled ? "cursor-not-allowed opacity-50" : ""}`}
               >
                 <span className="font-semibold">{p.label}</span>
                 <span className="text-xs text-muted-foreground">{p.hint}</span>
@@ -219,10 +206,19 @@ function CheckoutPage() {
             <span className="text-muted-foreground">Taxa de entrega</span>
             <span className="font-semibold">{deliveryFee ? brl(deliveryFee) : "—"}</span>
           </div>
+          {coupon && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Cupom {coupon}</span>
+              <span className="font-semibold">validado na confirmação</span>
+            </div>
+          )}
           <div className="flex justify-between border-t border-border pt-2 font-display text-base font-bold">
-            <span>Total</span>
+            <span>Total estimado</span>
             <span>{brl(total)}</span>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Os valores finais são calculados e confirmados no momento do pedido.
+          </p>
         </section>
       </div>
 

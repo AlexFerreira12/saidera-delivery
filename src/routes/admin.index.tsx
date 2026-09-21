@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { brl, timeBR } from "@/lib/format";
+import { checkoutErrorMessage } from "@/lib/checkout";
 import { ORDER_FLOW, STATUS_LABEL, nextStatus } from "@/lib/orders";
 
 export const Route = createFileRoute("/admin/")({
@@ -56,8 +57,8 @@ function AdminOrders() {
   }, [qc]);
 
   const setStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("orders").update({ status }).eq("id", id);
-    if (error) toast.error("Não foi possível atualizar o pedido.");
+    const { error } = await supabase.rpc("set_order_status", { p_order_id: id, p_status: status });
+    if (error) toast.error(checkoutErrorMessage(error));
     else {
       toast.success(`Pedido atualizado: ${STATUS_LABEL[status]}`);
       void qc.invalidateQueries({ queryKey: ["admin", "orders"] });
@@ -67,15 +68,24 @@ function AdminOrders() {
   const list = (orders ?? []).filter((o) =>
     filter === "ativos" ? !["entregue", "cancelado"].includes(o.status) : o.status === filter,
   );
-  const today = (orders ?? []).filter((o) => new Date(o.created_at).toDateString() === new Date().toDateString());
-  const revenue = today.filter((o) => o.status !== "cancelado").reduce((s, o) => s + Number(o.total), 0);
+  const today = (orders ?? []).filter(
+    (o) => new Date(o.created_at).toDateString() === new Date().toDateString(),
+  );
+  const revenue = today
+    .filter((o) => o.status !== "cancelado")
+    .reduce((s, o) => s + Number(o.total), 0);
 
   return (
     <div className="space-y-4 p-4">
       <div className="grid grid-cols-3 gap-3">
         <Stat label="Pedidos hoje" value={String(today.length)} />
         <Stat label="Faturamento hoje" value={brl(revenue)} />
-        <Stat label="Em andamento" value={String((orders ?? []).filter((o) => !["entregue", "cancelado"].includes(o.status)).length)} />
+        <Stat
+          label="Em andamento"
+          value={String(
+            (orders ?? []).filter((o) => !["entregue", "cancelado"].includes(o.status)).length,
+          )}
+        />
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -85,7 +95,9 @@ function AdminOrders() {
             type="button"
             onClick={() => setFilter(f)}
             className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${
-              filter === f ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+              filter === f
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground"
             }`}
           >
             {f === "ativos" ? "Ativos" : STATUS_LABEL[f]}
@@ -93,7 +105,9 @@ function AdminOrders() {
         ))}
       </div>
 
-      {list.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Nenhum pedido aqui.</p>}
+      {list.length === 0 && (
+        <p className="py-12 text-center text-sm text-muted-foreground">Nenhum pedido aqui.</p>
+      )}
 
       <div className="space-y-3">
         {list.map((o) => {
