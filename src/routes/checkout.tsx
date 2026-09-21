@@ -83,15 +83,17 @@ function CheckoutPage() {
     }
     setPlacing(true);
     try {
+      const trimmedNotes = notes.trim();
+      const trimmedChange = payment === "dinheiro" ? changeFor.trim() : "";
       const { data, error } = await supabase.rpc("create_order", {
         p_address_id: address.id,
         p_payment_method: payment,
         p_items: cart.items.map((item) => ({ product_id: item.id, quantity: item.quantity })),
-        p_notes: notes.trim() || undefined,
-        p_change_for: payment === "dinheiro" ? changeFor.trim() || undefined : undefined,
-        p_coupon_code: coupon ?? undefined,
-
+        ...(trimmedNotes ? { p_notes: trimmedNotes } : {}),
+        ...(trimmedChange ? { p_change_for: trimmedChange } : {}),
+        ...(coupon ? { p_coupon_code: coupon } : {}),
       });
+
       if (error) throw error;
 
       const result = data as { order_id: string; total: number };
