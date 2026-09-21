@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { adminErrorMessage, fetchAdminDrivers } from "@/lib/admin";
-import { dateBR } from "@/lib/format";
+import { dateTimeBR } from "@/lib/format";
 import {
   AdminHeading,
   AdminPage,
@@ -150,7 +150,7 @@ function AdminDrivers() {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {Number(s?.in_route ?? 0)} em rota · {Number(s?.delivered ?? 0)} entregues
-                    {s?.last_delivery_at ? ` · última em ${dateBR(s.last_delivery_at)}` : ""}
+                    {s?.last_delivery_at ? ` · última em ${dateTimeBR(s.last_delivery_at)}` : ""}
                   </p>
                 </div>
                 <StatusPill active={d.is_active} onClick={() => toggle(d.id, d.is_active)} />

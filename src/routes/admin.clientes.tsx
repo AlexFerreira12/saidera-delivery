@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { fetchAdminCustomers } from "@/lib/admin";
-import { brl, dateBR } from "@/lib/format";
+import { brl, dateTimeBR } from "@/lib/format";
 import {
   AdminHeading,
   AdminPage,
@@ -55,8 +55,8 @@ function AdminCustomers() {
                   {c.phone ?? "sem telefone"} · {c.email ?? "sem e-mail"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Cliente desde {dateBR(c.created_at)}
-                  {c.last_order_at ? ` · último pedido em ${dateBR(c.last_order_at)}` : ""}
+                  Cliente desde {dateTimeBR(c.created_at)}
+                  {c.last_order_at ? ` · último pedido em ${dateTimeBR(c.last_order_at)}` : ""}
                 </p>
               </div>
               <div className="text-right">
