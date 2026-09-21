@@ -134,7 +134,12 @@ function AdminProducts() {
     const invalidCount = noImage.filter((p) => !isValidGtin(p.barcode)).length;
     const eligible = noImage.filter((p) => isValidGtin(p.barcode));
     if (eligible.length === 0) {
-      setBatch({ running: false, current: 0, total: 0, summary: { applied: 0, notFound: 0, invalidGtin: invalidCount, errors: 0 } });
+      setBatch({
+        running: false,
+        current: 0,
+        total: 0,
+        summary: { applied: 0, notFound: 0, invalidGtin: invalidCount, errors: 0 },
+      });
       return;
     }
 
@@ -318,7 +323,9 @@ function AdminProducts() {
             <button
               type="button"
               onClick={() => void openImageSearch(p)}
-              aria-label={p.image_url ? `Substituir imagem de ${p.name}` : `Buscar imagem de ${p.name}`}
+              aria-label={
+                p.image_url ? `Substituir imagem de ${p.name}` : `Buscar imagem de ${p.name}`
+              }
               title={p.image_url ? "Substituir imagem" : "Buscar imagem"}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-input bg-muted text-muted-foreground"
             >
@@ -478,7 +485,7 @@ function ImageSearchDialog({
         {state.phase !== "loading" && result && result.status !== "found" && (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">{imageSearchMessage(result)}</p>
-            {(result.status === "no_image") && (
+            {result.status === "no_image" && (
               <p className="text-xs text-muted-foreground">
                 {candidateLines(result.candidate) || "Produto identificado na fonte."}
               </p>
@@ -500,13 +507,7 @@ function ImageSearchDialog({
   );
 }
 
-function BatchSummaryDialog({
-  summary,
-  onClose,
-}: {
-  summary: BatchSummary;
-  onClose: () => void;
-}) {
+function BatchSummaryDialog({ summary, onClose }: { summary: BatchSummary; onClose: () => void }) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {

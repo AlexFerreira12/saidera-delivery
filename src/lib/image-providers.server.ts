@@ -49,13 +49,10 @@ function pickImageUrl(p: Record<string, unknown>): string | null {
 /** Consulta o Open Food Facts pelo GTIN. Nunca lança: falhas viram status "error". */
 export async function lookupOpenFoodFacts(gtin: string): Promise<ImageSearchResult> {
   try {
-    const res = await fetch(
-      `${OFF_API}/${encodeURIComponent(gtin)}.json?fields=${OFF_FIELDS}`,
-      {
-        headers: { "user-agent": USER_AGENT, accept: "application/json" },
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-      },
-    );
+    const res = await fetch(`${OFF_API}/${encodeURIComponent(gtin)}.json?fields=${OFF_FIELDS}`, {
+      headers: { "user-agent": USER_AGENT, accept: "application/json" },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
     if (res.status === 404) return { status: "not_found" };
     if (!res.ok) return { status: "error", message: "PROVEDOR_INDISPONIVEL" };
     return parseOpenFoodFacts(await res.json(), gtin);

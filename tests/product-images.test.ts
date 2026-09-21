@@ -1,15 +1,17 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sniffImageType } from "@/lib/image-bytes";
 import { parseOpenFoodFacts } from "@/lib/image-providers.server";
-import { downloadImageGuarded, isAllowedImageUrl, MAX_IMAGE_BYTES } from "@/lib/image-import.server";
+import {
+  downloadImageGuarded,
+  isAllowedImageUrl,
+  MAX_IMAGE_BYTES,
+} from "@/lib/image-import.server";
 
 const GTIN = "4006381333931";
 const IMG = "https://images.openfoodfacts.org/images/products/400/638/133/3931/front.jpg";
 
 function offBody(product: Record<string, unknown> | null) {
-  return product
-    ? { status: 1, code: GTIN, product: { code: GTIN, ...product } }
-    : { status: 0 };
+  return product ? { status: 1, code: GTIN, product: { code: GTIN, ...product } } : { status: 0 };
 }
 
 describe("parseOpenFoodFacts", () => {
@@ -106,12 +108,16 @@ describe("downloadImageGuarded", () => {
       ok: init.ok ?? true,
       url: init.url ?? IMG,
       headers,
-      arrayBuffer: () => Promise.resolve(body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)),
+      arrayBuffer: () =>
+        Promise.resolve(body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)),
     } as unknown as Response;
   }
 
   it("baixa imagem válida do host permitido", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(fakeResponse({ contentType: "image/jpeg" }))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(fakeResponse({ contentType: "image/jpeg" }))),
+    );
     const img = await downloadImageGuarded(IMG);
     expect(img.ext).toBe("jpg");
     expect(img.contentType).toBe("image/jpeg");
@@ -131,14 +137,19 @@ describe("downloadImageGuarded", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(fakeResponse({ contentType: "image/jpeg", url: "https://evil.example.com/x.jpg" })),
+        Promise.resolve(
+          fakeResponse({ contentType: "image/jpeg", url: "https://evil.example.com/x.jpg" }),
+        ),
       ),
     );
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("DOWNLOAD_FALHOU");
   });
 
   it("rejeita MIME que não é imagem permitida", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(fakeResponse({ contentType: "image/svg+xml" }))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(fakeResponse({ contentType: "image/svg+xml" }))),
+    );
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("MIME_INVALIDO");
   });
 
@@ -146,7 +157,9 @@ describe("downloadImageGuarded", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(fakeResponse({ contentType: "image/jpeg", contentLength: MAX_IMAGE_BYTES + 1 })),
+        Promise.resolve(
+          fakeResponse({ contentType: "image/jpeg", contentLength: MAX_IMAGE_BYTES + 1 }),
+        ),
       ),
     );
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("ARQUIVO_GRANDE");
@@ -156,7 +169,10 @@ describe("downloadImageGuarded", () => {
     const big = new Uint8Array(MAX_IMAGE_BYTES + 1);
     big[0] = 0xff;
     big[1] = 0xd8;
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(fakeResponse({ contentType: "image/jpeg", body: big }))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(fakeResponse({ contentType: "image/jpeg", body: big }))),
+    );
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("ARQUIVO_GRANDE");
   });
 
@@ -164,19 +180,27 @@ describe("downloadImageGuarded", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(fakeResponse({ contentType: "image/jpeg", body: new TextEncoder().encode("html") })),
+        Promise.resolve(
+          fakeResponse({ contentType: "image/jpeg", body: new TextEncoder().encode("html") }),
+        ),
       ),
     );
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("TIPO_INVALIDO");
   });
 
   it("timeout/erro de rede vira DOWNLOAD_FALHOU", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new DOMException("aborted", "AbortError"))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new DOMException("aborted", "AbortError"))),
+    );
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("DOWNLOAD_FALHOU");
   });
 
   it("resposta HTTP de erro vira DOWNLOAD_FALHOU", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(fakeResponse({ ok: false, status: 500 }))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(fakeResponse({ ok: false, status: 500 }))),
+    );
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("DOWNLOAD_FALHOU");
   });
 });
