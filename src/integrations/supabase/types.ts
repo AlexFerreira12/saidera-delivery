@@ -1100,6 +1100,39 @@ export type Database = {
     }
     Functions: {
       accept_delivery: { Args: { p_order_id: string }; Returns: Json }
+      admin_customers: {
+        Args: { p_search?: string }
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          last_order_at: string
+          orders_count: number
+          orders_total: number
+          phone: string
+        }[]
+      }
+      admin_dashboard_metrics: { Args: never; Returns: Json }
+      admin_driver_stats: {
+        Args: never
+        Returns: {
+          delivered: number
+          driver_id: string
+          in_route: number
+          last_delivery_at: string
+        }[]
+      }
+      admin_link_driver: {
+        Args: {
+          p_email: string
+          p_name: string
+          p_phone?: string
+          p_vehicle?: string
+        }
+        Returns: Json
+      }
+      admin_unlink_driver: { Args: { p_driver_id: string }; Returns: Json }
       can_view_order: { Args: { _order_id: string }; Returns: boolean }
       create_order: {
         Args: {
