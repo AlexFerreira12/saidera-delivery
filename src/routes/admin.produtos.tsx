@@ -147,13 +147,14 @@ function AdminProducts() {
                 )}
               </p>
             </div>
-            <input
-              type="number"
-              defaultValue={p.stock}
-              onBlur={(e) => patch(p.id, { stock: Number(e.target.value) })}
-              className="w-16 rounded-lg border border-input bg-card px-2 py-1 text-center text-sm outline-none"
-              aria-label={`Estoque de ${p.name}`}
-            />
+            <Link
+              to="/admin/estoque"
+              className="w-16 rounded-lg border border-input bg-muted px-2 py-1 text-center text-sm font-semibold"
+              aria-label={`Estoque de ${p.name}: ${p.stock}. Abrir tela de estoque`}
+            >
+              {p.stock}
+            </Link>
+
             <input
               type="number"
               step="0.01"
