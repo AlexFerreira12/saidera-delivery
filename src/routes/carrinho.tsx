@@ -126,13 +126,19 @@ function CartPage() {
 
         <div className="surface-card space-y-2 p-4 text-sm">
           <Row label="Subtotal" value={brl(cart.subtotal)} />
-          {discount > 0 && <Row label={`Desconto (${coupon?.code})`} value={`- ${brl(discount)}`} highlight />}
+          {discount > 0 && (
+            <Row label={`Desconto estimado (${coupon?.code})`} value={`- ${brl(discount)}`} highlight />
+          )}
           <Row label="Taxa de entrega" value="calculada no checkout" muted />
           <div className="mt-2 flex justify-between border-t border-border pt-2 font-display text-base font-bold">
-            <span>Total</span>
+            <span>Total estimado</span>
             <span>{brl(total)}</span>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Valores e cupom são confirmados no momento de finalizar o pedido.
+          </p>
         </div>
+
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card px-4 py-3">
