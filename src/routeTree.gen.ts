@@ -21,6 +21,7 @@ import { Route as EntregadorRouteImport } from './routes/entregador'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
@@ -86,6 +87,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPedidosRoute = AdminPedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProdutosRoute = AdminProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/entregador': typeof EntregadorRoute
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/pedido/$id': typeof PedidoIdRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/entregador': typeof EntregadorRoute
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/pedido/$id': typeof PedidoIdRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/entregador': typeof EntregadorRoute
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
+  '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/pedido/$id': typeof PedidoIdRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/entregador'
     | '/favoritos'
     | '/pedidos'
+    | '/admin/pedidos'
     | '/admin/produtos'
     | '/categoria/$slug'
     | '/pedido/$id'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/entregador'
     | '/favoritos'
     | '/pedidos'
+    | '/admin/pedidos'
     | '/admin/produtos'
     | '/categoria/$slug'
     | '/pedido/$id'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/entregador'
     | '/favoritos'
     | '/pedidos'
+    | '/admin/pedidos'
     | '/admin/produtos'
     | '/categoria/$slug'
     | '/pedido/$id'
@@ -320,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/pedidos': {
+      id: '/admin/pedidos'
+      path: '/pedidos'
+      fullPath: '/admin/pedidos'
+      preLoaderRoute: typeof AdminPedidosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/produtos': {
       id: '/admin/produtos'
       path: '/produtos'
@@ -352,11 +371,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminPedidosRoute: typeof AdminPedidosRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminPedidosRoute: AdminPedidosRoute,
   AdminProdutosRoute: AdminProdutosRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
