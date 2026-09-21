@@ -207,7 +207,15 @@ function AdminProducts() {
       }
     }
     toast.success("Produto criado!");
-    setForm({ name: "", price: "", stock: "", category_id: "", volume: "", barcode: "", image_url: "" });
+    setForm({
+      name: "",
+      price: "",
+      stock: "",
+      category_id: "",
+      volume: "",
+      barcode: "",
+      image_url: "",
+    });
     setCreating(false);
     void refresh();
     void qc.invalidateQueries({ queryKey: ["admin", "stock"] });
