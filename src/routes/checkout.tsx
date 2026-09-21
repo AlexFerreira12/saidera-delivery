@@ -87,9 +87,10 @@ function CheckoutPage() {
         p_address_id: address.id,
         p_payment_method: payment,
         p_items: cart.items.map((item) => ({ product_id: item.id, quantity: item.quantity })),
-        p_notes: notes.trim() || null,
-        p_change_for: payment === "dinheiro" ? changeFor.trim() || null : null,
-        p_coupon_code: coupon,
+        p_notes: notes.trim() || undefined,
+        p_change_for: payment === "dinheiro" ? changeFor.trim() || undefined : undefined,
+        p_coupon_code: coupon ?? undefined,
+
       });
       if (error) throw error;
 
