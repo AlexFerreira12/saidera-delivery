@@ -157,15 +157,17 @@ function CheckoutPage() {
               <button
                 key={p.id}
                 type="button"
-                onClick={() => setPayment(p.id)}
+                disabled={p.disabled}
+                onClick={() => !p.disabled && setPayment(p.id)}
                 className={`flex w-full items-center justify-between rounded-xl border p-3 text-left text-sm ${
                   payment === p.id ? "border-primary bg-primary/5" : "border-border"
-                }`}
+                } ${p.disabled ? "cursor-not-allowed opacity-50" : ""}`}
               >
                 <span className="font-semibold">{p.label}</span>
                 <span className="text-xs text-muted-foreground">{p.hint}</span>
               </button>
             ))}
+
           </div>
           {payment === "dinheiro" && (
             <input
