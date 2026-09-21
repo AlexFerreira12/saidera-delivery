@@ -60,12 +60,13 @@ async function applyFromProvider(
     p_event_id: eventId ?? "",
     p_event_type: eventType,
     p_summary: {
-      id: charge?.["id"] ?? null,
-      status: charge?.["status"] ?? null,
-      amount: charge?.["amount"] ?? null,
-      currency: charge?.["currency"] ?? null,
-      paid_at: charge?.["paid_at"] ?? null,
+      id: String(charge?.["id"] ?? ""),
+      status: String(charge?.["status"] ?? ""),
+      amount: Number(charge?.["amount"] ?? 0),
+      currency: String(charge?.["currency"] ?? ""),
+      paid_at: String(charge?.["paid_at"] ?? ""),
     },
+
   });
   if (error) throw new Error(error.message);
   return status;
@@ -155,14 +156,8 @@ export const syncPixPayment = createServerFn({ method: "POST" })
     return { status };
   });
 
-type AuthContext = {
-  userId: string;
-  supabase: {
-    rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
-  };
-};
+async function assertAdmin(context: { userId: string; supabase: AdminDb }) {
 
-async function assertAdmin(context: AuthContext) {
   const { data, error } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
