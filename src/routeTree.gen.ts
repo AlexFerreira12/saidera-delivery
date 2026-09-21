@@ -22,8 +22,10 @@ import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCategoriasRouteImport } from './routes/admin.categorias'
+import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
+import { Route as AdminPromocoesRouteImport } from './routes/admin.promocoes'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
@@ -93,6 +95,11 @@ const AdminCategoriasRoute = AdminCategoriasRouteImport.update({
   path: '/categorias',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCuponsRoute = AdminCuponsRouteImport.update({
+  id: '/cupons',
+  path: '/cupons',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPedidosRoute = AdminPedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
@@ -101,6 +108,11 @@ const AdminPedidosRoute = AdminPedidosRouteImport.update({
 const AdminProdutosRoute = AdminProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPromocoesRoute = AdminPromocoesRouteImport.update({
+  id: '/promocoes',
+  path: '/promocoes',
   getParentRoute: () => AdminRoute,
 } as any)
 const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
@@ -132,8 +144,10 @@ export interface FileRoutesByFullPath {
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/cupons': typeof AdminCuponsRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/promocoes': typeof AdminPromocoesRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
@@ -151,8 +165,10 @@ export interface FileRoutesByTo {
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/cupons': typeof AdminCuponsRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/promocoes': typeof AdminPromocoesRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
@@ -172,8 +188,10 @@ export interface FileRoutesById {
   '/favoritos': typeof FavoritosRoute
   '/pedidos': typeof PedidosRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/cupons': typeof AdminCuponsRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/promocoes': typeof AdminPromocoesRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
@@ -194,8 +212,10 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/pedidos'
     | '/admin/categorias'
+    | '/admin/cupons'
     | '/admin/pedidos'
     | '/admin/produtos'
+    | '/admin/promocoes'
     | '/categoria/$slug'
     | '/pedido/$id'
     | '/produto/$slug'
@@ -213,8 +233,10 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/pedidos'
     | '/admin/categorias'
+    | '/admin/cupons'
     | '/admin/pedidos'
     | '/admin/produtos'
+    | '/admin/promocoes'
     | '/categoria/$slug'
     | '/pedido/$id'
     | '/produto/$slug'
@@ -233,8 +255,10 @@ export interface FileRouteTypes {
     | '/favoritos'
     | '/pedidos'
     | '/admin/categorias'
+    | '/admin/cupons'
     | '/admin/pedidos'
     | '/admin/produtos'
+    | '/admin/promocoes'
     | '/categoria/$slug'
     | '/pedido/$id'
     | '/produto/$slug'
@@ -351,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriasRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/cupons': {
+      id: '/admin/cupons'
+      path: '/cupons'
+      fullPath: '/admin/cupons'
+      preLoaderRoute: typeof AdminCuponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/pedidos': {
       id: '/admin/pedidos'
       path: '/pedidos'
@@ -363,6 +394,13 @@ declare module '@tanstack/react-router' {
       path: '/produtos'
       fullPath: '/admin/produtos'
       preLoaderRoute: typeof AdminProdutosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/promocoes': {
+      id: '/admin/promocoes'
+      path: '/promocoes'
+      fullPath: '/admin/promocoes'
+      preLoaderRoute: typeof AdminPromocoesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/categoria/$slug': {
@@ -391,15 +429,19 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminCategoriasRoute: typeof AdminCategoriasRoute
+  AdminCuponsRoute: typeof AdminCuponsRoute
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
+  AdminPromocoesRoute: typeof AdminPromocoesRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriasRoute: AdminCategoriasRoute,
+  AdminCuponsRoute: AdminCuponsRoute,
   AdminPedidosRoute: AdminPedidosRoute,
   AdminProdutosRoute: AdminProdutosRoute,
+  AdminPromocoesRoute: AdminPromocoesRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
