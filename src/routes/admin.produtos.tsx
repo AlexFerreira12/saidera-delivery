@@ -184,23 +184,35 @@ function AdminProducts() {
         running: false,
         current: 0,
         total: 0,
-        summary: { applied: 0, notFound: 0, invalidGtin: invalidCount, errors: 0 },
+        summary: { applied: 0, notFound: 0, invalidGtin: invalidCount, errors: 0, failures: [] },
       });
       return;
     }
 
     setBatch({ running: true, current: 0, total: eligible.length, summary: null });
-    const summary: BatchSummary = { applied: 0, notFound: 0, invalidGtin: invalidCount, errors: 0 };
+    const summary: BatchSummary = {
+      applied: 0,
+      notFound: 0,
+      invalidGtin: invalidCount,
+      errors: 0,
+      failures: [],
+    };
     for (const [index, product] of eligible.entries()) {
       setBatch((b) => ({ ...b, current: index + 1 }));
       try {
         const result = await applyImage({ data: { productId: product.id, allowReplace: false } });
         if (result.status === "applied") summary.applied++;
         else if (result.status === "invalid_gtin") summary.invalidGtin++;
-        else if (result.status === "error") summary.errors++;
-        else if (result.status !== "has_image") summary.notFound++;
+        else if (result.status === "error") {
+          summary.errors++;
+          summary.failures.push({ name: product.name, reason: imageApplyMessage(result) });
+        } else if (result.status !== "has_image") summary.notFound++;
       } catch {
         summary.errors++;
+        summary.failures.push({
+          name: product.name,
+          reason: imageApplyMessage({ status: "error", message: "FALHA" }),
+        });
       }
       // Intervalo entre chamadas para não abusar da API pública.
       if (index < eligible.length - 1) await new Promise((r) => setTimeout(r, 400));
