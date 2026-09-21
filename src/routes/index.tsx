@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { MapPin, Search, ShoppingBag, User, Clock, Store, ArrowDown } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { BrandLogo } from "@/components/BrandLogo";
 import { ProductCard } from "@/components/ProductCard";
 import {
   fetchBanners,
@@ -98,11 +99,9 @@ function Home() {
       <header className="brand-gradient safe-top px-4 pb-5 pt-5 text-primary-foreground">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            {/* Wordmark temporário em sans — substituir pelo logo oficial quando o asset existir. */}
-            <p className="text-xl font-extrabold tracking-[0.22em] text-accent">SAIDERA</p>
-            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-primary-foreground/55">
-              Adega e Distribuidora
-            </p>
+            {/* Logo oficial: usa /branding/saidera-logo.png quando o asset existir;
+                até lá, BrandLogo exibe o wordmark temporário automaticamente. */}
+            <BrandLogo size="md" variant="on-dark" withTagline />
             <button
               type="button"
               onClick={() => navigate({ to: user ? "/enderecos" : "/auth" })}
