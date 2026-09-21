@@ -7,6 +7,13 @@ import { brl, timeBR } from "@/lib/format";
 import { checkoutErrorMessage } from "@/lib/checkout";
 import { ORDER_FLOW, STATUS_LABEL, nextStatus } from "@/lib/orders";
 import { AdminPage, StateBlock } from "@/components/admin/ui";
+import { fetchAdminDrivers } from "@/lib/admin";
+import {
+  adminAssignDriver,
+  adminForceDeliver,
+  adminUnassignDriver,
+  deliveryErrorMessage,
+} from "@/lib/delivery";
 
 export const Route = createFileRoute("/admin/pedidos")({
   component: AdminOrders,
@@ -21,6 +28,8 @@ type AdminOrder = {
   created_at: string;
   customer_name: string | null;
   customer_phone: string | null;
+  driver_id: string | null;
+  delivery_confirmed_by: string | null;
   address_snapshot: { street?: string; number?: string; neighborhood?: string } | null;
   order_items?: { id: string; product_name: string; quantity: number }[];
 };
