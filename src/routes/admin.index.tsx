@@ -1,178 +1,112 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { brl, timeBR } from "@/lib/format";
-import { checkoutErrorMessage } from "@/lib/checkout";
-import { ORDER_FLOW, STATUS_LABEL, nextStatus } from "@/lib/orders";
+import { useQuery } from "@tanstack/react-query";
+import { brl } from "@/lib/format";
+import { fetchDashboardMetrics, fetchLowStock } from "@/lib/admin";
+import { AdminPage, Card, StateBlock } from "@/components/admin/ui";
 
 export const Route = createFileRoute("/admin/")({
-  component: AdminOrders,
+  component: AdminDashboard,
 });
 
-type AdminOrder = {
-  id: string;
-  order_number: number;
-  status: string;
-  total: number;
-  payment_method: string;
-  created_at: string;
-  customer_name: string | null;
-  customer_phone: string | null;
-  address_snapshot: { street?: string; number?: string; neighborhood?: string } | null;
-  order_items?: { id: string; product_name: string; quantity: number }[];
-};
+const SHORTCUTS: { to: string; label: string }[] = [
+  { to: "/admin/pedidos", label: "Pedidos" },
+  { to: "/admin/produtos", label: "Produtos" },
+  { to: "/admin/categorias", label: "Categorias" },
+  { to: "/admin/promocoes", label: "Promoções" },
+  { to: "/admin/cupons", label: "Cupons" },
+  { to: "/admin/banners", label: "Banners" },
+  { to: "/admin/entrega", label: "Entrega" },
+  { to: "/admin/clientes", label: "Clientes" },
+  { to: "/admin/entregadores", label: "Entregadores" },
+  { to: "/admin/configuracoes", label: "Configurações" },
+];
 
-const FILTERS = ["ativos", ...ORDER_FLOW, "cancelado"];
-
-function AdminOrders() {
-  const qc = useQueryClient();
-  const [filter, setFilter] = useState("ativos");
-
-  const { data: orders } = useQuery({
-    queryKey: ["admin", "orders"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*, order_items(id, product_name, quantity)")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (error) throw error;
-      return (data ?? []) as AdminOrder[];
-    },
-    refetchInterval: 20000,
+function AdminDashboard() {
+  const {
+    data: m,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["admin", "metrics"],
+    queryFn: fetchDashboardMetrics,
+    refetchInterval: 30000,
   });
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("admin-orders")
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
-        void qc.invalidateQueries({ queryKey: ["admin", "orders"] });
-      })
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [qc]);
-
-  const setStatus = async (id: string, status: string) => {
-    const { error } = await supabase.rpc("set_order_status", { p_order_id: id, p_status: status });
-    if (error) toast.error(checkoutErrorMessage(error));
-    else {
-      toast.success(`Pedido atualizado: ${STATUS_LABEL[status]}`);
-      void qc.invalidateQueries({ queryKey: ["admin", "orders"] });
-    }
-  };
-
-  const list = (orders ?? []).filter((o) =>
-    filter === "ativos" ? !["entregue", "cancelado"].includes(o.status) : o.status === filter,
-  );
-  const today = (orders ?? []).filter(
-    (o) => new Date(o.created_at).toDateString() === new Date().toDateString(),
-  );
-  const revenue = today
-    .filter((o) => o.status !== "cancelado")
-    .reduce((s, o) => s + Number(o.total), 0);
+  const { data: lowStock } = useQuery({ queryKey: ["admin", "low-stock"], queryFn: fetchLowStock });
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="grid grid-cols-3 gap-3">
-        <Stat label="Pedidos hoje" value={String(today.length)} />
-        <Stat label="Faturamento hoje" value={brl(revenue)} />
-        <Stat
-          label="Em andamento"
-          value={String(
-            (orders ?? []).filter((o) => !["entregue", "cancelado"].includes(o.status)).length,
-          )}
-        />
-      </div>
+    <AdminPage>
+      <StateBlock loading={isLoading && !m} error={error} emptyText="" />
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setFilter(f)}
-            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${
-              filter === f
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground"
-            }`}
-          >
-            {f === "ativos" ? "Ativos" : STATUS_LABEL[f]}
-          </button>
-        ))}
-      </div>
+      {m && (
+        <>
+          <Card className="flex items-center justify-between">
+            <div>
+              <p className="text-[11px] text-muted-foreground">Status da loja</p>
+              <p className="font-display text-lg font-extrabold">
+                {m.store_open ? "Aberta" : "Fechada"}
+              </p>
+            </div>
+            <Link
+              to="/admin/configuracoes"
+              className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground"
+            >
+              {m.store_open ? "Fechar loja" : "Abrir loja"}
+            </Link>
+          </Card>
 
-      {list.length === 0 && (
-        <p className="py-12 text-center text-sm text-muted-foreground">Nenhum pedido aqui.</p>
-      )}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Pedidos hoje" value={String(m.orders_today)} />
+            <Stat label="Faturamento hoje" value={brl(Number(m.revenue_today))} />
+            <Stat label="Entregues hoje" value={String(m.delivered_today)} />
+            <Stat label="Ticket médio" value={brl(Number(m.avg_ticket_today))} />
+          </div>
 
-      <div className="space-y-3">
-        {list.map((o) => {
-          const next = nextStatus(o.status);
-          return (
-            <div key={o.id} className="surface-card space-y-2 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-display text-sm font-bold">
-                    #{o.order_number} · {o.customer_name ?? "Cliente"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {timeBR(o.created_at)} ·{" "}
-                    {o.address_snapshot
-                      ? `${o.address_snapshot.street}, ${o.address_snapshot.number} — ${o.address_snapshot.neighborhood}`
-                      : "sem endereço"}
-                  </p>
-                </div>
-                <span className="rounded-full bg-secondary px-2 py-1 text-[11px] font-bold">
-                  {STATUS_LABEL[o.status]}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Novos" value={String(m.open_new)} />
+            <Stat label="Em preparo" value={String(m.open_preparing)} />
+            <Stat label="Prontos" value={String(m.open_ready)} />
+            <Stat label="Em rota" value={String(m.open_route)} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Estoque baixo" value={String(m.low_stock)} />
+            <Stat label="Sem estoque" value={String(m.out_of_stock)} />
+            <Stat label="Clientes" value={String(m.customers)} />
+            <Stat label="Entregadores ativos" value={String(m.active_drivers)} />
+          </div>
+
+          <Card>
+            <p className="font-display text-sm font-bold">Produtos com estoque baixo</p>
+            {(lowStock ?? []).length === 0 && (
+              <p className="text-xs text-muted-foreground">Nenhum produto abaixo do mínimo.</p>
+            )}
+            {(lowStock ?? []).map((p) => (
+              <div key={p.id} className="flex items-center justify-between text-sm">
+                <span className="truncate">{p.name}</span>
+                <span className="text-xs font-bold text-destructive">
+                  {p.stock} / mín. {p.min_stock}
                 </span>
               </div>
-              <ul className="text-xs text-muted-foreground">
-                {(o.order_items ?? []).map((i) => (
-                  <li key={i.id}>
-                    {i.quantity}x {i.product_name}
-                  </li>
-                ))}
-              </ul>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="font-display text-sm font-bold">{brl(o.total)}</span>
-                <span className="text-xs text-muted-foreground">{o.payment_method}</span>
-                <div className="ml-auto flex gap-2">
-                  {o.status !== "cancelado" && o.status !== "entregue" && (
-                    <button
-                      type="button"
-                      onClick={() => setStatus(o.id, "cancelado")}
-                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-destructive"
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                  {next && (
-                    <button
-                      type="button"
-                      onClick={() => setStatus(o.id, next)}
-                      className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
-                    >
-                      {STATUS_LABEL[next]}
-                    </button>
-                  )}
-                  <Link
-                    to="/pedido/$id"
-                    params={{ id: o.id }}
-                    className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold"
-                  >
-                    Detalhes
-                  </Link>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+            ))}
+            <Link to="/admin/produtos" className="text-xs font-bold text-primary">
+              Ajustar estoque
+            </Link>
+          </Card>
+
+          <div className="flex flex-wrap gap-2">
+            {SHORTCUTS.map((s) => (
+              <Link
+                key={s.to}
+                to={s.to}
+                className="rounded-full bg-secondary px-3 py-1.5 text-xs font-semibold text-secondary-foreground"
+              >
+                {s.label}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+    </AdminPage>
   );
 }
 
