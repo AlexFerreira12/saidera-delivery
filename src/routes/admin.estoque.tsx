@@ -267,7 +267,9 @@ function AdminStock() {
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
-                          {a === "inventario" ? "Inventário" : a[0].toUpperCase() + a.slice(1)}
+                          {a === "inventario"
+                            ? "Inventário"
+                            : a.charAt(0).toUpperCase() + a.slice(1)}
                         </button>
                       ))}
                     </div>
