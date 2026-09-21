@@ -90,7 +90,9 @@ export function ProductCard({
 
       <div className="mt-auto space-y-2 p-3 pt-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-display text-lg font-bold">{brl(price)}</span>
+          <span className="font-sans text-lg font-bold tracking-tight text-primary">
+            {brl(price)}
+          </span>
           {hasPromo && (
             <span className="text-xs text-muted-foreground line-through">{brl(product.price)}</span>
           )}

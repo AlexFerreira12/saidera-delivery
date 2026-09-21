@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MapPin, Search, ShoppingBag, User, Clock, Store } from "lucide-react";
+import { MapPin, Search, ShoppingBag, User, Clock, Store, ArrowDown } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ProductCard } from "@/components/ProductCard";
 import {
@@ -19,16 +19,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bebidas Guariba — Distribuidora de bebidas com entrega rápida" },
+      { title: "SAIDERA — Adega e Distribuidora | Entrega rápida em Guariba/SP" },
       {
         name: "description",
         content:
-          "Peça bebidas geladas, gelo, carvão e petiscos com entrega rápida em Guariba/SP. Preço de distribuidora e pagamento pelo app.",
+          "SAIDERA Adega e Distribuidora: bebidas geladas, gelo, carvão e petiscos com entrega rápida em Guariba/SP. Preço de distribuidora e pagamento pelo app.",
       },
-      { property: "og:title", content: "Bebidas Guariba — Entrega rápida de bebidas" },
+      { property: "og:title", content: "SAIDERA — Adega e Distribuidora" },
       {
         property: "og:description",
-        content: "Bebidas geladas, gelo, carvão e petiscos entregues em minutos em Guariba/SP.",
+        content:
+          "Bebidas geladas, gelo, carvão e petiscos entregues em minutos em Guariba/SP.",
       },
     ],
   }),
@@ -91,20 +92,25 @@ function Home() {
   const featured = list.filter((p) => p.is_featured);
   const repeat = list.filter((p) => (repeatIds ?? []).includes(p.id));
 
+  const isOpen = store?.is_open !== false;
+
   return (
     <AppShell>
-      <header className="brand-gradient rounded-b-3xl px-4 pb-5 pt-4 text-primary-foreground">
+      <header className="brand-gradient hairline-gold border-x-0 border-t-0 px-4 pb-5 pt-5 text-foreground">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-display text-lg font-extrabold leading-none">
-              {store?.store_name ?? "Bebidas Guariba"}
+            <p className="font-display text-2xl font-bold tracking-[0.18em] text-primary">
+              SAIDERA
+            </p>
+            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+              Adega e Distribuidora
             </p>
             <button
               type="button"
               onClick={() => navigate({ to: user ? "/enderecos" : "/auth" })}
-              className="mt-1 flex max-w-[200px] items-center gap-1 text-xs opacity-90"
+              className="mt-2 flex max-w-[220px] items-center gap-1 text-xs text-muted-foreground"
             >
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
               <span className="truncate">
                 {address ? `${address.street}, ${address.number}` : "Escolher endereço de entrega"}
               </span>
@@ -114,18 +120,18 @@ function Home() {
             <Link
               to="/conta"
               aria-label="Minha conta"
-              className="grid h-10 w-10 place-items-center rounded-full bg-white/15"
+              className="grid h-10 w-10 place-items-center rounded-full border border-border bg-card/70 text-foreground"
             >
               <User className="h-5 w-5" />
             </Link>
             <Link
               to="/carrinho"
               aria-label="Carrinho"
-              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/15"
+              className="relative grid h-10 w-10 place-items-center rounded-full border border-border bg-card/70 text-foreground"
             >
               <ShoppingBag className="h-5 w-5" />
               {cart.count > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
+                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                   {cart.count}
                 </span>
               )}
@@ -133,7 +139,7 @@ function Home() {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 rounded-2xl bg-card px-3 py-2.5 text-foreground">
+        <div className="mt-4 flex items-center gap-2 rounded-xl border border-border bg-card/70 px-3 py-2.5 text-foreground">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
             value={search}
@@ -142,22 +148,50 @@ function Home() {
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
-
-        <div className="mt-3 flex items-center gap-3 text-xs">
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1">
-            <Clock className="h-3.5 w-3.5" /> {store?.avg_delivery_minutes ?? 35} min
-          </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1">
-            <Store className="h-3.5 w-3.5" />{" "}
-            {store?.is_open === false ? "Loja fechada" : "Loja aberta"}
-          </span>
-        </div>
       </header>
 
-      {store?.is_open === false && (
-        <p className="mx-4 mt-3 rounded-xl bg-warning/15 p-3 text-xs font-medium text-warning-foreground">
+      {!search && (
+        <section className="px-4 pt-5">
+          <div className="brand-gradient hairline-gold relative overflow-hidden rounded-2xl p-5">
+            <div className="h-px w-10 bg-primary/70" aria-hidden />
+            <h1 className="mt-3 font-display text-2xl font-bold leading-tight">
+              Bebidas selecionadas,
+              <br />
+              entrega rápida.
+            </h1>
+            <p className="mt-2 max-w-[240px] text-xs leading-relaxed text-muted-foreground">
+              Adega completa com preço de distribuidora, entregue gelada na sua porta.
+            </p>
+            <a
+              href="#catalogo"
+              className="shadow-gold mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Explorar produtos
+              <ArrowDown className="h-4 w-4" />
+            </a>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-medium">
+              <span
+                className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 ${
+                  isOpen
+                    ? "border-success/40 text-success"
+                    : "border-warning/40 text-warning"
+                }`}
+              >
+                <Store className="h-3.5 w-3.5" />
+                {isOpen ? "Loja aberta" : "Loja fechada"}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" /> {store?.avg_delivery_minutes ?? 35} min
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {!isOpen && (
+        <p className="mx-4 mt-3 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs font-medium text-warning">
           Estamos fechados no momento. Horário de funcionamento:{" "}
-          {store.opening_hours ?? "consulte a loja"}. Você pode montar seu carrinho e finalizar
+          {store?.opening_hours ?? "consulte a loja"}. Você pode montar seu carrinho e finalizar
           quando abrirmos.
         </p>
       )}
@@ -168,17 +202,19 @@ function Home() {
         </Section>
       ) : (
         <>
-          <div className="no-scrollbar mt-4 flex gap-3 overflow-x-auto px-4 pb-1">
-            {(banners ?? []).map((b) => (
-              <div
-                key={b.id}
-                className="brand-gradient min-w-[80%] rounded-2xl p-4 text-primary-foreground shadow-card"
-              >
-                <p className="font-display text-base font-bold">{b.title}</p>
-                <p className="mt-1 text-xs opacity-90">{b.subtitle}</p>
-              </div>
-            ))}
-          </div>
+          {(banners ?? []).length > 0 && (
+            <div className="no-scrollbar mt-5 flex gap-3 overflow-x-auto px-4 pb-1">
+              {(banners ?? []).map((b) => (
+                <div
+                  key={b.id}
+                  className="brand-gradient hairline-gold min-w-[80%] rounded-2xl p-4"
+                >
+                  <p className="font-display text-base font-bold text-primary">{b.title}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{b.subtitle}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="no-scrollbar mt-5 flex gap-2 overflow-x-auto px-4">
             {(categories ?? []).map((c) => (
@@ -186,37 +222,39 @@ function Home() {
                 key={c.id}
                 to="/categoria/$slug"
                 params={{ slug: c.slug }}
-                className="whitespace-nowrap rounded-full bg-card px-4 py-2 text-sm font-semibold shadow-card"
+                className="whitespace-nowrap rounded-full border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-primary/50 hover:text-primary"
               >
                 {c.name}
               </Link>
             ))}
           </div>
 
-          {repeat.length > 0 && (
-            <Section title="Comprar novamente">
-              <ProductGrid products={repeat} loading={false} />
-            </Section>
-          )}
+          <div id="catalogo" className="scroll-mt-4">
+            {repeat.length > 0 && (
+              <Section title="Comprar novamente">
+                <ProductGrid products={repeat} loading={false} />
+              </Section>
+            )}
 
-          {featured.length > 0 && (
-            <Section title="Ofertas do dia">
-              <ProductGrid products={featured} loading={isLoading} />
-            </Section>
-          )}
+            {featured.length > 0 && (
+              <Section title="Ofertas do dia">
+                <ProductGrid products={featured} loading={isLoading} />
+              </Section>
+            )}
 
-          <Section title="Todos os produtos">
-            <ProductGrid
-              products={list}
-              loading={isLoading}
-              empty="Nenhum produto cadastrado ainda."
-            />
-          </Section>
+            <Section title="Todos os produtos">
+              <ProductGrid
+                products={list}
+                loading={isLoading}
+                empty="Nenhum produto cadastrado ainda."
+              />
+            </Section>
+          </div>
         </>
       )}
       <p className="px-4 pb-4 pt-2 text-center text-[11px] text-muted-foreground">
-        Olá{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Entregamos em
-        Guariba/SP.
+        Olá{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! SAIDERA — Adega e
+        Distribuidora · Entregamos em Guariba/SP.
       </p>
     </AppShell>
   );
@@ -225,7 +263,10 @@ function Home() {
 export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-6 px-4">
-      <h2 className="mb-3 font-display text-base font-bold">{title}</h2>
+      <div className="mb-3 flex items-baseline gap-2">
+        <span className="h-3.5 w-px bg-primary/70" aria-hidden />
+        <h2 className="font-display text-base font-bold">{title}</h2>
+      </div>
       {children}
     </section>
   );
