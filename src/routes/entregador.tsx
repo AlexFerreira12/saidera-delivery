@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { brl, timeBR } from "@/lib/format";
+import { checkoutErrorMessage } from "@/lib/checkout";
 import { STATUS_LABEL } from "@/lib/orders";
 
 export const Route = createFileRoute("/entregador")({

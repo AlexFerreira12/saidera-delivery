@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { brl, timeBR } from "@/lib/format";
+import { checkoutErrorMessage } from "@/lib/checkout";
 import { ORDER_FLOW, STATUS_LABEL, nextStatus } from "@/lib/orders";
 
 export const Route = createFileRoute("/admin/")({
