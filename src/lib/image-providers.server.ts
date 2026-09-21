@@ -163,7 +163,9 @@ export function isPublicHttpsImageUrl(raw: string): boolean {
 export function parseRetryAfter(header: string | null): number | null {
   if (!header) return null;
   const seconds = Number(header.trim());
-  if (Number.isFinite(seconds) && seconds >= 0) return Math.min(Math.ceil(seconds), 3600);
+  if (header.trim() !== "" && Number.isFinite(seconds)) {
+    return seconds >= 0 ? Math.min(Math.ceil(seconds), 3600) : null;
+  }
   const date = Date.parse(header);
   if (!Number.isNaN(date)) return Math.min(Math.max(0, Math.ceil((date - Date.now()) / 1000)), 3600);
   return null;
