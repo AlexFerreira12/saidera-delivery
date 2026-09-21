@@ -52,7 +52,7 @@ export async function downloadImageGuarded(url: string): Promise<DownloadedImage
   const declaredLength = Number(res.headers.get("content-length") ?? 0);
   if (declaredLength > MAX_IMAGE_BYTES) throw new Error("ARQUIVO_GRANDE");
 
-  const mime = (res.headers.get("content-type") ?? "").split(";")[0]?.trim().toLowerCase();
+  const mime = ((res.headers.get("content-type") ?? "").split(";")[0] ?? "").trim().toLowerCase();
   if (!["image/jpeg", "image/png", "image/webp"].includes(mime)) throw new Error("MIME_INVALIDO");
 
   const bytes = new Uint8Array(await res.arrayBuffer());
