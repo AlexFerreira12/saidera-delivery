@@ -6,9 +6,13 @@
  *   apontar para a rota interna /api/public/imagem/... (sem hotlink externo).
  */
 import { isValidGtin, normalizeGtin } from "./gtin";
-import { lookupOpenFoodFacts } from "./image-providers.server";
+import { isPublicHttpsImageUrl, lookupProductImageByGtin } from "./image-providers.server";
 import { IMAGE_MIME_BY_EXT, sniffImageType } from "./image-bytes";
-import type { ImageApplyResult, ImageSearchResult } from "./product-image-types";
+import type {
+  ImageApplyResult,
+  ImageCandidate,
+  ImageSearchResult,
+} from "./product-image-types";
 
 export const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT_MS = 10_000;
@@ -20,7 +24,7 @@ const ALLOWED_IMAGE_HOSTS = new Set([
   "static.openfoodfacts.org",
 ]);
 
-/** Allowlist SSRF: somente HTTPS e hosts conhecidos do provedor. */
+/** Allowlist SSRF do Open Food Facts: somente HTTPS e hosts oficiais. */
 export function isAllowedImageUrl(raw: string): boolean {
   try {
     const url = new URL(raw);
@@ -30,6 +34,19 @@ export function isAllowedImageUrl(raw: string): boolean {
   }
 }
 
+/**
+ * Política de download por provedor: Open Food Facts usa allowlist fixa de
+ * hosts oficiais; UPCitemdb lista CDNs de varejistas que não podemos enumerar,
+ * então exige HTTPS público estrito (sem localhost/IP/nome interno).
+ * Nenhuma política permite HTTP, IP privado/link-local ou host desconhecido
+ * sem validação.
+ */
+export function imageUrlPolicyFor(
+  provider: ImageCandidate["provider"],
+): (url: string) => boolean {
+  return provider === "upcitemdb" ? isPublicHttpsImageUrl : isAllowedImageUrl;
+}
+
 type DownloadedImage = { bytes: Uint8Array; ext: "jpg" | "png" | "webp"; contentType: string };
 
 /**
@@ -37,8 +54,11 @@ type DownloadedImage = { bytes: Uint8Array; ext: "jpg" | "png" | "webp"; content
  * Falha de rede/timeout vira PROVEDOR_IMAGEM_INALCANCAVEL (estado específico de
  * "provider_image_unreachable"), distinto de erro HTTP ou de validação de arquivo.
  */
-export async function downloadImageGuarded(url: string): Promise<DownloadedImage> {
-  if (!isAllowedImageUrl(url)) throw new Error("URL_NAO_PERMITIDA");
+export async function downloadImageGuarded(
+  url: string,
+  isAllowed: (url: string) => boolean = isAllowedImageUrl,
+): Promise<DownloadedImage> {
+  if (!isAllowed(url)) throw new Error("URL_NAO_PERMITIDA");
 
   let res: Response;
   try {
@@ -50,8 +70,8 @@ export async function downloadImageGuarded(url: string): Promise<DownloadedImage
   } catch {
     throw new Error("PROVEDOR_IMAGEM_INALCANCAVEL");
   }
-  // Revalida o host final após redirects — um redirect não pode sair da allowlist.
-  if (!isAllowedImageUrl(res.url || url)) throw new Error("DOWNLOAD_FALHOU");
+  // Revalida o host final após redirects — um redirect não pode sair da política.
+  if (!isAllowed(res.url || url)) throw new Error("DOWNLOAD_FALHOU");
   if (!res.ok) throw new Error("DOWNLOAD_FALHOU");
 
   const declaredLength = Number(res.headers.get("content-length") ?? 0);
@@ -81,12 +101,15 @@ const CHAIN_RETRYABLE = new Set(["PROVEDOR_IMAGEM_INALCANCAVEL", "DOWNLOAD_FALHO
  * Se nenhuma funcionar, relata PROVEDOR_IMAGEM_INALCANCAVEL quando houve
  * falha de rede/timeout; caso contrário, o último erro de download.
  */
-export async function downloadFirstReachableImage(urls: string[]): Promise<DownloadedImage> {
+export async function downloadFirstReachableImage(
+  urls: string[],
+  isAllowed: (url: string) => boolean = isAllowedImageUrl,
+): Promise<DownloadedImage> {
   const unique = [...new Set(urls.filter((u) => typeof u === "string" && u.length > 0))];
   let sawUnreachable = false;
   for (const url of unique) {
     try {
-      return await downloadImageGuarded(url);
+      return await downloadImageGuarded(url, isAllowed);
     } catch (err) {
       const code = err instanceof Error ? err.message : "DOWNLOAD_FALHOU";
       if (!CHAIN_RETRYABLE.has(code)) throw err;
@@ -113,7 +136,7 @@ export async function previewProductImageById(productId: string): Promise<ImageS
 
   const gtin = normalizeGtin(product.barcode);
   if (!isValidGtin(gtin)) return { status: "invalid_gtin" };
-  return lookupOpenFoodFacts(gtin);
+  return lookupProductImageByGtin(gtin);
 }
 
 /**
@@ -137,7 +160,7 @@ export async function applyProductImageById(
   const gtin = normalizeGtin(product.barcode);
   if (!isValidGtin(gtin)) return { status: "invalid_gtin" };
 
-  const lookup = await lookupOpenFoodFacts(gtin);
+  const lookup = await lookupProductImageByGtin(gtin);
   if (lookup.status !== "found") return lookup;
   const candidate = lookup.candidate;
 
@@ -155,11 +178,13 @@ export async function applyProductImageById(
 
   let image: DownloadedImage;
   try {
-    // Cadeia oficial: URL primária → espelho oficial → foto original (imgid) no espelho.
-    image = await downloadFirstReachableImage([
-      candidate.imageUrl ?? "",
-      ...(candidate.fallbackImageUrls ?? []),
-    ]);
+    // Cadeia do provedor: URL primária → alternativas oficiais, sempre sob a
+    // política de URL do provedor que respondeu (allowlist OFF / HTTPS público UPC).
+    const isAllowed = imageUrlPolicyFor(candidate.provider);
+    image = await downloadFirstReachableImage(
+      [candidate.imageUrl ?? "", ...(candidate.fallbackImageUrls ?? [])],
+      isAllowed,
+    );
   } catch (err) {
     return { status: "error", message: err instanceof Error ? err.message : "DOWNLOAD_FALHOU" };
   }
