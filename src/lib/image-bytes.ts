@@ -7,7 +7,13 @@ export type SniffedImageType = "jpg" | "png" | "webp";
 
 export function sniffImageType(bytes: Uint8Array): SniffedImageType | null {
   if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xd8) return "jpg";
-  if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47)
+  if (
+    bytes.length >= 4 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47
+  )
     return "png";
   if (bytes.length >= 12) {
     const tag =
