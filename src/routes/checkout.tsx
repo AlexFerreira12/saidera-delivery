@@ -35,7 +35,6 @@ const PAYMENTS = [
   { id: "cartao_entrega", label: "Cartão na entrega", hint: "Débito ou crédito", disabled: false },
 ] as const;
 
-
 function CheckoutPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
@@ -49,7 +48,6 @@ function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [coupon, setCoupon] = useState<string | null>(null);
   const requestIdRef = useRef<string | null>(null);
-
 
   useEffect(() => {
     setCoupon(localStorage.getItem(COUPON_STORAGE_KEY));
@@ -131,7 +129,6 @@ function CheckoutPage() {
       setPlacing(false);
     }
   };
-
 
   return (
     <AppShell hideNav hideCartBar>

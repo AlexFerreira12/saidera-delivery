@@ -26,7 +26,12 @@ async function prepare(db: any, orderId: string, userId: string | null) {
   return data as any;
 }
 
-async function applyFromProvider(db: any, chargeId: string, eventId: string | null, eventType: string) {
+async function applyFromProvider(
+  db: any,
+  chargeId: string,
+  eventId: string | null,
+  eventType: string,
+) {
   const { getCharge, mapChargeStatus } = await import("./pagarme.server");
   const charge = await getCharge(chargeId);
   const status = mapChargeStatus(charge?.["status"] as string);
@@ -81,7 +86,8 @@ export const createPixCharge = createServerFn({ method: "POST" })
     const { createPixOrder, pagarmeConfigured } = await import("./pagarme.server");
     if (!pagarmeConfigured()) throw new Error("PAGARME_NAO_CONFIGURADO");
 
-    const email = (context.claims as any)?.email ?? `pedido-${info.order_number}@bebidasguariba.app`;
+    const email =
+      (context.claims as any)?.email ?? `pedido-${info.order_number}@bebidasguariba.app`;
     const idempotencyKey = `order-${data.orderId}-${Math.floor(Date.now() / (PIX_EXPIRES_SECONDS * 1000))}`;
 
     const charge = await createPixOrder({

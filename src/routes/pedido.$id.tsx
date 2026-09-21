@@ -175,7 +175,9 @@ function OrderPage() {
         )}
 
         {order.payment_method === "pix" && order.payment_status === "pago" && (
-          <section className="surface-card p-4 text-sm text-success">Pagamento PIX confirmado.</section>
+          <section className="surface-card p-4 text-sm text-success">
+            Pagamento PIX confirmado.
+          </section>
         )}
 
         {order.status === "saiu_para_entrega" && pin && (
@@ -187,7 +189,6 @@ function OrderPage() {
             </p>
           </section>
         )}
-
 
         {order.status === "entregue" && order.delivered_at && (
           <section className="surface-card p-4 text-sm text-muted-foreground">

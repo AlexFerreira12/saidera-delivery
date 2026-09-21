@@ -85,7 +85,6 @@ export function GhostButton({
   );
 }
 
-
 export function StatusPill({ active, onClick }: { active: boolean; onClick?: () => void }) {
   return (
     <button

@@ -122,9 +122,7 @@ function PaymentPage() {
 
         {charge.isError && (
           <section className="surface-card space-y-3 p-4 text-sm">
-            <p className="font-semibold text-destructive">
-              {paymentErrorMessage(charge.error)}
-            </p>
+            <p className="font-semibold text-destructive">{paymentErrorMessage(charge.error)}</p>
             <button
               type="button"
               onClick={() => void charge.refetch()}
@@ -145,9 +143,7 @@ function PaymentPage() {
         {charge.data && !closed && (
           <section className="surface-card space-y-4 p-4 text-center">
             <div>
-              <p className="font-display text-sm font-bold">
-                Pedido #{charge.data.order_number}
-              </p>
+              <p className="font-display text-sm font-bold">Pedido #{charge.data.order_number}</p>
               <p className="font-display text-2xl font-extrabold">
                 {brl(Number(charge.data.amount))}
               </p>

@@ -20,7 +20,6 @@ export const STATUS_LABEL: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
-
 export const PAYMENT_LABEL: Record<string, string> = {
   pix: "PIX",
   dinheiro: "Dinheiro na entrega",

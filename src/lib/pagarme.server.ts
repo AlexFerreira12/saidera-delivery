@@ -86,9 +86,7 @@ export async function createPixOrder(input: {
         payment_method: "pix",
         pix: {
           expires_in: input.expiresInSeconds,
-          additional_information: [
-            { name: "Pedido", value: `#${input.orderNumber}` },
-          ],
+          additional_information: [{ name: "Pedido", value: `#${input.orderNumber}` }],
         },
       },
     ],

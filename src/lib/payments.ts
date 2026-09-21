@@ -51,7 +51,8 @@ export function paymentErrorMessage(err: unknown) {
   if (raw.includes("MOTIVO_OBRIGATORIO")) return "Informe o motivo.";
   if (raw.includes("SEM_PERMISSAO")) return "Você não tem permissão para esta ação.";
   if (raw.includes("PEDIDO_FINALIZADO")) return "Este pedido já foi finalizado.";
-  if (raw.includes("PAGARME_ERRO")) return "O provedor de pagamento recusou a operação. Tente novamente.";
+  if (raw.includes("PAGARME_ERRO"))
+    return "O provedor de pagamento recusou a operação. Tente novamente.";
   return "Não foi possível concluir. Tente novamente.";
 }
 

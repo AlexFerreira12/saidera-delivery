@@ -4,11 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { brl, dateTimeBR } from "@/lib/format";
-import {
-  fetchAdminPayments,
-  paymentErrorMessage,
-  PAYMENT_STATUS_LABEL,
-} from "@/lib/payments";
+import { fetchAdminPayments, paymentErrorMessage, PAYMENT_STATUS_LABEL } from "@/lib/payments";
 import { adminRefundPayment, adminSyncPayment } from "@/lib/payments.functions";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -24,7 +20,15 @@ export const Route = createFileRoute("/admin/pagamentos")({
   component: AdminPayments,
 });
 
-const STATUSES = ["", "aguardando_pagamento", "pago", "expirado", "falhou", "cancelado", "estornado"];
+const STATUSES = [
+  "",
+  "aguardando_pagamento",
+  "pago",
+  "expirado",
+  "falhou",
+  "cancelado",
+  "estornado",
+];
 const METHODS = ["", "pix", "dinheiro", "cartao_entrega"];
 
 function AdminPayments() {
