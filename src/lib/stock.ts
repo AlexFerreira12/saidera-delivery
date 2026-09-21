@@ -48,21 +48,26 @@ export async function fetchStockProducts() {
 }
 
 export async function fetchStockHistory(params: {
-  productId?: string;
-  kind?: string;
-  from?: string;
-  to?: string;
+  productId?: string | undefined;
+  kind?: string | undefined;
+  from?: string | undefined;
+  to?: string | undefined;
   limit: number;
   offset: number;
 }) {
-  const { data, error } = await supabase.rpc("admin_stock_history", {
-    p_product_id: params.productId || undefined,
+  const args: Record<string, unknown> = {
     p_kind: params.kind || "",
-    p_from: params.from || undefined,
-    p_to: params.to || undefined,
     p_limit: params.limit,
     p_offset: params.offset,
-  });
+  };
+  if (params.productId) args["p_product_id"] = params.productId;
+  if (params.from) args["p_from"] = params.from;
+  if (params.to) args["p_to"] = params.to;
+
+  const { data, error } = await supabase.rpc(
+    "admin_stock_history",
+    args as Parameters<typeof supabase.rpc<"admin_stock_history">>[1],
+  );
   if (error) throw error;
   return (data ?? []) as unknown as StockMovement[];
 }
