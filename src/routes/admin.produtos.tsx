@@ -280,6 +280,14 @@ function AdminProducts() {
               className="rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
             />
           </div>
+          <input
+            value={form.barcode}
+            onChange={(e) => setForm({ ...form, barcode: e.target.value.replace(/\D/g, "") })}
+            inputMode="numeric"
+            placeholder="Código de barras (EAN/GTIN)"
+            aria-label="Código de barras do produto"
+            className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
+          />
           <select
             value={form.category_id}
             onChange={(e) => setForm({ ...form, category_id: e.target.value })}
