@@ -1155,6 +1155,30 @@ export type Database = {
           },
         ]
       }
+      public_rate_limits: {
+        Row: {
+          bucket: string
+          hits: number
+          identifier: string
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          identifier: string
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          identifier?: string
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           actor_user_id: string | null
@@ -1626,6 +1650,16 @@ export type Database = {
       pin_secret: { Args: never; Returns: string }
       preview_coupon: {
         Args: { p_code: string; p_subtotal: number }
+        Returns: Json
+      }
+      purge_old_audit_data: { Args: { p_days?: number }; Returns: Json }
+      rate_limit_hit: {
+        Args: {
+          p_bucket: string
+          p_identifier: string
+          p_limit: number
+          p_window_seconds?: number
+        }
         Returns: Json
       }
       record_stock_movement: {

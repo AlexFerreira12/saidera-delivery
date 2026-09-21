@@ -85,6 +85,13 @@
       "when": 1789964269337,
       "tag": "0011_block_e_drop_old_create_order_overload",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789985293692,
+      "tag": "0012_block_f_public_rate_limit",
+      "breakpoints": true
     }
   ]
 }
