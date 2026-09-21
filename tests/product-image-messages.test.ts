@@ -10,6 +10,12 @@ describe("friendlyImageError", () => {
     expect(friendlyImageError("DOWNLOAD_FALHOU")).toMatch(/download falhou/i);
   });
 
+  it("traduz PROVEDOR_IMAGEM_INALCANCAVEL para estado específico de imagem inalcançável", () => {
+    expect(friendlyImageError("PROVEDOR_IMAGEM_INALCANCAVEL")).toMatch(
+      /servidor de imagens.*não está acessível/i,
+    );
+  });
+
   it("traduz códigos de validação de arquivo", () => {
     expect(friendlyImageError("ARQUIVO_GRANDE")).toMatch(/3 MB/);
     expect(friendlyImageError("MIME_INVALIDO")).toMatch(/JPEG, PNG ou WebP/);

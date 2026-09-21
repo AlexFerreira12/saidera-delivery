@@ -5,6 +5,8 @@
 import type { ImageApplyResult, ImageSearchResult } from "./product-image-types";
 
 const ERROR_MESSAGES: Record<string, string> = {
+  PROVEDOR_IMAGEM_INALCANCAVEL:
+    "A fonte encontrou a imagem, mas o servidor de imagens dela não está acessível no momento. Tente novamente mais tarde.",
   DOWNLOAD_FALHOU:
     "A fonte encontrou a imagem, mas o download falhou (conexão lenta ou indisponível). Tente novamente.",
   URL_NAO_PERMITIDA: "O endereço da imagem não é permitido por segurança.",

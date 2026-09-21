@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { sniffImageType } from "@/lib/image-bytes";
-import { parseOpenFoodFacts } from "@/lib/image-providers.server";
+import { buildOfficialFallbackUrls, parseOpenFoodFacts } from "@/lib/image-providers.server";
 import {
+  downloadFirstReachableImage,
   downloadImageGuarded,
   isAllowedImageUrl,
   MAX_IMAGE_BYTES,
@@ -58,6 +59,48 @@ describe("parseOpenFoodFacts", () => {
   it("resposta inválida retorna erro", () => {
     expect(parseOpenFoodFacts("lixo", GTIN).status).toBe("error");
     expect(parseOpenFoodFacts(null, GTIN).status).toBe("error");
+  });
+
+  it("inclui espelho oficial e foto original (imgid) como fallback", () => {
+    const result = parseOpenFoodFacts(
+      offBody({
+        image_front_url: IMG,
+        images: { front_pt: { imgid: 10, rev: 60 }, "1": { uploaded_t: 1 } },
+      }),
+      GTIN,
+    );
+    expect(result.status).toBe("found");
+    if (result.status === "found") {
+      expect(result.candidate.fallbackImageUrls).toEqual([
+        "https://images.openfoodfacts.net/images/products/400/638/133/3931/front.jpg",
+        "https://images.openfoodfacts.net/images/products/400/638/133/3931/10.400.jpg",
+        "https://images.openfoodfacts.net/images/products/400/638/133/3931/10.jpg",
+      ]);
+    }
+  });
+});
+
+describe("buildOfficialFallbackUrls", () => {
+  const base = "https://images.openfoodfacts.org/images/products/400/638/133/3931/front.jpg";
+
+  it("gera apenas URLs de domínios oficiais do provedor", () => {
+    const urls = buildOfficialFallbackUrls(base, {}) ?? [];
+    expect(urls.length).toBeGreaterThan(0);
+    for (const url of urls) {
+      expect(isAllowedImageUrl(url)).toBe(true);
+      expect(url.startsWith("https://images.openfoodfacts.")).toBe(true);
+    }
+  });
+
+  it("sem imgid, oferece somente o mesmo caminho no espelho", () => {
+    expect(buildOfficialFallbackUrls(base, {})).toEqual([
+      "https://images.openfoodfacts.net/images/products/400/638/133/3931/front.jpg",
+    ]);
+  });
+
+  it("retorna undefined para URL fora do host primário oficial", () => {
+    expect(buildOfficialFallbackUrls("https://evil.example.com/x.jpg", {})).toBeUndefined();
+    expect(buildOfficialFallbackUrls(null, {})).toBeUndefined();
   });
 });
 
@@ -188,12 +231,12 @@ describe("downloadImageGuarded", () => {
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("TIPO_INVALIDO");
   });
 
-  it("timeout/erro de rede vira DOWNLOAD_FALHOU", async () => {
+  it("timeout/erro de rede vira PROVEDOR_IMAGEM_INALCANCAVEL (provider_image_unreachable)", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() => Promise.reject(new DOMException("aborted", "AbortError"))),
     );
-    await expect(downloadImageGuarded(IMG)).rejects.toThrow("DOWNLOAD_FALHOU");
+    await expect(downloadImageGuarded(IMG)).rejects.toThrow("PROVEDOR_IMAGEM_INALCANCAVEL");
   });
 
   it("resposta HTTP de erro vira DOWNLOAD_FALHOU", async () => {
@@ -202,5 +245,81 @@ describe("downloadImageGuarded", () => {
       vi.fn(() => Promise.resolve(fakeResponse({ ok: false, status: 500 }))),
     );
     await expect(downloadImageGuarded(IMG)).rejects.toThrow("DOWNLOAD_FALHOU");
+  });
+});
+
+describe("downloadFirstReachableImage (cadeia de fallback oficial)", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const MIRROR = "https://images.openfoodfacts.net/images/products/400/638/133/3931/front.jpg";
+  const RAW = "https://images.openfoodfacts.net/images/products/400/638/133/3931/10.jpg";
+  const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
+
+  function okResponse() {
+    const headers = new Headers({ "content-type": "image/jpeg" });
+    return {
+      ok: true,
+      url: MIRROR,
+      headers,
+      arrayBuffer: () => Promise.resolve(JPEG.buffer.slice(0)),
+    } as unknown as Response;
+  }
+
+  it("usa a URL primária quando ela funciona, sem chamar os fallbacks", async () => {
+    const spy = vi.fn(() => Promise.resolve(okResponse()));
+    vi.stubGlobal("fetch", spy);
+    const img = await downloadFirstReachableImage([IMG, MIRROR, RAW]);
+    expect(img.ext).toBe("jpg");
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("cai para o espelho oficial quando a primária está inalcançável", async () => {
+    const spy = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith("https://images.openfoodfacts.org/")) {
+        return Promise.reject(new DOMException("timeout", "AbortError"));
+      }
+      return Promise.resolve(okResponse());
+    });
+    vi.stubGlobal("fetch", spy);
+    const img = await downloadFirstReachableImage([IMG, MIRROR, RAW]);
+    expect(img.ext).toBe("jpg");
+    expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it("relata PROVEDOR_IMAGEM_INALCANCAVEL quando todas as URLs falham por rede/HTTP", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.startsWith("https://images.openfoodfacts.org/")) {
+          return Promise.reject(new DOMException("timeout", "AbortError"));
+        }
+        const headers = new Headers({ "content-type": "image/jpeg" });
+        return Promise.resolve({
+          ok: false,
+          url,
+          headers,
+          arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+        } as unknown as Response);
+      }),
+    );
+    await expect(downloadFirstReachableImage([IMG, MIRROR, RAW])).rejects.toThrow(
+      "PROVEDOR_IMAGEM_INALCANCAVEL",
+    );
+  });
+
+  it("erro de validação aborta a cadeia sem tentar fallbacks", async () => {
+    const spy = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        url: IMG,
+        headers: new Headers({ "content-type": "image/svg+xml" }),
+        arrayBuffer: () => Promise.resolve(new TextEncoder().encode("<svg/>").buffer),
+      } as unknown as Response),
+    );
+    vi.stubGlobal("fetch", spy);
+    await expect(downloadFirstReachableImage([IMG, MIRROR])).rejects.toThrow("MIME_INVALIDO");
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });

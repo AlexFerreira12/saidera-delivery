@@ -7,9 +7,13 @@ import { gtinsMatch, normalizeGtin } from "./gtin";
 import type { ImageCandidate, ImageSearchResult } from "./product-image-types";
 
 const OFF_API = "https://world.openfoodfacts.org/api/v2/product";
-const OFF_FIELDS = "code,product_name,brands,image_url,image_front_url";
+const OFF_FIELDS = "code,product_name,brands,image_url,image_front_url,images";
 const USER_AGENT = "SaideraImageImport/1.0 (catalog admin tool)";
 const TIMEOUT_MS = 10_000;
+
+const OFF_PRIMARY_HOST = "https://images.openfoodfacts.org";
+/** Espelho oficial do Open Food Facts (mesma infraestrutura, domínio .net). */
+const OFF_MIRROR_HOST = "https://images.openfoodfacts.net";
 
 /** Interpreta a resposta do Open Food Facts. Função pura para testes. */
 export function parseOpenFoodFacts(body: unknown, gtin: string): ImageSearchResult {
@@ -26,16 +30,53 @@ export function parseOpenFoodFacts(body: unknown, gtin: string): ImageSearchResu
 
   const name = p["product_name"];
   const brands = p["brands"];
+  const imageUrl = pickImageUrl(p);
   const candidate: ImageCandidate = {
     provider: "open_food_facts",
     gtin: normalizeGtin(code),
     name: typeof name === "string" && name.trim() ? name.trim() : null,
     brand: typeof brands === "string" && brands.trim() ? brands.trim() : null,
-    imageUrl: pickImageUrl(p),
+    imageUrl,
+    fallbackImageUrls: buildOfficialFallbackUrls(imageUrl, p),
     match: "exact",
   };
   if (!candidate.imageUrl) return { status: "no_image", candidate };
   return { status: "found", candidate };
+}
+
+/**
+ * Monta alternativas de download usando SOMENTE domínios oficiais do OFF:
+ * 1. mesmo caminho no espelho oficial (.net);
+ * 2. a foto original (imgid) que gerou a imagem frontal selecionada, no espelho.
+ * Nenhum host externo/proxy é adicionado aqui.
+ */
+export function buildOfficialFallbackUrls(
+  imageUrl: string | null,
+  product: Record<string, unknown>,
+): string[] | undefined {
+  if (!imageUrl || !imageUrl.startsWith(`${OFF_PRIMARY_HOST}/`)) return undefined;
+  const path = imageUrl.slice(OFF_PRIMARY_HOST.length);
+  const urls = [`${OFF_MIRROR_HOST}${path}`];
+  const dir = path.slice(0, path.lastIndexOf("/") + 1);
+  const imgid = selectedFrontImageId(product);
+  if (imgid !== null) {
+    urls.push(`${OFF_MIRROR_HOST}${dir}${imgid}.400.jpg`);
+    urls.push(`${OFF_MIRROR_HOST}${dir}${imgid}.jpg`);
+  }
+  return [...new Set(urls)];
+}
+
+/** Extrai o imgid da foto original usada pela imagem frontal selecionada. */
+function selectedFrontImageId(product: Record<string, unknown>): number | null {
+  const images = product["images"];
+  if (!images || typeof images !== "object") return null;
+  for (const [key, value] of Object.entries(images as Record<string, unknown>)) {
+    if (!key.startsWith("front")) continue;
+    if (!value || typeof value !== "object") continue;
+    const imgid = (value as Record<string, unknown>)["imgid"];
+    if (typeof imgid === "number" && Number.isInteger(imgid) && imgid > 0) return imgid;
+  }
+  return null;
 }
 
 function pickImageUrl(p: Record<string, unknown>): string | null {
