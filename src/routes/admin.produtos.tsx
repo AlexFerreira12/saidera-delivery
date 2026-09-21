@@ -9,7 +9,7 @@ import { brl } from "@/lib/format";
 import { stockEntry, stockErrorMessage } from "@/lib/stock";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { applyProductImage, previewProductImage } from "@/lib/product-image.functions";
-import { isValidGtin } from "@/lib/gtin";
+import { isValidGtin, normalizeGtin } from "@/lib/gtin";
 import type { ImageCandidate, ImageSearchResult } from "@/lib/product-image-types";
 
 export const Route = createFileRoute("/admin/produtos")({
@@ -67,6 +67,15 @@ function AdminProducts() {
     barcode: "",
     image_url: "",
   });
+  const [editing, setEditing] = useState<AdminProduct | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    price: "",
+    category_id: "",
+    volume: "",
+    barcode: "",
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const previewImage = useServerFn(previewProductImage);
   const applyImage = useServerFn(applyProductImage);
@@ -83,6 +92,51 @@ function AdminProducts() {
     const { error } = await supabase.from("products").update(values).eq("id", id);
     if (error) toast.error("Não foi possível salvar.");
     else void refresh();
+  };
+
+  const openEdit = (p: AdminProduct) => {
+    setEditForm({
+      name: p.name,
+      price: String(Number(p.price)),
+      category_id: p.category_id ?? "",
+      volume: p.volume ?? "",
+      barcode: p.barcode ?? "",
+    });
+    setEditing(p);
+  };
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editing || savingEdit) return;
+    if (!editForm.name.trim() || !editForm.price) {
+      toast.error("Informe nome e preço.");
+      return;
+    }
+    // Preserva zeros à esquerda; remove apenas espaços/separadores acidentais.
+    const barcode = normalizeGtin(editForm.barcode);
+    if (barcode && !isValidGtin(barcode)) {
+      toast.error("Código de barras inválido: confira os dígitos (o verificador não confere).");
+      return;
+    }
+    setSavingEdit(true);
+    const { error } = await supabase
+      .from("products")
+      .update({
+        name: editForm.name.trim(),
+        price: Number(editForm.price),
+        volume: editForm.volume.trim() || null,
+        category_id: editForm.category_id || null,
+        barcode: barcode || null,
+      })
+      .eq("id", editing.id);
+    setSavingEdit(false);
+    if (error) {
+      toast.error("Não foi possível salvar as alterações.");
+      return;
+    }
+    toast.success("Produto atualizado!");
+    setEditing(null);
+    void refresh();
   };
 
   const openImageSearch = async (product: AdminProduct) => {
