@@ -1,21 +1,63 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCategories, fetchAdminProducts, type AdminProduct } from "@/lib/catalog";
 import { brl } from "@/lib/format";
 import { stockEntry, stockErrorMessage } from "@/lib/stock";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { applyProductImage, previewProductImage } from "@/lib/product-image.functions";
+import { isValidGtin } from "@/lib/gtin";
+import type { ImageCandidate, ImageSearchResult } from "@/lib/product-image-types";
 
 export const Route = createFileRoute("/admin/produtos")({
   component: AdminProducts,
 });
 
+type ImageSearchState = {
+  product: AdminProduct;
+  phase: "loading" | "ready" | "applying";
+  result: ImageSearchResult | null;
+};
+
+type BatchSummary = { applied: number; notFound: number; invalidGtin: number; errors: number };
+type BatchState = {
+  running: boolean;
+  current: number;
+  total: number;
+  summary: BatchSummary | null;
+};
+
+function imageSearchMessage(result: ImageSearchResult): string {
+  switch (result.status) {
+    case "invalid_gtin":
+      return "Este produto não tem um código de barras (GTIN/EAN) válido cadastrado.";
+    case "not_found":
+      return "Nenhum produto encontrado para este código no Open Food Facts.";
+    case "gtin_mismatch":
+      return "O código retornado não confere exatamente com o cadastrado. Busca rejeitada por segurança.";
+    case "no_image":
+      return "Produto encontrado, mas sem imagem disponível na fonte.";
+    case "error":
+      return "Não foi possível buscar a imagem agora. Tente novamente.";
+    default:
+      return "";
+  }
+}
+
 function AdminProducts() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
+  const [imageSearch, setImageSearch] = useState<ImageSearchState | null>(null);
+  const [batch, setBatch] = useState<BatchState>({
+    running: false,
+    current: 0,
+    total: 0,
+    summary: null,
+  });
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -24,6 +66,9 @@ function AdminProducts() {
     volume: "",
     image_url: "",
   });
+
+  const previewImage = useServerFn(previewProductImage);
+  const applyImage = useServerFn(applyProductImage);
 
   const { data: products } = useQuery({
     queryKey: ["admin", "products"],
@@ -37,6 +82,80 @@ function AdminProducts() {
     const { error } = await supabase.from("products").update(values).eq("id", id);
     if (error) toast.error("Não foi possível salvar.");
     else void refresh();
+  };
+
+  const openImageSearch = async (product: AdminProduct) => {
+    setImageSearch({ product, phase: "loading", result: null });
+    try {
+      const result = await previewImage({ data: { productId: product.id } });
+      setImageSearch((current) =>
+        current?.product.id === product.id ? { ...current, phase: "ready", result } : current,
+      );
+    } catch {
+      setImageSearch((current) =>
+        current?.product.id === product.id
+          ? { ...current, phase: "ready", result: { status: "error", message: "FALHA" } }
+          : current,
+      );
+    }
+  };
+
+  const confirmImageSearch = async () => {
+    if (!imageSearch || imageSearch.result?.status !== "found") return;
+    const productId = imageSearch.product.id;
+    setImageSearch({ ...imageSearch, phase: "applying" });
+    try {
+      const result = await applyImage({ data: { productId, allowReplace: true } });
+      if (result.status === "applied") {
+        toast.success("Imagem aplicada!");
+        setImageSearch(null);
+        void refresh();
+      } else if (result.status === "has_image") {
+        setImageSearch(null);
+      } else {
+        setImageSearch({ product: imageSearch.product, phase: "ready", result });
+      }
+    } catch {
+      setImageSearch({
+        product: imageSearch.product,
+        phase: "ready",
+        result: { status: "error", message: "FALHA" },
+      });
+    }
+  };
+
+  const runBatch = async () => {
+    const list = (products ?? []) as AdminProduct[];
+    const noImage = list.filter((p) => !p.image_url);
+    if (noImage.length === 0) {
+      toast.info("Todos os produtos já têm imagem.");
+      return;
+    }
+    const invalidCount = noImage.filter((p) => !isValidGtin(p.barcode)).length;
+    const eligible = noImage.filter((p) => isValidGtin(p.barcode));
+    if (eligible.length === 0) {
+      setBatch({ running: false, current: 0, total: 0, summary: { applied: 0, notFound: 0, invalidGtin: invalidCount, errors: 0 } });
+      return;
+    }
+
+    setBatch({ running: true, current: 0, total: eligible.length, summary: null });
+    const summary: BatchSummary = { applied: 0, notFound: 0, invalidGtin: invalidCount, errors: 0 };
+    for (const [index, product] of eligible.entries()) {
+      setBatch((b) => ({ ...b, current: index + 1 }));
+      try {
+        const result = await applyImage({ data: { productId: product.id, allowReplace: false } });
+        if (result.status === "applied") summary.applied++;
+        else if (result.status === "invalid_gtin") summary.invalidGtin++;
+        else if (result.status === "error") summary.errors++;
+        else if (result.status !== "has_image") summary.notFound++;
+      } catch {
+        summary.errors++;
+      }
+      // Intervalo entre chamadas para não abusar da API pública.
+      if (index < eligible.length - 1) await new Promise((r) => setTimeout(r, 400));
+    }
+    setBatch({ running: false, current: eligible.length, total: eligible.length, summary });
+    void refresh();
   };
 
   const create = async (e: React.FormEvent) => {
@@ -53,7 +172,7 @@ function AdminProducts() {
         slug: form.name
           .toLowerCase()
           .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[̀-ͯ]/g, "")
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, ""),
         price: Number(form.price),
@@ -97,12 +216,27 @@ function AdminProducts() {
         />
         <button
           type="button"
+          onClick={() => void runBatch()}
+          disabled={batch.running}
+          className="min-h-11 rounded-xl border border-input bg-card px-3 text-sm font-bold disabled:opacity-50"
+        >
+          {batch.running ? `Buscando ${batch.current}/${batch.total}` : "Buscar imagens"}
+        </button>
+        <button
+          type="button"
           onClick={() => setCreating((v) => !v)}
-          className="rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
+          className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
         >
           {creating ? "Fechar" : "Novo"}
         </button>
       </div>
+
+      {batch.running && (
+        <p className="surface-card p-3 text-xs text-muted-foreground" role="status">
+          Buscando imagens automaticamente… {batch.current}/{batch.total}. Produtos sem código de
+          barras válido serão listados no resumo.
+        </p>
+      )}
 
       {creating && (
         <form onSubmit={create} className="surface-card space-y-3 p-4">
@@ -181,6 +315,29 @@ function AdminProducts() {
                 )}
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => void openImageSearch(p)}
+              aria-label={p.image_url ? `Substituir imagem de ${p.name}` : `Buscar imagem de ${p.name}`}
+              title={p.image_url ? "Substituir imagem" : "Buscar imagem"}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-input bg-muted text-muted-foreground"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="9" cy="9" r="2" />
+                <path d="m21 15-3.5-3.5a2 2 0 0 0-3 0L6 20" />
+              </svg>
+            </button>
             <Link
               to="/admin/estoque"
               className="w-16 rounded-lg border border-input bg-muted px-2 py-1 text-center text-sm font-semibold"
@@ -208,6 +365,200 @@ function AdminProducts() {
             </button>
           </div>
         ))}
+      </div>
+
+      {imageSearch && (
+        <ImageSearchDialog
+          state={imageSearch}
+          onCancel={() => setImageSearch(null)}
+          onConfirm={() => void confirmImageSearch()}
+        />
+      )}
+
+      {batch.summary && (
+        <BatchSummaryDialog
+          summary={batch.summary}
+          onClose={() => setBatch((b) => ({ ...b, summary: null }))}
+        />
+      )}
+    </div>
+  );
+}
+
+function candidateLines(candidate: ImageCandidate): string {
+  return [candidate.name, candidate.brand].filter(Boolean).join(" · ");
+}
+
+function ImageSearchDialog({
+  state,
+  onCancel,
+  onConfirm,
+}: {
+  state: ImageSearchState;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && state.phase !== "applying") onCancel();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onCancel, state.phase]);
+
+  const { result } = state;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && state.phase !== "applying") onCancel();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="image-search-title"
+        className="w-full max-w-sm space-y-3 rounded-2xl bg-card p-4 shadow-lg"
+      >
+        <h2 id="image-search-title" className="font-display text-base font-extrabold">
+          Imagem de {state.product.name}
+        </h2>
+
+        {state.phase === "loading" && (
+          <p className="text-xs text-muted-foreground">Buscando imagem no Open Food Facts…</p>
+        )}
+
+        {state.phase !== "loading" && result?.status === "found" && (
+          <div className="space-y-2">
+            <img
+              src={result.candidate.imageUrl ?? ""}
+              alt={result.candidate.name ?? "Imagem encontrada"}
+              className="mx-auto h-32 w-32 rounded-xl border border-border bg-card object-contain"
+            />
+            <p className="text-center text-xs text-muted-foreground">
+              {candidateLines(result.candidate) || "Sem nome na fonte"}
+              <br />
+              Fonte: Open Food Facts · GTIN {result.candidate.gtin}
+            </p>
+            {state.product.image_url ? (
+              <p className="text-center text-[11px] font-semibold text-warning">
+                Isso substituirá a imagem atual.
+              </p>
+            ) : null}
+            {state.phase === "applying" ? (
+              <p className="text-center text-xs text-muted-foreground">Aplicando imagem…</p>
+            ) : null}
+            <div className="flex justify-end gap-2">
+              <button
+                ref={closeRef}
+                type="button"
+                onClick={onCancel}
+                disabled={state.phase === "applying"}
+                className="min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={onConfirm}
+                disabled={state.phase === "applying"}
+                className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
+              >
+                Usar imagem
+              </button>
+            </div>
+          </div>
+        )}
+
+        {state.phase !== "loading" && result && result.status !== "found" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">{imageSearchMessage(result)}</p>
+            {(result.status === "no_image") && (
+              <p className="text-xs text-muted-foreground">
+                {candidateLines(result.candidate) || "Produto identificado na fonte."}
+              </p>
+            )}
+            <div className="flex justify-end">
+              <button
+                ref={closeRef}
+                type="button"
+                onClick={onCancel}
+                className="min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BatchSummaryDialog({
+  summary,
+  onClose,
+}: {
+  summary: BatchSummary;
+  onClose: () => void;
+}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="batch-summary-title"
+        className="w-full max-w-sm space-y-3 rounded-2xl bg-card p-4 shadow-lg"
+      >
+        <h2 id="batch-summary-title" className="font-display text-base font-extrabold">
+          Busca automática concluída
+        </h2>
+        <ul className="space-y-1 text-sm">
+          <li>
+            <strong>{summary.applied}</strong> imagem(ns) aplicada(s)
+          </li>
+          <li>
+            <strong>{summary.notFound}</strong> não encontrada(s)
+          </li>
+          <li>
+            <strong>{summary.invalidGtin}</strong> sem código de barras válido
+          </li>
+          <li>
+            <strong>{summary.errors}</strong> erro(s)
+          </li>
+        </ul>
+        <div className="flex justify-end">
+          <button
+            ref={closeRef}
+            type="button"
+            onClick={onClose}
+            className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
+          >
+            Fechar
+          </button>
+        </div>
       </div>
     </div>
   );
