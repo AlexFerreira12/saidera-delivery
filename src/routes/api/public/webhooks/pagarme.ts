@@ -73,11 +73,11 @@ export const Route = createFileRoute("/api/public/webhooks/pagarme")({
             p_event_id: eventId ?? "",
             p_event_type: eventType,
             p_summary: {
-              id: charge?.["id"] ?? null,
-              status: charge?.["status"] ?? null,
-              amount: charge?.["amount"] ?? null,
-              currency: charge?.["currency"] ?? null,
-              paid_at: charge?.["paid_at"] ?? null,
+              id: String(charge?.["id"] ?? ""),
+              status: String(charge?.["status"] ?? ""),
+              amount: Number(charge?.["amount"] ?? 0),
+              currency: String(charge?.["currency"] ?? ""),
+              paid_at: String(charge?.["paid_at"] ?? ""),
             },
           });
         } catch (err) {

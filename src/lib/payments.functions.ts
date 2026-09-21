@@ -44,7 +44,7 @@ async function prepare(db: AdminDb, orderId: string, userId: string) {
 }
 
 async function applyFromProvider(
-  db: any,
+  db: AdminDb,
   chargeId: string,
   eventId: string | null,
   eventType: string,
@@ -104,7 +104,8 @@ export const createPixCharge = createServerFn({ method: "POST" })
     if (!pagarmeConfigured()) throw new Error("PAGARME_NAO_CONFIGURADO");
 
     const email =
-      (context.claims as any)?.email ?? `pedido-${info.order_number}@bebidasguariba.app`;
+      (context.claims as { email?: string } | null)?.email ??
+      `pedido-${info.order_number}@bebidasguariba.app`;
     const idempotencyKey = `order-${data.orderId}-${Math.floor(Date.now() / (PIX_EXPIRES_SECONDS * 1000))}`;
 
     const charge = await createPixOrder({
