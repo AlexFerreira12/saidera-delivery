@@ -15,20 +15,22 @@ const TIMEOUT_MS = 10_000;
 export function parseOpenFoodFacts(body: unknown, gtin: string): ImageSearchResult {
   if (!body || typeof body !== "object") return { status: "error", message: "RESPOSTA_INVALIDA" };
   const root = body as Record<string, unknown>;
-  if (root.status !== 1 || !root.product || typeof root.product !== "object") {
+  if (root["status"] !== 1 || !root["product"] || typeof root["product"] !== "object") {
     return { status: "not_found" };
   }
-  const p = root.product as Record<string, unknown>;
-  const code =
-    typeof p.code === "string" && p.code ? p.code : typeof root.code === "string" ? root.code : "";
+  const p = root["product"] as Record<string, unknown>;
+  const rawCode = p["code"] ?? root["code"];
+  const code = typeof rawCode === "string" ? rawCode : "";
   // Regra de segurança: só aceita correspondência exata de GTIN; nunca inferir por nome.
   if (!gtinsMatch(code, gtin)) return { status: "gtin_mismatch" };
 
+  const name = p["product_name"];
+  const brands = p["brands"];
   const candidate: ImageCandidate = {
     provider: "open_food_facts",
     gtin: normalizeGtin(code),
-    name: typeof p.product_name === "string" && p.product_name.trim() ? p.product_name.trim() : null,
-    brand: typeof p.brands === "string" && p.brands.trim() ? p.brands.trim() : null,
+    name: typeof name === "string" && name.trim() ? name.trim() : null,
+    brand: typeof brands === "string" && brands.trim() ? brands.trim() : null,
     imageUrl: pickImageUrl(p),
     match: "exact",
   };
