@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Trash2, TicketPercent } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { ProductImage } from "@/components/ProductImage";
 import { QtyStepper } from "@/components/QtyStepper";
 import { useCart } from "@/hooks/useCart";
 import { brl } from "@/lib/format";
@@ -82,15 +83,11 @@ function CartPage() {
           const unit = unitPriceFor(item, item.quantity);
           return (
             <div key={item.id} className="surface-card flex gap-3 p-3">
-              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-secondary">
-                {item.image_url && (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="h-full w-full object-cover"
-                  />
-                )}
-              </div>
+              <ProductImage
+                product={item}
+                className="h-16 w-16 shrink-0 rounded-xl"
+                imgClassName="p-1"
+              />
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-sm font-semibold">{item.name}</p>
                 <p className="text-xs text-muted-foreground">

@@ -8,6 +8,7 @@ import { fetchCategories, fetchAdminProducts, type AdminProduct } from "@/lib/ca
 import { brl } from "@/lib/format";
 import { stockEntry, stockErrorMessage } from "@/lib/stock";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ProductImage } from "@/components/ProductImage";
 import { applyProductImage, previewProductImage } from "@/lib/product-image.functions";
 import { isValidGtin, normalizeGtin } from "@/lib/gtin";
 import type { ImageCandidate, ImageSearchResult } from "@/lib/product-image-types";
@@ -386,11 +387,10 @@ function AdminProducts() {
         {list.map((p) => (
           <div key={p.id} className="surface-card flex items-center gap-3 p-3">
             {p.image_url ? (
-              <img
-                src={p.image_url}
-                alt=""
-                loading="lazy"
-                className="h-10 w-10 shrink-0 rounded-lg border border-border object-cover"
+              <ProductImage
+                product={p}
+                className="h-10 w-10 shrink-0 rounded-lg border border-border"
+                imgClassName="p-0.5"
               />
             ) : null}
             <div className="min-w-0 flex-1">

@@ -3,35 +3,10 @@ import { Snowflake, Heart } from "lucide-react";
 import { brl } from "@/lib/format";
 import { basePrice, nextTierHint, type PriceTier } from "@/lib/pricing";
 import { QtyStepper } from "@/components/QtyStepper";
+import { ProductImage } from "@/components/ProductImage";
 import { useCart } from "@/hooks/useCart";
 import { toCartItem, type Product } from "@/lib/catalog";
 import { toast } from "sonner";
-
-export function ProductImage({
-  product,
-  className = "",
-}: {
-  product: Product;
-  className?: string;
-}) {
-  if (product.image_url) {
-    return (
-      <img
-        src={product.image_url}
-        alt={product.name}
-        loading="lazy"
-        className={`object-cover ${className}`}
-      />
-    );
-  }
-  return (
-    <div className={`grid place-items-center bg-secondary ${className}`}>
-      <span className="px-2 text-center text-xs font-bold text-muted-foreground">
-        {product.brand ?? product.name.split(" ")[0]}
-      </span>
-    </div>
-  );
-}
 
 export function ProductCard({
   product,
