@@ -35,7 +35,7 @@ async function applyFromProvider(db: any, chargeId: string, eventId: string | nu
     p_status: status,
     p_amount_cents: Number(charge?.["amount"] ?? 0),
     p_currency: String(charge?.["currency"] ?? "BRL").toUpperCase(),
-    ...(eventId ? { p_event_id: eventId } : {}),
+    p_event_id: eventId ?? "",
     p_event_type: eventType,
     p_summary: {
       id: charge?.["id"] ?? null,
@@ -98,8 +98,8 @@ export const createPixCharge = createServerFn({ method: "POST" })
       p_payment_id: info.payment_id,
       p_provider_order_id: charge.providerOrderId,
       p_provider_charge_id: charge.providerChargeId,
-      p_qr: charge.qrCode,
-      p_copy: charge.copyPaste,
+      p_qr: charge.qrCode ?? "",
+      p_copy: charge.copyPaste ?? "",
       p_expires_at:
         charge.expiresAt ?? new Date(Date.now() + PIX_EXPIRES_SECONDS * 1000).toISOString(),
       p_idempotency_key: idempotencyKey,

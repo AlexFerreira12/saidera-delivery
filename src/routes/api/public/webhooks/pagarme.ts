@@ -69,7 +69,7 @@ export const Route = createFileRoute("/api/public/webhooks/pagarme")({
             p_status: status,
             p_amount_cents: Number(charge?.["amount"] ?? 0),
             p_currency: String(charge?.["currency"] ?? "BRL").toUpperCase(),
-            ...(eventId ? { p_event_id: eventId } : {}),
+            p_event_id: eventId ?? "",
             p_event_type: eventType,
             p_summary: {
               id: charge?.["id"] ?? null,
