@@ -27,6 +27,7 @@ import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
 import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
 import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminEntregaRouteImport } from './routes/admin.entrega'
+import { Route as AdminEntregadoresRouteImport } from './routes/admin.entregadores'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPromocoesRouteImport } from './routes/admin.promocoes'
@@ -124,6 +125,11 @@ const AdminEntregaRoute = AdminEntregaRouteImport.update({
   path: '/entrega',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminEntregadoresRoute = AdminEntregadoresRouteImport.update({
+  id: '/entregadores',
+  path: '/entregadores',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPedidosRoute = AdminPedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/entrega': typeof AdminEntregaRoute
+  '/admin/entregadores': typeof AdminEntregadoresRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/entrega': typeof AdminEntregaRoute
+  '/admin/entregadores': typeof AdminEntregadoresRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/entrega': typeof AdminEntregaRoute
+  '/admin/entregadores': typeof AdminEntregadoresRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/cupons'
     | '/admin/entrega'
+    | '/admin/entregadores'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/cupons'
     | '/admin/entrega'
+    | '/admin/entregadores'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/admin/configuracoes'
     | '/admin/cupons'
     | '/admin/entrega'
+    | '/admin/entregadores'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
@@ -458,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEntregaRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/entregadores': {
+      id: '/admin/entregadores'
+      path: '/entregadores'
+      fullPath: '/admin/entregadores'
+      preLoaderRoute: typeof AdminEntregadoresRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/pedidos': {
       id: '/admin/pedidos'
       path: '/pedidos'
@@ -510,6 +529,7 @@ interface AdminRouteChildren {
   AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
   AdminEntregaRoute: typeof AdminEntregaRoute
+  AdminEntregadoresRoute: typeof AdminEntregadoresRoute
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
   AdminPromocoesRoute: typeof AdminPromocoesRoute
@@ -523,6 +543,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminConfiguracoesRoute: AdminConfiguracoesRoute,
   AdminCuponsRoute: AdminCuponsRoute,
   AdminEntregaRoute: AdminEntregaRoute,
+  AdminEntregadoresRoute: AdminEntregadoresRoute,
   AdminPedidosRoute: AdminPedidosRoute,
   AdminProdutosRoute: AdminProdutosRoute,
   AdminPromocoesRoute: AdminPromocoesRoute,
