@@ -20,6 +20,8 @@ export const Route = createFileRoute("/admin")({
 const TABS: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin", label: "Visão geral", exact: true },
   { to: "/admin/pedidos", label: "Pedidos" },
+  { to: "/admin/pagamentos", label: "Pagamentos" },
+
   { to: "/admin/produtos", label: "Produtos" },
   { to: "/admin/estoque", label: "Estoque" },
   { to: "/admin/categorias", label: "Categorias" },
