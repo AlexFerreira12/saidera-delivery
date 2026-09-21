@@ -1541,30 +1541,18 @@ export type Database = {
         Returns: Json
       }
       can_view_order: { Args: { _order_id: string }; Returns: boolean }
-      create_order:
-        | {
-            Args: {
-              p_address_id: string
-              p_change_for?: string
-              p_coupon_code?: string
-              p_items: Json
-              p_notes?: string
-              p_payment_method: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_address_id: string
-              p_change_for?: string
-              p_client_request_id?: string
-              p_coupon_code?: string
-              p_items: Json
-              p_notes?: string
-              p_payment_method: string
-            }
-            Returns: Json
-          }
+      create_order: {
+        Args: {
+          p_address_id: string
+          p_change_for?: string
+          p_client_request_id?: string
+          p_coupon_code?: string
+          p_items: Json
+          p_notes?: string
+          p_payment_method: string
+        }
+        Returns: Json
+      }
       driver_available_orders: {
         Args: never
         Returns: {
