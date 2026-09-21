@@ -72,6 +72,11 @@ function OrderPage() {
     queryKey: ["order", id],
     queryFn: () => fetchOrder(id),
   });
+  const { data: pin } = useQuery({
+    queryKey: ["order", id, "pin"],
+    queryFn: () => fetchOrderPin(id),
+    enabled: order?.status === "saiu_para_entrega",
+  });
 
   useEffect(() => {
     const channel = supabase
