@@ -236,7 +236,7 @@ export type AdminCustomer = {
 
 export async function fetchAdminCustomers(search: string) {
   const { data, error } = await supabase.rpc("admin_customers", {
-    p_search: search.trim() || undefined,
+    p_search: search.trim(),
   });
   if (error) throw error;
   return (data ?? []) as unknown as AdminCustomer[];
