@@ -797,6 +797,19 @@ function BatchSummaryDialog({ summary, onClose }: { summary: BatchSummary; onClo
             <strong>{summary.errors}</strong> erro(s)
           </li>
         </ul>
+        {summary.failures.length > 0 && (
+          <ul
+            className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-border bg-muted/40 p-3"
+            aria-label="Detalhes dos erros"
+          >
+            {summary.failures.map((failure, index) => (
+              <li key={`${failure.name}-${index}`} className="text-xs">
+                <p className="font-semibold">{failure.name}</p>
+                <p className="text-muted-foreground">{failure.reason}</p>
+              </li>
+            ))}
+          </ul>
+        )}
         <div className="flex justify-end">
           <button
             ref={closeRef}
