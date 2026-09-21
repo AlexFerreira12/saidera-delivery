@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useAdminPrompt } from "@/components/admin/PromptDialog";
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -37,6 +39,7 @@ type AdminOrder = {
 const FILTERS = ["ativos", ...ORDER_FLOW, "cancelado"];
 
 function AdminOrders() {
+  const { ask, dialog } = useAdminPrompt();
   const qc = useQueryClient();
   const [filter, setFilter] = useState("ativos");
 
@@ -101,27 +104,43 @@ function AdminOrders() {
     }
   };
 
-  const assign = (id: string) => {
+  const assign = async (id: string) => {
     if (drivers.length === 0) {
       toast.error("Nenhum entregador ativo cadastrado.");
       return;
     }
-    const options = drivers.map((d, i) => `${i + 1} - ${d.name}`).join("\n");
-    const pick = prompt(`Atribuir a qual entregador?\n${options}`);
-    const index = Number(pick) - 1;
-    const chosen = drivers[index];
+    const pick = await ask({
+      title: "Atribuir entregador",
+      description: "Escolha quem vai levar este pedido.",
+      confirmLabel: "Atribuir",
+      required: true,
+      options: drivers.map((d) => ({ value: d.id, label: d.name })),
+    });
+    const chosen = drivers.find((d) => d.id === pick);
     if (!chosen) return;
     void runDelivery(() => adminAssignDriver(id, chosen.id), `Atribuído a ${chosen.name}.`);
   };
 
-  const unassign = (id: string) => {
-    const reason = prompt("Motivo para remover a atribuição:");
+  const unassign = async (id: string) => {
+    const reason = await ask({
+      title: "Remover entregador",
+      description: "O motivo fica registrado no histórico do pedido.",
+      placeholder: "Motivo",
+      confirmLabel: "Remover",
+      required: true,
+    });
     if (!reason?.trim()) return;
     void runDelivery(() => adminUnassignDriver(id, reason), "Atribuição removida.");
   };
 
-  const forceDeliver = (id: string) => {
-    const reason = prompt("Motivo para marcar como entregue sem o código do cliente:");
+  const forceDeliver = async (id: string) => {
+    const reason = await ask({
+      title: "Entregue sem o código do cliente",
+      description: "Use só em exceção. O motivo fica registrado.",
+      placeholder: "Motivo",
+      confirmLabel: "Marcar entregue",
+      required: true,
+    });
     if (!reason?.trim()) return;
     void runDelivery(() => adminForceDeliver(id, reason), "Pedido marcado como entregue.");
   };
@@ -206,7 +225,7 @@ function AdminOrders() {
                   {!["entregue", "cancelado"].includes(o.status) && (
                     <button
                       type="button"
-                      onClick={() => assign(o.id)}
+                      onClick={() => void assign(o.id)}
                       className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold"
                     >
                       {o.driver_id ? "Reatribuir" : "Atribuir"}
@@ -215,7 +234,7 @@ function AdminOrders() {
                   {o.driver_id && !["entregue", "cancelado"].includes(o.status) && (
                     <button
                       type="button"
-                      onClick={() => unassign(o.id)}
+                      onClick={() => void unassign(o.id)}
                       className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold"
                     >
                       Remover entregador
@@ -224,7 +243,7 @@ function AdminOrders() {
                   {o.status === "saiu_para_entrega" && (
                     <button
                       type="button"
-                      onClick={() => forceDeliver(o.id)}
+                      onClick={() => void forceDeliver(o.id)}
                       className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
                     >
                       Entregue sem código
@@ -252,6 +271,8 @@ function AdminOrders() {
           );
         })}
       </div>
+      {/* diálogo acessível no lugar de prompt() */}
+      {dialog}
     </AdminPage>
   );
 }

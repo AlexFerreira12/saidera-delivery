@@ -79,15 +79,20 @@ function withSecurityHeaders(response: Response) {
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    // Identificador de requisição: permite ligar um erro do cliente ao log do
+    // servidor sem registrar dados pessoais, PIN, QR ou segredos.
+    const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return withSecurityHeaders(await normalizeCatastrophicSsrResponse(response));
+      const safe = withSecurityHeaders(await normalizeCatastrophicSsrResponse(response));
+      safe.headers.set("x-request-id", requestId);
+      return safe;
     } catch (error) {
-      console.error(error);
+      console.error("ssr_error", requestId, new URL(request.url).pathname, error);
       return new Response(renderErrorPage(), {
         status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
+        headers: { "content-type": "text/html; charset=utf-8", "x-request-id": requestId },
       });
     }
   },

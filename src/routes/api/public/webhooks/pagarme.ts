@@ -10,7 +10,10 @@ export const Route = createFileRoute("/api/public/webhooks/pagarme")({
     handlers: {
       POST: async ({ request }) => {
         const expected = process.env["PAGARME_WEBHOOK_BASIC"];
-        if (expected) {
+        // Sem credencial cadastrada o endereço fica desligado: nunca aceita
+        // chamadas anônimas só porque o segredo ainda não foi configurado.
+        if (!expected) return new Response("Service Unavailable", { status: 503 });
+        {
           const header = request.headers.get("authorization") ?? "";
           const given = header.startsWith("Basic ") ? header.slice(6) : "";
           const want = btoa(expected);
