@@ -18,6 +18,12 @@
 - Decidir o prazo de retenção da auditoria antes de ligar purge_old_audit_data
 
 ## Rebrand SAIDERA (em andamento)
-- [x] Tokens globais: grafite/dourado, serif editorial (Playfair Display)
-- [x] Home/vitrine pública na nova identidade
+- [x] Tokens globais claros/premium (marfim, grafite, dourado pontual; Manrope)
+- [x] Home/vitrine pública na nova identidade + BrandLogo via Storage (catalogo/branding/saidera-logo.png)
 - [ ] Propagar identidade às demais telas (aguardando avaliação)
+
+## Imagens automáticas de produtos (concluído)
+- [x] Busca por GTIN no Open Food Facts (server-side, dígito verificador, correspondência exata)
+- [x] Importação protegida p/ bucket catalogo (HTTPS + hosts permitidos, 3 MB, magic bytes) + proveniência (tabela product_image_provenance)
+- [x] Admin > Produtos: busca individual com confirmação, lote só p/ produtos sem imagem, campo código de barras no cadastro
+- [ ] Sandbox não alcança images.openfoodfacts.org — validar 1 aplicação real após publicar
