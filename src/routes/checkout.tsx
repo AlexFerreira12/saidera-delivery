@@ -199,12 +199,22 @@ function CheckoutPage() {
             <span className="text-muted-foreground">Taxa de entrega</span>
             <span className="font-semibold">{deliveryFee ? brl(deliveryFee) : "—"}</span>
           </div>
+          {coupon && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Cupom {coupon}</span>
+              <span className="font-semibold">validado na confirmação</span>
+            </div>
+          )}
           <div className="flex justify-between border-t border-border pt-2 font-display text-base font-bold">
-            <span>Total</span>
+            <span>Total estimado</span>
             <span>{brl(total)}</span>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Os valores finais são calculados e confirmados no momento do pedido.
+          </p>
         </section>
       </div>
+
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card px-4 py-3">
         <button
