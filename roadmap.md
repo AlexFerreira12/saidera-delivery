@@ -28,4 +28,4 @@
 - [x] Admin > Produtos: busca individual com confirmação, lote só p/ produtos sem imagem, campo código de barras no cadastro
 - [x] Diagnóstico do erro de download: rede do sandbox bloqueia images.openfoodfacts.org; código correto. Resumo do lote mostra produto + motivo amigável
 - [x] Fallback oficial: cadeia .org → espelho images.openfoodfacts.net → foto original por imgid; estado "imagem inalcançável" quando nenhum caminho responde; validado ponta a ponta no preview (download → storage → proveniência)
-- [ ] Validar 1 aplicação real após publicar (imagem frontal atual só existe no host primário, bloqueado no sandbox)
+- [x] UPCitemdb como provedor principal (API trial sem chave, ritmo 1 lookup/10s, 429 com Retry-After, política HTTPS público estrita p/ imagens); OFF como fallback; validado ponta a ponta no preview com Coca-Cola 2L (EAN 7894900027013: UPCitemdb sem registro → OFF encontrou → imagem aplicada + proveniência)
