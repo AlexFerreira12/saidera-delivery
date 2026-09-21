@@ -1,7 +1,8 @@
 /**
- * Provedores de imagem de produto (server-only). Começa com Open Food Facts
- * (API aberta, sem chave). Novos provedores autorizados (ex.: GS1) entram aqui
- * implementando o mesmo contrato de lookup.
+ * Provedores de imagem de produto (server-only).
+ * Cadeia: UPCitemdb (principal) → Open Food Facts (fallback) → upload manual.
+ * Ambos têm API aberta, sem chave. Novos provedores autorizados (ex.: GS1)
+ * entram aqui implementando o mesmo contrato de lookup.
  */
 import { gtinsMatch, normalizeGtin } from "./gtin";
 import type { ImageCandidate, ImageSearchResult } from "./product-image-types";
