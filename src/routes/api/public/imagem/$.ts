@@ -22,9 +22,7 @@ export const Route = createFileRoute("/api/public/imagem/$")({
         // produtos/banners usam nomes únicos (UUID): cache longo é seguro.
         // branding pode ser substituído no mesmo caminho (logo): cache curto.
         const cacheControl =
-          match[1] === "branding"
-            ? "public, max-age=300"
-            : "public, max-age=31536000, immutable";
+          match[1] === "branding" ? "public, max-age=300" : "public, max-age=31536000, immutable";
 
         return new Response(await data.arrayBuffer(), {
           headers: {
