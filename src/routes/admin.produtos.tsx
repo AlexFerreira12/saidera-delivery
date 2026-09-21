@@ -64,6 +64,7 @@ function AdminProducts() {
     stock: "",
     category_id: "",
     volume: "",
+    barcode: "",
     image_url: "",
   });
 
@@ -167,6 +168,11 @@ function AdminProducts() {
     e.preventDefault();
     if (!form.name || !form.price) {
       toast.error("Informe nome e preço.");
+      return;
+    }
+    const barcode = form.barcode.trim();
+    if (barcode && !isValidGtin(barcode)) {
+      toast.error("Código de barras inválido: confira os dígitos (o verificador não confere).");
       return;
     }
     const initialStock = Number(form.stock || 0);
