@@ -142,7 +142,10 @@ function AddressesPage() {
             <MapPin className="mt-0.5 h-5 w-5 text-primary" />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
-                {a.label} {a.is_default && <span className="text-xs font-semibold text-success">• padrão</span>}
+                {a.label}{" "}
+                {a.is_default && (
+                  <span className="text-xs font-semibold text-success">• padrão</span>
+                )}
               </p>
               <p className="text-sm text-muted-foreground">
                 {a.street}, {a.number}
@@ -174,10 +177,22 @@ function AddressesPage() {
           </button>
         ) : (
           <form onSubmit={save} className="surface-card space-y-3 p-4">
-            <Input label="Identificação" value={form.label} onChange={(v) => setForm({ ...form, label: v })} />
-            <Input label="Rua" value={form.street} onChange={(v) => setForm({ ...form, street: v })} />
+            <Input
+              label="Identificação"
+              value={form.label}
+              onChange={(v) => setForm({ ...form, label: v })}
+            />
+            <Input
+              label="Rua"
+              value={form.street}
+              onChange={(v) => setForm({ ...form, street: v })}
+            />
             <div className="grid grid-cols-2 gap-3">
-              <Input label="Número" value={form.number} onChange={(v) => setForm({ ...form, number: v })} />
+              <Input
+                label="Número"
+                value={form.number}
+                onChange={(v) => setForm({ ...form, number: v })}
+              />
               <Input
                 label="Complemento"
                 value={form.complement}
@@ -213,13 +228,23 @@ function AddressesPage() {
             </button>
           </form>
         )}
-        <p className="pt-2 text-center text-xs text-muted-foreground">Entregamos apenas em Guariba/SP.</p>
+        <p className="pt-2 text-center text-xs text-muted-foreground">
+          Entregamos apenas em Guariba/SP.
+        </p>
       </div>
     </AppShell>
   );
 }
 
-function Input({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+function Input({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <label className="block">
       <span className="mb-1 block text-xs font-semibold text-muted-foreground">{label}</span>

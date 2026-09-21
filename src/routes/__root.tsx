@@ -47,7 +47,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">Não conseguimos carregar</h1>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          Não conseguimos carregar
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Algo deu errado. Tente novamente ou volte para o início.
         </p>
@@ -94,7 +96,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/icons/icon-192.png" },
-
     ],
   }),
   shellComponent: RootShell,

@@ -29,7 +29,9 @@ export function QtyStepper({
       >
         <Minus className="h-4 w-4" />
       </button>
-      <span className="min-w-6 text-center text-sm font-bold text-primary-foreground">{quantity}</span>
+      <span className="min-w-6 text-center text-sm font-bold text-primary-foreground">
+        {quantity}
+      </span>
       <button
         type="button"
         aria-label="Aumentar quantidade"

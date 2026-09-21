@@ -17,7 +17,10 @@ export const Route = createFileRoute("/produto/$slug")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.slug.replace(/-/g, " ")} — Bebidas Guariba` },
-      { name: "description", content: "Detalhes do produto, preço e entrega rápida em Guariba/SP." },
+      {
+        name: "description",
+        content: "Detalhes do produto, preço e entrega rápida em Guariba/SP.",
+      },
       { property: "og:title", content: "Produto — Bebidas Guariba" },
       { property: "og:description", content: "Bebidas geladas com entrega rápida em Guariba/SP." },
     ],
@@ -65,7 +68,8 @@ function ProductPage() {
   const tiers = (product.promotions ?? []) as PriceTier[];
   const priced = { price: Number(product.price), promo_price: product.promo_price, tiers };
   const unit = unitPriceFor(priced, quantity);
-  const hasPromo = product.promo_price != null && Number(product.promo_price) < Number(product.price);
+  const hasPromo =
+    product.promo_price != null && Number(product.promo_price) < Number(product.price);
 
   return (
     <AppShell hideNav hideCartBar>
@@ -97,11 +101,15 @@ function ProductPage() {
 
         <div className="flex items-baseline gap-2">
           <span className="font-display text-3xl font-extrabold text-primary">{brl(unit)}</span>
-          {hasPromo && <span className="text-sm text-muted-foreground line-through">{brl(product.price)}</span>}
+          {hasPromo && (
+            <span className="text-sm text-muted-foreground line-through">{brl(product.price)}</span>
+          )}
           <span className="text-xs text-muted-foreground">/un</span>
         </div>
 
-        {product.description && <p className="text-sm text-muted-foreground">{product.description}</p>}
+        {product.description && (
+          <p className="text-sm text-muted-foreground">{product.description}</p>
+        )}
 
         {tiers.length > 0 && (
           <div className="surface-card space-y-2 p-4">
@@ -127,7 +135,9 @@ function ProductPage() {
         {related && related.length > 1 && (
           <div>
             <h2 className="mb-3 font-display text-base font-bold">Você também pode gostar</h2>
-            <ProductGrid products={(related as Product[]).filter((p) => p.id !== product.id).slice(0, 4)} />
+            <ProductGrid
+              products={(related as Product[]).filter((p) => p.id !== product.id).slice(0, 4)}
+            />
           </div>
         )}
       </div>

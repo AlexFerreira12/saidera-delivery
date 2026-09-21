@@ -16,12 +16,18 @@ function AdminProducts() {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: "", price: "", stock: "", category_id: "", volume: "" });
 
-  const { data: products } = useQuery({ queryKey: ["admin", "products"], queryFn: () => fetchProducts() });
+  const { data: products } = useQuery({
+    queryKey: ["admin", "products"],
+    queryFn: () => fetchProducts(),
+  });
   const { data: categories } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin", "products"] });
 
-  const patch = async (id: string, values: { stock?: number; price?: number; is_active?: boolean }) => {
+  const patch = async (
+    id: string,
+    values: { stock?: number; price?: number; is_active?: boolean },
+  ) => {
     const { error } = await supabase.from("products").update(values).eq("id", id);
     if (error) toast.error("Não foi possível salvar.");
     else void refresh();
@@ -120,7 +126,10 @@ function AdminProducts() {
               </option>
             ))}
           </select>
-          <button type="submit" className="w-full rounded-xl bg-primary py-2.5 text-sm font-bold text-primary-foreground">
+          <button
+            type="submit"
+            className="w-full rounded-xl bg-primary py-2.5 text-sm font-bold text-primary-foreground"
+          >
             CRIAR PRODUTO
           </button>
         </form>
@@ -133,7 +142,9 @@ function AdminProducts() {
               <p className="truncate text-sm font-semibold">{p.name}</p>
               <p className="text-xs text-muted-foreground">
                 {brl(p.price)} · {p.categories?.name ?? "sem categoria"}
-                {p.stock <= p.min_stock && <span className="ml-1 font-bold text-destructive">estoque baixo</span>}
+                {p.stock <= p.min_stock && (
+                  <span className="ml-1 font-bold text-destructive">estoque baixo</span>
+                )}
               </p>
             </div>
             <input

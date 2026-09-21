@@ -6,7 +6,10 @@ export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Painel administrativo — Bebidas Guariba" },
-      { name: "description", content: "Gestão de pedidos, produtos e estoque da distribuidora de Guariba/SP." },
+      {
+        name: "description",
+        content: "Gestão de pedidos, produtos e estoque da distribuidora de Guariba/SP.",
+      },
       { property: "og:title", content: "Painel administrativo — Bebidas Guariba" },
       { property: "og:description", content: "Gestão de pedidos, produtos e estoque." },
     ],
@@ -26,7 +29,9 @@ function AdminLayout() {
   }, [loading, session, isAdmin, navigate]);
 
   if (loading || !isAdmin) {
-    return <div className="p-8 text-center text-sm text-muted-foreground">Carregando painel...</div>;
+    return (
+      <div className="p-8 text-center text-sm text-muted-foreground">Carregando painel...</div>
+    );
   }
 
   return (

@@ -8,9 +8,15 @@ export const Route = createFileRoute("/categorias")({
   head: () => ({
     meta: [
       { title: "Categorias — Bebidas Guariba" },
-      { name: "description", content: "Navegue por refrigerantes, energéticos, água, gelo, carvão, petiscos e combos." },
+      {
+        name: "description",
+        content: "Navegue por refrigerantes, energéticos, água, gelo, carvão, petiscos e combos.",
+      },
       { property: "og:title", content: "Categorias — Bebidas Guariba" },
-      { property: "og:description", content: "Todas as categorias da distribuidora em Guariba/SP." },
+      {
+        property: "og:description",
+        content: "Todas as categorias da distribuidora em Guariba/SP.",
+      },
     ],
   }),
   component: CategoriesPage,
@@ -23,7 +29,9 @@ function CategoriesPage() {
       <PageHeader title="Categorias" />
       <div className="grid grid-cols-2 gap-3 p-4">
         {isLoading
-          ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-2xl" />
+            ))
           : (data ?? []).map((c) => (
               <Link
                 key={c.id}

@@ -22,7 +22,15 @@ export function AppShell({
   );
 }
 
-export function PageHeader({ title, backTo = "/", action }: { title: string; backTo?: string; action?: ReactNode }) {
+export function PageHeader({
+  title,
+  backTo = "/",
+  action,
+}: {
+  title: string;
+  backTo?: string;
+  action?: ReactNode;
+}) {
   return (
     <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-border bg-card/95 px-3 py-3 backdrop-blur">
       <Link

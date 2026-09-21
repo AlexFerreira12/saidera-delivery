@@ -37,8 +37,7 @@ export type Category = {
   icon: string | null;
 };
 
-const PRODUCT_SELECT =
-  "*, categories(name, slug), promotions(min_quantity, unit_price, label)";
+const PRODUCT_SELECT = "*, categories(name, slug), promotions(min_quantity, unit_price, label)";
 
 export const withTiers = (p: Product) => ({ ...p, tiers: (p.promotions ?? []) as PriceTier[] });
 
@@ -52,7 +51,11 @@ export async function fetchCategories() {
   return (data ?? []) as Category[];
 }
 
-export async function fetchProducts(params?: { categorySlug?: string; search?: string; featured?: boolean }) {
+export async function fetchProducts(params?: {
+  categorySlug?: string;
+  search?: string;
+  featured?: boolean;
+}) {
   let query = supabase.from("products").select(PRODUCT_SELECT).eq("is_active", true).order("name");
   if (params?.featured) query = query.eq("is_featured", true);
   if (params?.search) query = query.ilike("name", `%${params.search}%`);
@@ -64,25 +67,41 @@ export async function fetchProducts(params?: { categorySlug?: string; search?: s
 }
 
 export async function fetchProductBySlug(slug: string) {
-  const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle();
+  const { data, error } = await supabase
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("slug", slug)
+    .maybeSingle();
   if (error) throw error;
   return (data as unknown as Product) ?? null;
 }
 
 export async function fetchStoreSettings() {
-  const { data, error } = await supabase.from("store_settings").select("*").eq("id", 1).maybeSingle();
+  const { data, error } = await supabase
+    .from("store_settings")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
 
 export async function fetchDeliveryZones() {
-  const { data, error } = await supabase.from("delivery_zones").select("*").eq("is_active", true).order("neighborhood");
+  const { data, error } = await supabase
+    .from("delivery_zones")
+    .select("*")
+    .eq("is_active", true)
+    .order("neighborhood");
   if (error) throw error;
   return data ?? [];
 }
 
 export async function fetchBanners() {
-  const { data, error } = await supabase.from("banners").select("*").eq("is_active", true).order("sort_order");
+  const { data, error } = await supabase
+    .from("banners")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order");
   if (error) throw error;
   return data ?? [];
 }
