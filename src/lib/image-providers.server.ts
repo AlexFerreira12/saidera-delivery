@@ -218,7 +218,6 @@ export function parseUpcItemdb(body: unknown, gtin: string): ImageSearchResult {
 }
 
 async function fetchUpcItemdb(gtin: string): Promise<Response> {
-  await paceUpcItemdb();
   return fetch(`${UPC_API}?upc=${encodeURIComponent(gtin)}`, {
     headers: { "user-agent": USER_AGENT, accept: "application/json" },
     signal: AbortSignal.timeout(TIMEOUT_MS),
@@ -227,11 +226,13 @@ async function fetchUpcItemdb(gtin: string): Promise<Response> {
 
 /**
  * Consulta o UPCitemdb pelo GTIN. Nunca lança: falhas viram status "error".
- * HTTP 429: respeita Retry-After e tenta UMA vez; persistindo, retorna
- * "rate_limited" e a cadeia segue para o fallback.
+ * Ritmo: no máximo 1 lookup a cada 10s (pacer por instância). HTTP 429:
+ * respeita Retry-After e tenta UMA vez; persistindo, retorna "rate_limited"
+ * e a cadeia segue para o fallback.
  */
 export async function lookupUpcItemdb(gtin: string): Promise<ImageSearchResult> {
   try {
+    await paceUpcItemdb();
     let res = await fetchUpcItemdb(gtin);
     if (res.status === 429) {
       const wait = parseRetryAfter(res.headers.get("retry-after"));

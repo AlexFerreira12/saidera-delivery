@@ -311,8 +311,9 @@ function AdminProducts() {
 
       {batch.running && (
         <p className="surface-card p-3 text-xs text-muted-foreground" role="status">
-          Buscando imagens automaticamente… {batch.current}/{batch.total}. Produtos sem código de
-          barras válido serão listados no resumo.
+          Buscando imagens automaticamente… {batch.current}/{batch.total}. O ritmo é limitado
+          para respeitar as fontes (UPCitemdb → Open Food Facts). Produtos sem código de barras
+          válido serão listados no resumo.
         </p>
       )}
 
