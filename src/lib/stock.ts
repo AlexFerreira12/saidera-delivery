@@ -66,7 +66,7 @@ export async function fetchStockHistory(params: {
 
   const { data, error } = await supabase.rpc(
     "admin_stock_history",
-    args as Parameters<typeof supabase.rpc<"admin_stock_history">>[1],
+    args as unknown as { p_limit: number; p_offset: number; p_kind: string },
   );
   if (error) throw error;
   return (data ?? []) as unknown as StockMovement[];
