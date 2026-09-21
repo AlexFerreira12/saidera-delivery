@@ -64,6 +64,27 @@
       "when": 1789962395498,
       "tag": "0008_block_d_pin_attempts_persist",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789963945101,
+      "tag": "0009_block_e_payments_pix_pagarme",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789964201688,
+      "tag": "0010_block_e_payment_null_args",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789964269337,
+      "tag": "0011_block_e_drop_old_create_order_overload",
+      "breakpoints": true
     }
   ]
 }

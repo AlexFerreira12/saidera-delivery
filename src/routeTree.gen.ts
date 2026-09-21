@@ -29,12 +29,15 @@ import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminEntregaRouteImport } from './routes/admin.entrega'
 import { Route as AdminEntregadoresRouteImport } from './routes/admin.entregadores'
 import { Route as AdminEstoqueRouteImport } from './routes/admin.estoque'
+import { Route as AdminPagamentosRouteImport } from './routes/admin.pagamentos'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 import { Route as AdminPromocoesRouteImport } from './routes/admin.promocoes'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
+import { Route as PagamentoIdRouteImport } from './routes/pagamento.$id'
 import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
 import { Route as ProdutoSlugRouteImport } from './routes/produto.$slug'
+import { Route as ApiPublicWebhooksPagarmeRouteImport } from './routes/api/public/webhooks/pagarme'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -136,6 +139,11 @@ const AdminEstoqueRoute = AdminEstoqueRouteImport.update({
   path: '/estoque',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPagamentosRoute = AdminPagamentosRouteImport.update({
+  id: '/pagamentos',
+  path: '/pagamentos',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPedidosRoute = AdminPedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
@@ -156,6 +164,11 @@ const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
   path: '/categoria/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PagamentoIdRoute = PagamentoIdRouteImport.update({
+  id: '/pagamento/$id',
+  path: '/pagamento/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PedidoIdRoute = PedidoIdRouteImport.update({
   id: '/pedido/$id',
   path: '/pedido/$id',
@@ -166,6 +179,12 @@ const ProdutoSlugRoute = ProdutoSlugRouteImport.update({
   path: '/produto/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhooksPagarmeRoute =
+  ApiPublicWebhooksPagarmeRouteImport.update({
+    id: '/api/public/webhooks/pagarme',
+    path: '/api/public/webhooks/pagarme',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,13 +206,16 @@ export interface FileRoutesByFullPath {
   '/admin/entrega': typeof AdminEntregaRoute
   '/admin/entregadores': typeof AdminEntregadoresRoute
   '/admin/estoque': typeof AdminEstoqueRoute
+  '/admin/pagamentos': typeof AdminPagamentosRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/webhooks/pagarme': typeof ApiPublicWebhooksPagarmeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -214,13 +236,16 @@ export interface FileRoutesByTo {
   '/admin/entrega': typeof AdminEntregaRoute
   '/admin/entregadores': typeof AdminEntregadoresRoute
   '/admin/estoque': typeof AdminEstoqueRoute
+  '/admin/pagamentos': typeof AdminPagamentosRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/webhooks/pagarme': typeof ApiPublicWebhooksPagarmeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -243,13 +268,16 @@ export interface FileRoutesById {
   '/admin/entrega': typeof AdminEntregaRoute
   '/admin/entregadores': typeof AdminEntregadoresRoute
   '/admin/estoque': typeof AdminEstoqueRoute
+  '/admin/pagamentos': typeof AdminPagamentosRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/promocoes': typeof AdminPromocoesRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/pagamento/$id': typeof PagamentoIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/produto/$slug': typeof ProdutoSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/webhooks/pagarme': typeof ApiPublicWebhooksPagarmeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -273,13 +301,16 @@ export interface FileRouteTypes {
     | '/admin/entrega'
     | '/admin/entregadores'
     | '/admin/estoque'
+    | '/admin/pagamentos'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
     | '/categoria/$slug'
+    | '/pagamento/$id'
     | '/pedido/$id'
     | '/produto/$slug'
     | '/admin/'
+    | '/api/public/webhooks/pagarme'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -300,13 +331,16 @@ export interface FileRouteTypes {
     | '/admin/entrega'
     | '/admin/entregadores'
     | '/admin/estoque'
+    | '/admin/pagamentos'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
     | '/categoria/$slug'
+    | '/pagamento/$id'
     | '/pedido/$id'
     | '/produto/$slug'
     | '/admin'
+    | '/api/public/webhooks/pagarme'
   id:
     | '__root__'
     | '/'
@@ -328,13 +362,16 @@ export interface FileRouteTypes {
     | '/admin/entrega'
     | '/admin/entregadores'
     | '/admin/estoque'
+    | '/admin/pagamentos'
     | '/admin/pedidos'
     | '/admin/produtos'
     | '/admin/promocoes'
     | '/categoria/$slug'
+    | '/pagamento/$id'
     | '/pedido/$id'
     | '/produto/$slug'
     | '/admin/'
+    | '/api/public/webhooks/pagarme'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -350,8 +387,10 @@ export interface RootRouteChildren {
   FavoritosRoute: typeof FavoritosRoute
   PedidosRoute: typeof PedidosRoute
   CategoriaSlugRoute: typeof CategoriaSlugRoute
+  PagamentoIdRoute: typeof PagamentoIdRoute
   PedidoIdRoute: typeof PedidoIdRoute
   ProdutoSlugRoute: typeof ProdutoSlugRoute
+  ApiPublicWebhooksPagarmeRoute: typeof ApiPublicWebhooksPagarmeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -496,6 +535,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEstoqueRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/pagamentos': {
+      id: '/admin/pagamentos'
+      path: '/pagamentos'
+      fullPath: '/admin/pagamentos'
+      preLoaderRoute: typeof AdminPagamentosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/pedidos': {
       id: '/admin/pedidos'
       path: '/pedidos'
@@ -524,6 +570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pagamento/$id': {
+      id: '/pagamento/$id'
+      path: '/pagamento/$id'
+      fullPath: '/pagamento/$id'
+      preLoaderRoute: typeof PagamentoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pedido/$id': {
       id: '/pedido/$id'
       path: '/pedido/$id'
@@ -538,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/pagarme': {
+      id: '/api/public/webhooks/pagarme'
+      path: '/api/public/webhooks/pagarme'
+      fullPath: '/api/public/webhooks/pagarme'
+      preLoaderRoute: typeof ApiPublicWebhooksPagarmeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -550,6 +610,7 @@ interface AdminRouteChildren {
   AdminEntregaRoute: typeof AdminEntregaRoute
   AdminEntregadoresRoute: typeof AdminEntregadoresRoute
   AdminEstoqueRoute: typeof AdminEstoqueRoute
+  AdminPagamentosRoute: typeof AdminPagamentosRoute
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
   AdminPromocoesRoute: typeof AdminPromocoesRoute
@@ -565,6 +626,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminEntregaRoute: AdminEntregaRoute,
   AdminEntregadoresRoute: AdminEntregadoresRoute,
   AdminEstoqueRoute: AdminEstoqueRoute,
+  AdminPagamentosRoute: AdminPagamentosRoute,
   AdminPedidosRoute: AdminPedidosRoute,
   AdminProdutosRoute: AdminProdutosRoute,
   AdminPromocoesRoute: AdminPromocoesRoute,
@@ -586,8 +648,10 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritosRoute: FavoritosRoute,
   PedidosRoute: PedidosRoute,
   CategoriaSlugRoute: CategoriaSlugRoute,
+  PagamentoIdRoute: PagamentoIdRoute,
   PedidoIdRoute: PedidoIdRoute,
   ProdutoSlugRoute: ProdutoSlugRoute,
+  ApiPublicWebhooksPagarmeRoute: ApiPublicWebhooksPagarmeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

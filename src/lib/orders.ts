@@ -10,6 +10,7 @@ export const ORDER_FLOW = [
 export type OrderStatus = (typeof ORDER_FLOW)[number] | "cancelado";
 
 export const STATUS_LABEL: Record<string, string> = {
+  aguardando_pagamento: "Aguardando pagamento",
   novo: "Pedido recebido",
   confirmado: "Confirmado",
   em_preparo: "Em separação",
