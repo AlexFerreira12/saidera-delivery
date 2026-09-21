@@ -4,6 +4,7 @@
  */
 
 const USER_AGENT = "pagarme-skill-generated/1.0";
+const TIMEOUT_MS = 12_000;
 
 function config() {
   const key = process.env["PAGARME_SECRET_KEY"];
@@ -31,7 +32,28 @@ async function call(
 
   const requestInit: RequestInit = { method: init.method, headers };
   if (init.body !== undefined) requestInit.body = JSON.stringify(init.body);
-  const res = await fetch(`${base}${path}`, requestInit);
+
+  // Tempo limite explícito: rede ruim não pode travar a requisição do cliente.
+  const attempts = init.method === "GET" ? 2 : 1;
+  let res: Response | null = null;
+  let lastError: unknown = null;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      res = await fetch(`${base}${path}`, {
+        ...requestInit,
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      break;
+    } catch (err) {
+      lastError = err;
+      if (attempt === attempts) break;
+      await new Promise((r) => setTimeout(r, 400 * attempt));
+    }
+  }
+  if (!res) {
+    console.error("pagarme_timeout", path, String(lastError));
+    throw new Error("PAGARME_INDISPONIVEL");
+  }
 
   const text = await res.text();
   let json: unknown = null;

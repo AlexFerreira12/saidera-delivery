@@ -19,6 +19,23 @@ export const Route = createFileRoute("/api/public/webhooks/pagarme")({
           }
         }
 
+        // Limite de abuso no endereço público (janela de 1 minuto por origem).
+        const origin =
+          request.headers.get("cf-connecting-ip") ??
+          request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+          "desconhecido";
+        {
+          const { supabaseAdmin: rateDb } = await import("@/integrations/supabase/client.server");
+          const { data: rate } = await rateDb.rpc("rate_limit_hit", {
+            p_bucket: "webhook_pagarme",
+            p_identifier: origin,
+            p_limit: 120,
+            p_window_seconds: 60,
+          });
+          const allowed = (rate as { allowed?: boolean } | null)?.allowed;
+          if (allowed === false) return new Response("Too Many Requests", { status: 429 });
+        }
+
         let payload: Record<string, unknown> | null = null;
         try {
           payload = await request.json();
