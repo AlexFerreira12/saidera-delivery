@@ -12,17 +12,24 @@ export const Route = createFileRoute("/api/public/imagem/$")({
     handlers: {
       GET: async ({ params }) => {
         const path = String((params as { _splat?: string })._splat ?? "");
-        const match = /^(produtos|banners)\/[A-Za-z0-9-]+\.(jpg|png|webp)$/.exec(path);
+        const match = /^(produtos|banners|branding)\/[A-Za-z0-9-]+\.(jpg|png|webp)$/.exec(path);
         if (!match) return new Response("Not found", { status: 404 });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data, error } = await supabaseAdmin.storage.from("catalogo").download(path);
         if (error || !data) return new Response("Not found", { status: 404 });
 
+        // produtos/banners usam nomes únicos (UUID): cache longo é seguro.
+        // branding pode ser substituído no mesmo caminho (logo): cache curto.
+        const cacheControl =
+          match[1] === "branding"
+            ? "public, max-age=300"
+            : "public, max-age=31536000, immutable";
+
         return new Response(await data.arrayBuffer(), {
           headers: {
             "content-type": TYPES[match[2] as string] ?? "application/octet-stream",
-            "cache-control": "public, max-age=31536000, immutable",
+            "cache-control": cacheControl,
           },
         });
       },
