@@ -28,7 +28,10 @@ export const Route = createFileRoute("/entregador")({
         content: "Entregas disponíveis e rotas para entregadores em Guariba/SP.",
       },
       { property: "og:title", content: "Área do entregador — Bebidas Guariba" },
-      { property: "og:description", content: "Aceite entregas e confirme com o código do cliente." },
+      {
+        property: "og:description",
+        content: "Aceite entregas e confirme com o código do cliente.",
+      },
     ],
   }),
   component: DriverPage,
