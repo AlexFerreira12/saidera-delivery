@@ -1,6 +1,15 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sniffImageType } from "@/lib/image-bytes";
-import { buildOfficialFallbackUrls, parseOpenFoodFacts } from "@/lib/image-providers.server";
+import {
+  __resetUpcItemdbPacerForTests,
+  buildOfficialFallbackUrls,
+  isPublicHttpsImageUrl,
+  lookupProductImageByGtin,
+  lookupUpcItemdb,
+  parseOpenFoodFacts,
+  parseRetryAfter,
+  parseUpcItemdb,
+} from "@/lib/image-providers.server";
 import {
   downloadFirstReachableImage,
   downloadImageGuarded,
