@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Snowflake } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { ProductImage } from "@/components/ProductCard";
+import { ProductImage } from "@/components/ProductImage";
 import { QtyStepper } from "@/components/QtyStepper";
 import { fetchProductBySlug, fetchProducts, toCartItem, type Product } from "@/lib/catalog";
 import { brl } from "@/lib/format";
