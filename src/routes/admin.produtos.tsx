@@ -25,10 +25,7 @@ function AdminProducts() {
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin", "products"] });
 
-  const patch = async (
-    id: string,
-    values: { stock?: number; price?: number; is_active?: boolean },
-  ) => {
+  const patch = async (id: string, values: { price?: number; is_active?: boolean }) => {
     const { error } = await supabase.from("products").update(values).eq("id", id);
     if (error) toast.error("Não foi possível salvar.");
     else void refresh();
@@ -40,27 +37,40 @@ function AdminProducts() {
       toast.error("Informe nome e preço.");
       return;
     }
-    const { error } = await supabase.from("products").insert({
-      name: form.name,
-      slug: form.name
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, ""),
-      price: Number(form.price),
-      stock: Number(form.stock || 0),
-      volume: form.volume || null,
-      category_id: form.category_id || null,
-    });
-    if (error) {
+    const initialStock = Number(form.stock || 0);
+    const { data, error } = await supabase
+      .from("products")
+      .insert({
+        name: form.name,
+        slug: form.name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
+        price: Number(form.price),
+        stock: 0,
+        volume: form.volume || null,
+        category_id: form.category_id || null,
+      })
+      .select("id")
+      .single();
+    if (error || !data) {
       toast.error("Não foi possível criar o produto.");
       return;
+    }
+    if (initialStock > 0) {
+      try {
+        await stockEntry(data.id, initialStock, "Estoque inicial do cadastro");
+      } catch (err) {
+        toast.error(stockErrorMessage(err, "Produto criado, mas o estoque inicial falhou."));
+      }
     }
     toast.success("Produto criado!");
     setForm({ name: "", price: "", stock: "", category_id: "", volume: "" });
     setCreating(false);
     void refresh();
+    void qc.invalidateQueries({ queryKey: ["admin", "stock"] });
   };
 
   const list = ((products ?? []) as AdminProduct[]).filter((p) =>
