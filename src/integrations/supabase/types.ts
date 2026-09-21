@@ -937,6 +937,82 @@ export type Database = {
           },
         ]
       }
+      stock_movements: {
+        Row: {
+          actor_user_id: string | null
+          cost_after: number | null
+          cost_before: number | null
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          kind: string
+          order_id: string | null
+          product_id: string
+          quantity_delta: number
+          reason: string | null
+          source: string
+          stock_after: number
+          stock_before: number
+          unit_cost: number | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          cost_after?: number | null
+          cost_before?: number | null
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          kind: string
+          order_id?: string | null
+          product_id: string
+          quantity_delta: number
+          reason?: string | null
+          source?: string
+          stock_after: number
+          stock_before: number
+          unit_cost?: number | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          cost_after?: number | null
+          cost_before?: number | null
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          kind?: string
+          order_id?: string | null
+          product_id?: string
+          quantity_delta?: number
+          reason?: string | null
+          source?: string
+          stock_after?: number
+          stock_before?: number
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_admin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_settings: {
         Row: {
           address: string | null
@@ -1132,6 +1208,57 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_stock_adjust: {
+        Args: {
+          p_delta: number
+          p_kind: string
+          p_product_id: string
+          p_reason: string
+        }
+        Returns: Json
+      }
+      admin_stock_bulk_entry: {
+        Args: { p_items: Json; p_reason?: string }
+        Returns: Json
+      }
+      admin_stock_entry: {
+        Args: {
+          p_product_id: string
+          p_quantity: number
+          p_reason?: string
+          p_unit_cost?: number
+        }
+        Returns: Json
+      }
+      admin_stock_history: {
+        Args: {
+          p_from?: string
+          p_kind?: string
+          p_limit?: number
+          p_offset?: number
+          p_product_id?: string
+          p_to?: string
+        }
+        Returns: {
+          actor_name: string
+          created_at: string
+          id: string
+          kind: string
+          order_id: string
+          order_number: number
+          product_id: string
+          product_name: string
+          quantity_delta: number
+          reason: string
+          stock_after: number
+          stock_before: number
+          unit_cost: number
+        }[]
+      }
+      admin_stock_inventory: {
+        Args: { p_counted: number; p_product_id: string; p_reason: string }
+        Returns: Json
+      }
       admin_unlink_driver: { Args: { p_driver_id: string }; Returns: Json }
       can_view_order: { Args: { _order_id: string }; Returns: boolean }
       create_order: {
@@ -1157,6 +1284,24 @@ export type Database = {
       preview_coupon: {
         Args: { p_code: string; p_subtotal: number }
         Returns: Json
+      }
+      record_stock_movement: {
+        Args: {
+          p_actor?: string
+          p_cost_after?: number
+          p_cost_before?: number
+          p_delta: number
+          p_key?: string
+          p_kind: string
+          p_order_id?: string
+          p_product_id: string
+          p_reason?: string
+          p_source?: string
+          p_stock_after: number
+          p_stock_before: number
+          p_unit_cost?: number
+        }
+        Returns: undefined
       }
       set_order_status: {
         Args: { p_order_id: string; p_status: string }
