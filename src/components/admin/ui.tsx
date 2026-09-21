@@ -64,16 +64,19 @@ export function GhostButton({
   children,
   onClick,
   danger,
+  disabled,
 }: {
   children: ReactNode;
   onClick?: () => void;
   danger?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg border border-border px-3 py-1.5 text-xs font-bold ${
+      disabled={disabled}
+      className={`rounded-lg border border-border px-3 py-1.5 text-xs font-bold disabled:opacity-60 ${
         danger ? "text-destructive" : "text-foreground"
       }`}
     >
@@ -81,6 +84,7 @@ export function GhostButton({
     </button>
   );
 }
+
 
 export function StatusPill({ active, onClick }: { active: boolean; onClick?: () => void }) {
   return (
