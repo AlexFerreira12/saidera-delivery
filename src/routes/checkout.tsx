@@ -14,6 +14,7 @@ import { fetchAddresses, useZones, type Address } from "@/routes/enderecos";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Finalizar pedido — Bebidas Guariba" },
       {
         name: "description",

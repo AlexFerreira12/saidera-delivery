@@ -12,6 +12,7 @@ import { validateCoupon, couponDiscount, type Coupon } from "@/lib/coupons";
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Carrinho — Bebidas Guariba" },
       { name: "description", content: "Revise seus itens, aplique cupom e finalize seu pedido." },
       { property: "og:title", content: "Carrinho — Bebidas Guariba" },

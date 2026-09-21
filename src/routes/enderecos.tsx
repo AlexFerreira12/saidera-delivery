@@ -24,6 +24,7 @@ export type Address = {
 export const Route = createFileRoute("/enderecos")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Meus endereços — Bebidas Guariba" },
       { name: "description", content: "Cadastre e gerencie endereços de entrega em Guariba/SP." },
       { property: "og:title", content: "Meus endereços — Bebidas Guariba" },

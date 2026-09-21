@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 export const Route = createFileRoute("/conta")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Minha conta — Bebidas Guariba" },
       {
         name: "description",

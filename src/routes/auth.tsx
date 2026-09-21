@@ -9,6 +9,7 @@ import { maskCPF, maskPhone, isValidPhone, isValidCPF } from "@/lib/format";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Entrar ou criar conta — Bebidas Guariba" },
       {
         name: "description",

@@ -13,6 +13,7 @@ import { createPixCharge, syncPixPayment } from "@/lib/payments.functions";
 export const Route = createFileRoute("/pagamento/$id")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Pagamento PIX — Bebidas Guariba" },
       {
         name: "description",
