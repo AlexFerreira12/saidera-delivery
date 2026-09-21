@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { brl } from "@/lib/format";
-import { unitPriceFor } from "@/lib/pricing";
+import { checkoutErrorMessage, COUPON_STORAGE_KEY } from "@/lib/checkout";
 import { fetchAddresses, useZones, type Address } from "@/routes/enderecos";
 
 export const Route = createFileRoute("/checkout")({
@@ -24,22 +24,28 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const PAYMENTS = [
-  { id: "pix", label: "PIX", hint: "Aprovação imediata" },
-  { id: "dinheiro", label: "Dinheiro na entrega", hint: "Informe o troco" },
-  { id: "cartao_entrega", label: "Cartão na entrega", hint: "Débito ou crédito" },
+  { id: "pix", label: "PIX", hint: "Indisponível — integração pendente", disabled: true },
+  { id: "dinheiro", label: "Dinheiro na entrega", hint: "Informe o troco", disabled: false },
+  { id: "cartao_entrega", label: "Cartão na entrega", hint: "Débito ou crédito", disabled: false },
 ] as const;
 
 function CheckoutPage() {
-  const { session, profile, loading } = useAuth();
+  const { session, loading } = useAuth();
   const navigate = useNavigate();
   const cart = useCart();
   const zones = useZones();
 
   const [addressId, setAddressId] = useState<string | null>(null);
-  const [payment, setPayment] = useState<string>("pix");
+  const [payment, setPayment] = useState<string>("dinheiro");
   const [changeFor, setChangeFor] = useState("");
   const [notes, setNotes] = useState("");
   const [placing, setPlacing] = useState(false);
+  const [coupon, setCoupon] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCoupon(localStorage.getItem(COUPON_STORAGE_KEY));
+  }, []);
+
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
