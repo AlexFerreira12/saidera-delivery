@@ -13,7 +13,10 @@ export const Route = createFileRoute("/entregador")({
   head: () => ({
     meta: [
       { title: "Área do entregador — Bebidas Guariba" },
-      { name: "description", content: "Entregas disponíveis e rotas para entregadores em Guariba/SP." },
+      {
+        name: "description",
+        content: "Entregas disponíveis e rotas para entregadores em Guariba/SP.",
+      },
       { property: "og:title", content: "Área do entregador — Bebidas Guariba" },
       { property: "og:description", content: "Aceite entregas e atualize o status em tempo real." },
     ],
@@ -31,7 +34,12 @@ type DriverOrder = {
   driver_id: string | null;
   customer_name: string | null;
   customer_phone: string | null;
-  address_snapshot: { street?: string; number?: string; neighborhood?: string; reference?: string } | null;
+  address_snapshot: {
+    street?: string;
+    number?: string;
+    neighborhood?: string;
+    reference?: string;
+  } | null;
 };
 
 function DriverPage() {
@@ -89,14 +97,16 @@ function DriverPage() {
   };
 
   const finish = async (id: string) => {
-    const { error } = await supabase.rpc("set_order_status", { p_order_id: id, p_status: "entregue" });
+    const { error } = await supabase.rpc("set_order_status", {
+      p_order_id: id,
+      p_status: "entregue",
+    });
     if (error) toast.error(checkoutErrorMessage(error));
     else {
       toast.success("Entrega concluída!");
       void qc.invalidateQueries({ queryKey: ["driver", "orders"] });
     }
   };
-
 
   if (loading || !allowed) {
     return <div className="p-8 text-center text-sm text-muted-foreground">Carregando...</div>;
@@ -118,14 +128,22 @@ function DriverPage() {
         <Section title={`Minhas entregas (${mine.length})`}>
           {mine.length === 0 && <Empty text="Nenhuma entrega em andamento." />}
           {mine.map((o) => (
-            <OrderCard key={o.id} order={o} action={{ label: "CONCLUIR ENTREGA", run: () => finish(o.id) }} />
+            <OrderCard
+              key={o.id}
+              order={o}
+              action={{ label: "CONCLUIR ENTREGA", run: () => finish(o.id) }}
+            />
           ))}
         </Section>
 
         <Section title={`Disponíveis (${available.length})`}>
           {available.length === 0 && <Empty text="Nenhuma entrega disponível agora." />}
           {available.map((o) => (
-            <OrderCard key={o.id} order={o} action={{ label: "ACEITAR ENTREGA", run: () => accept(o.id) }} />
+            <OrderCard
+              key={o.id}
+              order={o}
+              action={{ label: "ACEITAR ENTREGA", run: () => accept(o.id) }}
+            />
           ))}
         </Section>
       </main>
@@ -146,9 +164,17 @@ function Empty({ text }: { text: string }) {
   return <p className="py-6 text-center text-sm text-muted-foreground">{text}</p>;
 }
 
-function OrderCard({ order, action }: { order: DriverOrder; action: { label: string; run: () => void } }) {
+function OrderCard({
+  order,
+  action,
+}: {
+  order: DriverOrder;
+  action: { label: string; run: () => void };
+}) {
   const a = order.address_snapshot;
-  const maps = a ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${a.street}, ${a.number}, ${a.neighborhood}, Guariba SP`)}` : null;
+  const maps = a
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${a.street}, ${a.number}, ${a.neighborhood}, Guariba SP`)}`
+    : null;
   return (
     <div className="surface-card space-y-2 p-4">
       <div className="flex items-start justify-between">

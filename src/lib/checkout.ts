@@ -2,7 +2,8 @@ import { brl } from "@/lib/format";
 
 /** Mensagens amigáveis para os códigos de erro retornados pela RPC create_order. */
 export function checkoutErrorMessage(raw: unknown): string {
-  const message = typeof raw === "string" ? raw : ((raw as { message?: string } | null)?.message ?? "");
+  const message =
+    typeof raw === "string" ? raw : ((raw as { message?: string } | null)?.message ?? "");
   const [code = "", detail = ""] = message.split(":");
   const key = code.replace(/^.*?([A-Z_]+)$/, "$1").trim();
 

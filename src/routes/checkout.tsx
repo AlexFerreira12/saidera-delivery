@@ -15,9 +15,15 @@ export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
       { title: "Finalizar pedido — Bebidas Guariba" },
-      { name: "description", content: "Escolha endereço, pagamento e confirme sua entrega em Guariba/SP." },
+      {
+        name: "description",
+        content: "Escolha endereço, pagamento e confirme sua entrega em Guariba/SP.",
+      },
       { property: "og:title", content: "Finalizar pedido — Bebidas Guariba" },
-      { property: "og:description", content: "Endereço, pagamento e confirmação em poucos toques." },
+      {
+        property: "og:description",
+        content: "Endereço, pagamento e confirmação em poucos toques.",
+      },
     ],
   }),
   component: CheckoutPage,
@@ -45,7 +51,6 @@ function CheckoutPage() {
   useEffect(() => {
     setCoupon(localStorage.getItem(COUPON_STORAGE_KEY));
   }, []);
-
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
@@ -108,7 +113,6 @@ function CheckoutPage() {
     }
   };
 
-
   return (
     <AppShell hideNav hideCartBar>
       <PageHeader title="Finalizar pedido" />
@@ -148,7 +152,8 @@ function CheckoutPage() {
           )}
           {zone && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Entrega em ~{zone.eta_minutes} min · taxa {brl(Number(zone.fee))} · mínimo {brl(Number(zone.min_order))}
+              Entrega em ~{zone.eta_minutes} min · taxa {brl(Number(zone.fee))} · mínimo{" "}
+              {brl(Number(zone.min_order))}
             </p>
           )}
         </section>
@@ -170,7 +175,6 @@ function CheckoutPage() {
                 <span className="text-xs text-muted-foreground">{p.hint}</span>
               </button>
             ))}
-
           </div>
           {payment === "dinheiro" && (
             <input
@@ -217,7 +221,6 @@ function CheckoutPage() {
           </p>
         </section>
       </div>
-
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card px-4 py-3">
         <button
