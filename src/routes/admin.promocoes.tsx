@@ -90,7 +90,7 @@ function AdminPromotions() {
     void refresh();
   };
 
-  const patch = async (id: string, values: Partial<AdminPromotion>) => {
+  const patch = async (id: string, values: Partial<Omit<AdminPromotion, "products">>) => {
     const { error: err } = await supabase.from("promotions").update(values).eq("id", id);
     if (err) toast.error(adminErrorMessage(err));
     else void refresh();
