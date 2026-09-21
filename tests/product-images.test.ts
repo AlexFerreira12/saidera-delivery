@@ -350,7 +350,9 @@ function upcBody(items: Record<string, unknown>[] | null) {
 describe("isPublicHttpsImageUrl (política de URL do UPCitemdb)", () => {
   it("aceita HTTPS público de CDNs de varejo", () => {
     expect(isPublicHttpsImageUrl(UPC_IMG)).toBe(true);
-    expect(isPublicHttpsImageUrl("https://target.scene7.com/is/image/Target/x?wid=1000")).toBe(true);
+    expect(isPublicHttpsImageUrl("https://target.scene7.com/is/image/Target/x?wid=1000")).toBe(
+      true,
+    );
     expect(isPublicHttpsImageUrl("https://images.openfoodfacts.org/x.jpg")).toBe(true);
   });
 
@@ -523,7 +525,10 @@ describe("lookupUpcItemdb (rate limit e erros)", () => {
   });
 
   it("erro de rede vira PROVEDOR_INDISPONIVEL", async () => {
-    vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("socket"))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.reject(new Error("socket"))),
+    );
     await expect(lookupUpcItemdb(UPC_GTIN)).resolves.toMatchObject({
       status: "error",
       message: "PROVEDOR_INDISPONIVEL",

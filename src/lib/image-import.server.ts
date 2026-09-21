@@ -8,11 +8,7 @@
 import { isValidGtin, normalizeGtin } from "./gtin";
 import { isPublicHttpsImageUrl, lookupProductImageByGtin } from "./image-providers.server";
 import { IMAGE_MIME_BY_EXT, sniffImageType } from "./image-bytes";
-import type {
-  ImageApplyResult,
-  ImageCandidate,
-  ImageSearchResult,
-} from "./product-image-types";
+import type { ImageApplyResult, ImageCandidate, ImageSearchResult } from "./product-image-types";
 
 export const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT_MS = 10_000;
@@ -41,9 +37,7 @@ export function isAllowedImageUrl(raw: string): boolean {
  * Nenhuma política permite HTTP, IP privado/link-local ou host desconhecido
  * sem validação.
  */
-export function imageUrlPolicyFor(
-  provider: ImageCandidate["provider"],
-): (url: string) => boolean {
+export function imageUrlPolicyFor(provider: ImageCandidate["provider"]): (url: string) => boolean {
   return provider === "upcitemdb" ? isPublicHttpsImageUrl : isAllowedImageUrl;
 }
 
