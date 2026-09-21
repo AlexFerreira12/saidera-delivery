@@ -6,6 +6,7 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { brl, dateTimeBR } from "@/lib/format";
 import { ORDER_FLOW, PAYMENT_LABEL, STATUS_LABEL, statusIndex } from "@/lib/orders";
+import { fetchOrderPin } from "@/lib/delivery";
 
 export const Route = createFileRoute("/pedido/$id")({
   head: () => ({
@@ -43,6 +44,7 @@ export type OrderRow = {
   } | null;
   customer_name: string | null;
   customer_phone: string | null;
+  delivered_at?: string | null;
   order_items?: {
     id: string;
     product_name: string;
