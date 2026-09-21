@@ -15,6 +15,8 @@ import {
   StatusPill,
   inputClass,
 } from "@/components/admin/ui";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+
 
 export const Route = createFileRoute("/admin/banners")({
   component: AdminBanners,
