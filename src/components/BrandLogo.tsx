@@ -90,6 +90,7 @@ export function BrandLogo({
 
   return (
     <img
+      ref={imgRef}
       src="/branding/saidera-logo.png"
       alt="SAIDERA — Adega e Distribuidora"
       className={cn("w-auto max-w-[240px] shrink-0 object-contain", SIZES[size], className)}
