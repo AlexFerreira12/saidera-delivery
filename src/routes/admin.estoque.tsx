@@ -69,7 +69,7 @@ function AdminStock() {
         to: histTo ? new Date(`${histTo}T23:59:59`).toISOString() : undefined,
         limit: PAGE_SIZE,
         offset: page * PAGE_SIZE,
-      }),
+      } as Parameters<typeof fetchStockHistory>[0]),
     enabled: tab === "historico",
   });
 
