@@ -1,43 +1,45 @@
 import { supabase } from "@/integrations/supabase/client";
+import { checkoutErrorMessage } from "@/lib/checkout";
 
+/** Estimativa retornada pela RPC segura. A validação final é feita em create_order. */
 export type Coupon = {
-  id: string;
   code: string;
   discount_type: string;
   discount_value: number;
   min_order: number;
-  starts_at: string | null;
-  ends_at: string | null;
-  max_uses: number | null;
-  max_uses_per_user: number;
-  first_order_only: boolean;
-  used_count: number;
-  is_active: boolean;
+};
+
+type PreviewResult = {
+  ok: boolean;
+  code?: string;
+  discount_type?: string;
+  discount_value?: number;
+  min_order?: number;
 };
 
 export async function validateCoupon(code: string, subtotal: number) {
   const clean = code.trim().toUpperCase();
-  const { data, error } = await supabase
-    .from("coupons")
-    .select("*")
-    .eq("code", clean)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("preview_coupon", {
+    p_code: clean,
+    p_subtotal: subtotal,
+  });
   if (error) throw error;
-  const coupon = data as Coupon | null;
-  if (!coupon || !coupon.is_active) return { ok: false as const, message: "Cupom inválido." };
-  const now = Date.now();
-  if (coupon.starts_at && new Date(coupon.starts_at).getTime() > now)
-    return { ok: false as const, message: "Cupom ainda não está válido." };
-  if (coupon.ends_at && new Date(coupon.ends_at).getTime() < now)
-    return { ok: false as const, message: "Cupom expirado." };
-  if (coupon.max_uses != null && coupon.used_count >= coupon.max_uses)
-    return { ok: false as const, message: "Cupom esgotado." };
-  if (subtotal < Number(coupon.min_order))
+  const result = (data ?? { ok: false }) as unknown as PreviewResult;
+  if (!result.ok) {
     return {
       ok: false as const,
-      message: `Pedido mínimo de R$ ${Number(coupon.min_order).toFixed(2)} para este cupom.`,
+      message: checkoutErrorMessage({ message: result.code ?? "CUPOM_INVALIDO" }),
     };
-  return { ok: true as const, coupon };
+  }
+  return {
+    ok: true as const,
+    coupon: {
+      code: result.code ?? clean,
+      discount_type: result.discount_type ?? "fixed",
+      discount_value: Number(result.discount_value ?? 0),
+      min_order: Number(result.min_order ?? 0),
+    } satisfies Coupon,
+  };
 }
 
 export function couponDiscount(coupon: Coupon | null, subtotal: number, deliveryFee: number) {
