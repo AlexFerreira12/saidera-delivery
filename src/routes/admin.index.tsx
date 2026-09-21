@@ -56,13 +56,14 @@ function AdminOrders() {
   }, [qc]);
 
   const setStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("orders").update({ status }).eq("id", id);
-    if (error) toast.error("Não foi possível atualizar o pedido.");
+    const { error } = await supabase.rpc("set_order_status", { p_order_id: id, p_status: status });
+    if (error) toast.error(checkoutErrorMessage(error));
     else {
       toast.success(`Pedido atualizado: ${STATUS_LABEL[status]}`);
       void qc.invalidateQueries({ queryKey: ["admin", "orders"] });
     }
   };
+
 
   const list = (orders ?? []).filter((o) =>
     filter === "ativos" ? !["entregue", "cancelado"].includes(o.status) : o.status === filter,

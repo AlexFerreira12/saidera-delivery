@@ -79,11 +79,8 @@ function DriverPage() {
       toast.error("Seu cadastro de entregador ainda não foi criado pelo administrador.");
       return;
     }
-    const { error } = await supabase
-      .from("orders")
-      .update({ driver_id: driver.id, status: "saiu_para_entrega" })
-      .eq("id", id);
-    if (error) toast.error("Não foi possível aceitar a entrega.");
+    const { error } = await supabase.rpc("accept_delivery", { p_order_id: id });
+    if (error) toast.error(checkoutErrorMessage(error));
     else {
       toast.success("Entrega aceita! Boa rota.");
       void qc.invalidateQueries({ queryKey: ["driver", "orders"] });
@@ -91,13 +88,14 @@ function DriverPage() {
   };
 
   const finish = async (id: string) => {
-    const { error } = await supabase.from("orders").update({ status: "entregue" }).eq("id", id);
-    if (error) toast.error("Não foi possível concluir.");
+    const { error } = await supabase.rpc("set_order_status", { p_order_id: id, p_status: "entregue" });
+    if (error) toast.error(checkoutErrorMessage(error));
     else {
       toast.success("Entrega concluída!");
       void qc.invalidateQueries({ queryKey: ["driver", "orders"] });
     }
   };
+
 
   if (loading || !allowed) {
     return <div className="p-8 text-center text-sm text-muted-foreground">Carregando...</div>;
