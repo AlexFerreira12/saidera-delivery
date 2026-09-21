@@ -507,6 +507,77 @@ export type Database = {
         }
         Relationships: []
       }
+      order_assignment_events: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          created_at: string
+          driver_id: string | null
+          id: string
+          order_id: string
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          created_at?: string
+          driver_id?: string | null
+          id?: string
+          order_id: string
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string
+          driver_id?: string | null
+          id?: string
+          order_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_assignment_events_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_assignment_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_delivery_pins: {
+        Row: {
+          created_at: string
+          order_id: string
+          pin: string
+        }
+        Insert: {
+          created_at?: string
+          order_id: string
+          pin: string
+        }
+        Update: {
+          created_at?: string
+          order_id?: string
+          pin?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_delivery_pins_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           id: string
@@ -593,14 +664,20 @@ export type Database = {
       }
       orders: {
         Row: {
+          accepted_at: string | null
           address_id: string | null
           address_snapshot: Json | null
           coupon_code: string | null
           created_at: string
           customer_name: string | null
           customer_phone: string | null
+          delivered_at: string | null
+          delivery_confirmed_by: string | null
           delivery_fee: number
+          delivery_override_reason: string | null
+          delivery_pin_hash: string | null
           discount: number
+          dispatched_at: string | null
           driver_id: string | null
           eta_minutes: number | null
           id: string
@@ -608,6 +685,7 @@ export type Database = {
           order_number: number
           payment_method: string
           payment_status: string
+          pin_attempts: number
           status: string
           stock_restored_at: string | null
           subtotal: number
@@ -616,14 +694,20 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accepted_at?: string | null
           address_id?: string | null
           address_snapshot?: Json | null
           coupon_code?: string | null
           created_at?: string
           customer_name?: string | null
           customer_phone?: string | null
+          delivered_at?: string | null
+          delivery_confirmed_by?: string | null
           delivery_fee?: number
+          delivery_override_reason?: string | null
+          delivery_pin_hash?: string | null
           discount?: number
+          dispatched_at?: string | null
           driver_id?: string | null
           eta_minutes?: number | null
           id?: string
@@ -631,6 +715,7 @@ export type Database = {
           order_number?: number
           payment_method?: string
           payment_status?: string
+          pin_attempts?: number
           status?: string
           stock_restored_at?: string | null
           subtotal?: number
@@ -639,14 +724,20 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accepted_at?: string | null
           address_id?: string | null
           address_snapshot?: Json | null
           coupon_code?: string | null
           created_at?: string
           customer_name?: string | null
           customer_phone?: string | null
+          delivered_at?: string | null
+          delivery_confirmed_by?: string | null
           delivery_fee?: number
+          delivery_override_reason?: string | null
+          delivery_pin_hash?: string | null
           discount?: number
+          dispatched_at?: string | null
           driver_id?: string | null
           eta_minutes?: number | null
           id?: string
@@ -654,6 +745,7 @@ export type Database = {
           order_number?: number
           payment_method?: string
           payment_status?: string
+          pin_attempts?: number
           status?: string
           stock_restored_at?: string | null
           subtotal?: number
@@ -1176,6 +1268,10 @@ export type Database = {
     }
     Functions: {
       accept_delivery: { Args: { p_order_id: string }; Returns: Json }
+      admin_assign_driver: {
+        Args: { p_driver_id: string; p_order_id: string }
+        Returns: Json
+      }
       admin_customers: {
         Args: { p_search?: string }
         Returns: {
@@ -1199,6 +1295,10 @@ export type Database = {
           last_delivery_at: string
         }[]
       }
+      admin_force_deliver: {
+        Args: { p_order_id: string; p_reason: string }
+        Returns: Json
+      }
       admin_link_driver: {
         Args: {
           p_email: string
@@ -1208,6 +1308,7 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_reset_pin_attempts: { Args: { p_order_id: string }; Returns: Json }
       admin_stock_adjust: {
         Args: {
           p_delta: number
@@ -1259,6 +1360,10 @@ export type Database = {
         Args: { p_counted: number; p_product_id: string; p_reason: string }
         Returns: Json
       }
+      admin_unassign_driver: {
+        Args: { p_order_id: string; p_reason: string }
+        Returns: Json
+      }
       admin_unlink_driver: { Args: { p_driver_id: string }; Returns: Json }
       apply_stock_change: {
         Args: {
@@ -1289,12 +1394,39 @@ export type Database = {
         }
         Returns: Json
       }
+      driver_available_orders: {
+        Args: never
+        Returns: {
+          created_at: string
+          eta_minutes: number
+          id: string
+          items_count: number
+          neighborhood: string
+          order_number: number
+          payment_method: string
+          street: string
+          total: number
+        }[]
+      }
+      driver_complete_delivery: {
+        Args: { p_order_id: string; p_pin: string }
+        Returns: Json
+      }
+      driver_history: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
+      driver_my_orders: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      hash_delivery_pin: {
+        Args: { _order_id: string; _pin: string }
+        Returns: string
       }
       is_admin: { Args: never; Returns: boolean }
       is_order_driver: { Args: { _order_id: string }; Returns: boolean }
