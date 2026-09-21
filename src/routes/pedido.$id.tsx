@@ -6,6 +6,7 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import { supabase } from "@/integrations/supabase/client";
 import { brl, dateTimeBR } from "@/lib/format";
 import { ORDER_FLOW, PAYMENT_LABEL, STATUS_LABEL, statusIndex } from "@/lib/orders";
+import { fetchOrderPin } from "@/lib/delivery";
 
 export const Route = createFileRoute("/pedido/$id")({
   head: () => ({
@@ -43,6 +44,7 @@ export type OrderRow = {
   } | null;
   customer_name: string | null;
   customer_phone: string | null;
+  delivered_at?: string | null;
   order_items?: {
     id: string;
     product_name: string;
@@ -69,6 +71,11 @@ function OrderPage() {
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", id],
     queryFn: () => fetchOrder(id),
+  });
+  const { data: pin } = useQuery({
+    queryKey: ["order", id, "pin"],
+    queryFn: () => fetchOrderPin(id),
+    enabled: order?.status === "saiu_para_entrega",
   });
 
   useEffect(() => {
@@ -150,6 +157,22 @@ function OrderPage() {
             )}
           </ol>
         </section>
+
+        {order.status === "saiu_para_entrega" && pin && (
+          <section className="surface-card p-4 text-center">
+            <h2 className="font-display text-sm font-bold">Código de entrega</h2>
+            <p className="my-2 font-display text-4xl font-extrabold tracking-[0.4em]">{pin}</p>
+            <p className="text-xs text-muted-foreground">
+              Informe este código ao entregador apenas ao receber o pedido.
+            </p>
+          </section>
+        )}
+
+        {order.status === "entregue" && order.delivered_at && (
+          <section className="surface-card p-4 text-sm text-muted-foreground">
+            Entregue em {dateTimeBR(order.delivered_at)}.
+          </section>
+        )}
 
         <section className="surface-card p-4">
           <h2 className="mb-2 font-display text-sm font-bold">Itens</h2>

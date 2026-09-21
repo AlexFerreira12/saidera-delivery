@@ -7,6 +7,13 @@ import { brl, timeBR } from "@/lib/format";
 import { checkoutErrorMessage } from "@/lib/checkout";
 import { ORDER_FLOW, STATUS_LABEL, nextStatus } from "@/lib/orders";
 import { AdminPage, StateBlock } from "@/components/admin/ui";
+import { fetchAdminDrivers } from "@/lib/admin";
+import {
+  adminAssignDriver,
+  adminForceDeliver,
+  adminUnassignDriver,
+  deliveryErrorMessage,
+} from "@/lib/delivery";
 
 export const Route = createFileRoute("/admin/pedidos")({
   component: AdminOrders,
@@ -21,6 +28,8 @@ type AdminOrder = {
   created_at: string;
   customer_name: string | null;
   customer_phone: string | null;
+  driver_id: string | null;
+  delivery_confirmed_by: string | null;
   address_snapshot: { street?: string; number?: string; neighborhood?: string } | null;
   order_items?: { id: string; product_name: string; quantity: number }[];
 };
@@ -72,6 +81,49 @@ function AdminOrders() {
       toast.success(`Pedido atualizado: ${STATUS_LABEL[status]}`);
       void qc.invalidateQueries({ queryKey: ["admin", "orders"] });
     }
+  };
+
+  const { data: driversData } = useQuery({
+    queryKey: ["admin", "drivers"],
+    queryFn: fetchAdminDrivers,
+  });
+  const drivers = (driversData?.drivers ?? []).filter((d) => d.is_active);
+  const driverName = (id: string | null) =>
+    id ? (driversData?.drivers ?? []).find((d) => d.id === id)?.name : null;
+
+  const runDelivery = async (fn: () => Promise<void>, success: string) => {
+    try {
+      await fn();
+      toast.success(success);
+      void qc.invalidateQueries({ queryKey: ["admin", "orders"] });
+    } catch (e) {
+      toast.error(deliveryErrorMessage(e));
+    }
+  };
+
+  const assign = (id: string) => {
+    if (drivers.length === 0) {
+      toast.error("Nenhum entregador ativo cadastrado.");
+      return;
+    }
+    const options = drivers.map((d, i) => `${i + 1} - ${d.name}`).join("\n");
+    const pick = prompt(`Atribuir a qual entregador?\n${options}`);
+    const index = Number(pick) - 1;
+    const chosen = drivers[index];
+    if (!chosen) return;
+    void runDelivery(() => adminAssignDriver(id, chosen.id), `Atribuído a ${chosen.name}.`);
+  };
+
+  const unassign = (id: string) => {
+    const reason = prompt("Motivo para remover a atribuição:");
+    if (!reason?.trim()) return;
+    void runDelivery(() => adminUnassignDriver(id, reason), "Atribuição removida.");
+  };
+
+  const forceDeliver = (id: string) => {
+    const reason = prompt("Motivo para marcar como entregue sem o código do cliente:");
+    if (!reason?.trim()) return;
+    void runDelivery(() => adminForceDeliver(id, reason), "Pedido marcado como entregue.");
   };
 
   const list = (orders ?? []).filter((o) =>
@@ -132,10 +184,16 @@ function AdminOrders() {
                   </li>
                 ))}
               </ul>
+              <p className="text-xs text-muted-foreground">
+                Entregador: {driverName(o.driver_id) ?? "não atribuído"}
+                {o.status === "entregue" && o.delivery_confirmed_by === "admin"
+                  ? " · entrega confirmada pelo administrador"
+                  : ""}
+              </p>
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="font-display text-sm font-bold">{brl(o.total)}</span>
                 <span className="text-xs text-muted-foreground">{o.payment_method}</span>
-                <div className="ml-auto flex gap-2">
+                <div className="ml-auto flex flex-wrap gap-2">
                   {o.status !== "cancelado" && o.status !== "entregue" && (
                     <button
                       type="button"
@@ -145,7 +203,34 @@ function AdminOrders() {
                       Cancelar
                     </button>
                   )}
-                  {next && (
+                  {!["entregue", "cancelado"].includes(o.status) && (
+                    <button
+                      type="button"
+                      onClick={() => assign(o.id)}
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold"
+                    >
+                      {o.driver_id ? "Reatribuir" : "Atribuir"}
+                    </button>
+                  )}
+                  {o.driver_id && !["entregue", "cancelado"].includes(o.status) && (
+                    <button
+                      type="button"
+                      onClick={() => unassign(o.id)}
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold"
+                    >
+                      Remover entregador
+                    </button>
+                  )}
+                  {o.status === "saiu_para_entrega" && (
+                    <button
+                      type="button"
+                      onClick={() => forceDeliver(o.id)}
+                      className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
+                    >
+                      Entregue sem código
+                    </button>
+                  )}
+                  {next && next !== "entregue" && (
                     <button
                       type="button"
                       onClick={() => setStatus(o.id, next)}

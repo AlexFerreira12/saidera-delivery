@@ -50,6 +50,20 @@
       "when": 1789961520617,
       "tag": "0006_block_c_stock_numeric_returns",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789962372233,
+      "tag": "0007_block_d_delivery_flow",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789962395498,
+      "tag": "0008_block_d_pin_attempts_persist",
+      "breakpoints": true
     }
   ]
 }
