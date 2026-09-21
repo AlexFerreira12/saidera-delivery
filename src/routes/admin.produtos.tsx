@@ -503,6 +503,139 @@ function AdminProducts() {
   );
 }
 
+type EditForm = {
+  name: string;
+  price: string;
+  category_id: string;
+  volume: string;
+  barcode: string;
+};
+
+function EditProductDialog({
+  product,
+  form,
+  saving,
+  categories,
+  onChange,
+  onCancel,
+  onSubmit,
+}: {
+  product: AdminProduct;
+  form: EditForm;
+  saving: boolean;
+  categories: { id: string; name: string }[];
+  onChange: (form: EditForm) => void;
+  onCancel: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+}) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    cancelRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !saving) onCancel();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onCancel, saving]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-4 sm:items-center"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && !saving) onCancel();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-product-title"
+        className="w-full max-w-sm rounded-2xl bg-card p-4 shadow-lg"
+      >
+        <h2 id="edit-product-title" className="font-display text-base font-extrabold">
+          Editar {product.name}
+        </h2>
+        <form onSubmit={onSubmit} className="mt-3 space-y-3">
+          <label className="block space-y-1">
+            <span className="text-xs font-semibold text-muted-foreground">Nome do produto</span>
+            <input
+              value={form.name}
+              onChange={(e) => onChange({ ...form, name: e.target.value })}
+              className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block space-y-1">
+              <span className="text-xs font-semibold text-muted-foreground">Preço</span>
+              <input
+                value={form.price}
+                onChange={(e) => onChange({ ...form, price: e.target.value })}
+                inputMode="decimal"
+                className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-xs font-semibold text-muted-foreground">Volume</span>
+              <input
+                value={form.volume}
+                onChange={(e) => onChange({ ...form, volume: e.target.value })}
+                className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
+              />
+            </label>
+          </div>
+          <label className="block space-y-1">
+            <span className="text-xs font-semibold text-muted-foreground">
+              Código de barras (EAN/GTIN)
+            </span>
+            <input
+              value={form.barcode}
+              onChange={(e) => onChange({ ...form, barcode: e.target.value })}
+              inputMode="numeric"
+              placeholder="Ex.: 7891234567890"
+              aria-label="Código de barras do produto"
+              className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs font-semibold text-muted-foreground">Categoria</span>
+            <select
+              value={form.category_id}
+              onChange={(e) => onChange({ ...form, category_id: e.target.value })}
+              className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
+            >
+              <option value="">Sem categoria</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              ref={cancelRef}
+              type="button"
+              onClick={onCancel}
+              disabled={saving}
+              className="min-h-11 rounded-xl border border-border px-4 text-sm font-bold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground disabled:opacity-50"
+            >
+              {saving ? "Salvando…" : "Salvar"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function candidateLines(candidate: ImageCandidate): string {
   return [candidate.name, candidate.brand].filter(Boolean).join(" · ");
 }
