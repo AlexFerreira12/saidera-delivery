@@ -159,10 +159,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "combo_items_combo_id_fkey"
+            columns: ["combo_id"]
+            isOneToOne: false
+            referencedRelation: "products_admin"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "combo_items_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "combo_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_admin"
             referencedColumns: ["id"]
           },
         ]
@@ -395,6 +409,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_admin"
+            referencedColumns: ["id"]
+          },
         ]
       }
       loyalty_accounts: {
@@ -530,6 +551,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_admin"
             referencedColumns: ["id"]
           },
         ]
@@ -724,6 +752,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_admin"
+            referencedColumns: ["id"]
+          },
         ]
       }
       products: {
@@ -893,6 +928,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "promotions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_admin"
+            referencedColumns: ["id"]
+          },
         ]
       }
       store_settings: {
@@ -969,7 +1011,92 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      products_admin: {
+        Row: {
+          barcode: string | null
+          brand: string | null
+          category_id: string | null
+          combo_original_price: number | null
+          cost: number | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          is_combo: boolean | null
+          is_featured: boolean | null
+          min_stock: number | null
+          name: string | null
+          price: number | null
+          promo_price: number | null
+          sku: string | null
+          slug: string | null
+          stock: number | null
+          temperature: string | null
+          unit: string | null
+          updated_at: string | null
+          volume: string | null
+        }
+        Insert: {
+          barcode?: string | null
+          brand?: string | null
+          category_id?: string | null
+          combo_original_price?: number | null
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_combo?: boolean | null
+          is_featured?: boolean | null
+          min_stock?: number | null
+          name?: string | null
+          price?: number | null
+          promo_price?: number | null
+          sku?: string | null
+          slug?: string | null
+          stock?: number | null
+          temperature?: string | null
+          unit?: string | null
+          updated_at?: string | null
+          volume?: string | null
+        }
+        Update: {
+          barcode?: string | null
+          brand?: string | null
+          category_id?: string | null
+          combo_original_price?: number | null
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          is_combo?: boolean | null
+          is_featured?: boolean | null
+          min_stock?: number | null
+          name?: string | null
+          price?: number | null
+          promo_price?: number | null
+          sku?: string | null
+          slug?: string | null
+          stock?: number | null
+          temperature?: string | null
+          unit?: string | null
+          updated_at?: string | null
+          volume?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_delivery: { Args: { p_order_id: string }; Returns: Json }
@@ -994,6 +1121,10 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_order_driver: { Args: { _order_id: string }; Returns: boolean }
+      preview_coupon: {
+        Args: { p_code: string; p_subtotal: number }
+        Returns: Json
+      }
       set_order_status: {
         Args: { p_order_id: string; p_status: string }
         Returns: Json
