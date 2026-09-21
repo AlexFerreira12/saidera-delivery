@@ -1,13 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type StockKind =
-  | "saldo_inicial"
-  | "entrada"
-  | "venda"
-  | "cancelamento"
-  | "ajuste"
-  | "perda"
-  | "inventario";
+  "saldo_inicial" | "entrada" | "venda" | "cancelamento" | "ajuste" | "perda" | "inventario";
 
 export const STOCK_KIND_LABEL: Record<StockKind, string> = {
   saldo_inicial: "Saldo inicial",
