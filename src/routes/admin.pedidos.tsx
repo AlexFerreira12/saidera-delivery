@@ -184,10 +184,16 @@ function AdminOrders() {
                   </li>
                 ))}
               </ul>
+              <p className="text-xs text-muted-foreground">
+                Entregador: {driverName(o.driver_id) ?? "não atribuído"}
+                {o.status === "entregue" && o.delivery_confirmed_by === "admin"
+                  ? " · entrega confirmada pelo administrador"
+                  : ""}
+              </p>
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="font-display text-sm font-bold">{brl(o.total)}</span>
                 <span className="text-xs text-muted-foreground">{o.payment_method}</span>
-                <div className="ml-auto flex gap-2">
+                <div className="ml-auto flex flex-wrap gap-2">
                   {o.status !== "cancelado" && o.status !== "entregue" && (
                     <button
                       type="button"
@@ -197,7 +203,34 @@ function AdminOrders() {
                       Cancelar
                     </button>
                   )}
-                  {next && (
+                  {!["entregue", "cancelado"].includes(o.status) && (
+                    <button
+                      type="button"
+                      onClick={() => assign(o.id)}
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold"
+                    >
+                      {o.driver_id ? "Reatribuir" : "Atribuir"}
+                    </button>
+                  )}
+                  {o.driver_id && !["entregue", "cancelado"].includes(o.status) && (
+                    <button
+                      type="button"
+                      onClick={() => unassign(o.id)}
+                      className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold"
+                    >
+                      Remover entregador
+                    </button>
+                  )}
+                  {o.status === "saiu_para_entrega" && (
+                    <button
+                      type="button"
+                      onClick={() => forceDeliver(o.id)}
+                      className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
+                    >
+                      Entregue sem código
+                    </button>
+                  )}
+                  {next && next !== "entregue" && (
                     <button
                       type="button"
                       onClick={() => setStatus(o.id, next)}
