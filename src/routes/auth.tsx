@@ -10,7 +10,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Entrar ou criar conta — Bebidas Guariba" },
-      { name: "description", content: "Acesse sua conta para pedir bebidas com entrega rápida em Guariba/SP." },
+      {
+        name: "description",
+        content: "Acesse sua conta para pedir bebidas com entrega rápida em Guariba/SP.",
+      },
       { property: "og:title", content: "Entrar — Bebidas Guariba" },
       { property: "og:description", content: "Crie sua conta e peça em poucos toques." },
     ],
@@ -36,10 +39,22 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        if (!form.full_name.trim()) { toast.error("Informe seu nome completo."); return; }
-        if (!isValidCPF(form.cpf)) { toast.error("CPF inválido."); return; }
-        if (!isValidPhone(form.phone)) { toast.error("Telefone inválido."); return; }
-        if (form.password.length < 6) { toast.error("A senha precisa ter ao menos 6 caracteres."); return; }
+        if (!form.full_name.trim()) {
+          toast.error("Informe seu nome completo.");
+          return;
+        }
+        if (!isValidCPF(form.cpf)) {
+          toast.error("CPF inválido.");
+          return;
+        }
+        if (!isValidPhone(form.phone)) {
+          toast.error("Telefone inválido.");
+          return;
+        }
+        if (form.password.length < 6) {
+          toast.error("A senha precisa ter ao menos 6 caracteres.");
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email: form.email.trim(),
           password: form.password,
@@ -67,8 +82,13 @@ function AuthPage() {
   };
 
   const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (result.error) { toast.error("Não foi possível entrar com Google."); return; }
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) {
+      toast.error("Não foi possível entrar com Google.");
+      return;
+    }
     if (result.redirected) return;
     void navigate({ to: "/" });
   };
@@ -82,18 +102,39 @@ function AuthPage() {
         <h1 className="mt-6 font-display text-2xl font-extrabold">
           {mode === "login" ? "Entrar na sua conta" : "Criar conta"}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Bebidas geladas entregues em Guariba/SP.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Bebidas geladas entregues em Guariba/SP.
+        </p>
 
         <form onSubmit={submit} className="mt-6 space-y-3">
           {mode === "signup" && (
             <>
-              <Field label="Nome completo" value={form.full_name} onChange={(v) => set("full_name", v)} />
-              <Field label="CPF" value={form.cpf} onChange={(v) => set("cpf", maskCPF(v))} inputMode="numeric" />
-              <Field label="Telefone" value={form.phone} onChange={(v) => set("phone", maskPhone(v))} inputMode="tel" />
+              <Field
+                label="Nome completo"
+                value={form.full_name}
+                onChange={(v) => set("full_name", v)}
+              />
+              <Field
+                label="CPF"
+                value={form.cpf}
+                onChange={(v) => set("cpf", maskCPF(v))}
+                inputMode="numeric"
+              />
+              <Field
+                label="Telefone"
+                value={form.phone}
+                onChange={(v) => set("phone", maskPhone(v))}
+                inputMode="tel"
+              />
             </>
           )}
           <Field label="E-mail" type="email" value={form.email} onChange={(v) => set("email", v)} />
-          <Field label="Senha" type="password" value={form.password} onChange={(v) => set("password", v)} />
+          <Field
+            label="Senha"
+            type="password"
+            value={form.password}
+            onChange={(v) => set("password", v)}
+          />
           <button
             type="submit"
             disabled={loading}

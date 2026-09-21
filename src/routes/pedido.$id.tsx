@@ -11,7 +11,10 @@ export const Route = createFileRoute("/pedido/$id")({
   head: () => ({
     meta: [
       { title: "Acompanhar pedido — Bebidas Guariba" },
-      { name: "description", content: "Acompanhe em tempo real o status da sua entrega em Guariba/SP." },
+      {
+        name: "description",
+        content: "Acompanhe em tempo real o status da sua entrega em Guariba/SP.",
+      },
       { property: "og:title", content: "Acompanhar pedido — Bebidas Guariba" },
       { property: "og:description", content: "Status em tempo real do seu pedido." },
     ],
@@ -32,7 +35,12 @@ export type OrderRow = {
   notes: string | null;
   eta_minutes: number | null;
   created_at: string;
-  address_snapshot: { street?: string; number?: string; neighborhood?: string; complement?: string } | null;
+  address_snapshot: {
+    street?: string;
+    number?: string;
+    neighborhood?: string;
+    complement?: string;
+  } | null;
   customer_name: string | null;
   customer_phone: string | null;
   order_items?: {
@@ -58,14 +66,21 @@ export async function fetchOrder(id: string) {
 function OrderPage() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
-  const { data: order, isLoading } = useQuery({ queryKey: ["order", id], queryFn: () => fetchOrder(id) });
+  const { data: order, isLoading } = useQuery({
+    queryKey: ["order", id],
+    queryFn: () => fetchOrder(id),
+  });
 
   useEffect(() => {
     const channel = supabase
       .channel(`order-${id}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${id}` }, () => {
-        void qc.invalidateQueries({ queryKey: ["order", id] });
-      })
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${id}` },
+        () => {
+          void qc.invalidateQueries({ queryKey: ["order", id] });
+        },
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
@@ -119,7 +134,10 @@ function OrderPage() {
               ORDER_FLOW.map((s, i) => {
                 const done = i <= current;
                 return (
-                  <li key={s} className={`flex items-center gap-2 text-sm ${done ? "" : "text-muted-foreground"}`}>
+                  <li
+                    key={s}
+                    className={`flex items-center gap-2 text-sm ${done ? "" : "text-muted-foreground"}`}
+                  >
                     {done ? (
                       <CheckCircle2 className="h-4 w-4 text-success" />
                     ) : (
@@ -148,7 +166,9 @@ function OrderPage() {
           <div className="mt-3 space-y-1 border-t border-border pt-3 text-sm">
             <Row label="Subtotal" value={brl(order.subtotal)} />
             <Row label="Entrega" value={brl(order.delivery_fee)} />
-            {Number(order.discount) > 0 && <Row label="Desconto" value={`- ${brl(order.discount)}`} />}
+            {Number(order.discount) > 0 && (
+              <Row label="Desconto" value={`- ${brl(order.discount)}`} />
+            )}
             <div className="flex justify-between font-display text-base font-bold">
               <span>Total</span>
               <span>{brl(order.total)}</span>

@@ -11,7 +11,10 @@ export const Route = createFileRoute("/favoritos")({
   head: () => ({
     meta: [
       { title: "Favoritos — Bebidas Guariba" },
-      { name: "description", content: "Suas bebidas favoritas salvas para pedir em poucos toques." },
+      {
+        name: "description",
+        content: "Suas bebidas favoritas salvas para pedir em poucos toques.",
+      },
       { property: "og:title", content: "Favoritos — Bebidas Guariba" },
       { property: "og:description", content: "Seus produtos favoritos em um só lugar." },
     ],

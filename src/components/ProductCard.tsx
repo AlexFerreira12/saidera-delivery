@@ -7,9 +7,22 @@ import { useCart } from "@/hooks/useCart";
 import { toCartItem, type Product } from "@/lib/catalog";
 import { toast } from "sonner";
 
-export function ProductImage({ product, className = "" }: { product: Product; className?: string }) {
+export function ProductImage({
+  product,
+  className = "",
+}: {
+  product: Product;
+  className?: string;
+}) {
   if (product.image_url) {
-    return <img src={product.image_url} alt={product.name} loading="lazy" className={`object-cover ${className}`} />;
+    return (
+      <img
+        src={product.image_url}
+        alt={product.name}
+        loading="lazy"
+        className={`object-cover ${className}`}
+      />
+    );
   }
   return (
     <div className={`grid place-items-center bg-secondary ${className}`}>
@@ -32,9 +45,13 @@ export function ProductCard({
   const cart = useCart();
   const qty = cart.quantityOf(product.id);
   const price = basePrice({ price: Number(product.price), promo_price: product.promo_price });
-  const hasPromo = product.promo_price != null && Number(product.promo_price) < Number(product.price);
+  const hasPromo =
+    product.promo_price != null && Number(product.promo_price) < Number(product.price);
   const tiers = (product.promotions ?? []) as PriceTier[];
-  const hint = nextTierHint({ price: Number(product.price), promo_price: product.promo_price, tiers }, qty);
+  const hint = nextTierHint(
+    { price: Number(product.price), promo_price: product.promo_price, tiers },
+    qty,
+  );
   const soldOut = product.stock <= 0;
 
   return (
@@ -46,7 +63,9 @@ export function ProductCard({
           onClick={() => onToggleFavorite(product.id)}
           className="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-card/90 shadow-card"
         >
-          <Heart className={`h-4 w-4 ${isFavorite ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+          <Heart
+            className={`h-4 w-4 ${isFavorite ? "fill-primary text-primary" : "text-muted-foreground"}`}
+          />
         </button>
       )}
       <Link to="/produto/$slug" params={{ slug: product.slug ?? product.id }} className="block">
@@ -72,7 +91,9 @@ export function ProductCard({
       <div className="mt-auto space-y-2 p-3 pt-1">
         <div className="flex items-baseline gap-2">
           <span className="font-display text-lg font-bold">{brl(price)}</span>
-          {hasPromo && <span className="text-xs text-muted-foreground line-through">{brl(product.price)}</span>}
+          {hasPromo && (
+            <span className="text-xs text-muted-foreground line-through">{brl(product.price)}</span>
+          )}
         </div>
         {hint && (
           <p className="text-[11px] font-medium text-success">

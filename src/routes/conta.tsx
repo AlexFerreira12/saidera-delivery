@@ -9,7 +9,10 @@ export const Route = createFileRoute("/conta")({
   head: () => ({
     meta: [
       { title: "Minha conta — Bebidas Guariba" },
-      { name: "description", content: "Gerencie seus dados, endereços e pedidos na distribuidora de Guariba/SP." },
+      {
+        name: "description",
+        content: "Gerencie seus dados, endereços e pedidos na distribuidora de Guariba/SP.",
+      },
       { property: "og:title", content: "Minha conta — Bebidas Guariba" },
       { property: "og:description", content: "Seus dados, endereços e pedidos." },
     ],

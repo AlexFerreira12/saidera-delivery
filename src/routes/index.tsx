@@ -4,7 +4,13 @@ import { useState } from "react";
 import { MapPin, Search, ShoppingBag, User, Clock, Store } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { ProductCard } from "@/components/ProductCard";
-import { fetchBanners, fetchCategories, fetchProducts, fetchStoreSettings, type Product } from "@/lib/catalog";
+import {
+  fetchBanners,
+  fetchCategories,
+  fetchProducts,
+  fetchStoreSettings,
+  type Product,
+} from "@/lib/catalog";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +44,10 @@ function Home() {
   const { data: store } = useQuery({ queryKey: ["store"], queryFn: fetchStoreSettings });
   const { data: banners } = useQuery({ queryKey: ["banners"], queryFn: fetchBanners });
   const { data: categories } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
-  const { data: products, isLoading } = useQuery({ queryKey: ["products"], queryFn: () => fetchProducts() });
+  const { data: products, isLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => fetchProducts(),
+  });
 
   const { data: address } = useQuery({
     queryKey: ["default-address", user?.id],
@@ -67,7 +76,10 @@ function Home() {
         .limit(5);
       const ids = (orders ?? []).map((o) => o.id);
       if (!ids.length) return [] as string[];
-      const { data: items } = await supabase.from("order_items").select("product_id").in("order_id", ids);
+      const { data: items } = await supabase
+        .from("order_items")
+        .select("product_id")
+        .in("order_id", ids);
       return [...new Set((items ?? []).map((i) => i.product_id).filter(Boolean))] as string[];
     },
   });
@@ -84,7 +96,9 @@ function Home() {
       <header className="brand-gradient rounded-b-3xl px-4 pb-5 pt-4 text-primary-foreground">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-display text-lg font-extrabold leading-none">{store?.store_name ?? "Bebidas Guariba"}</p>
+            <p className="font-display text-lg font-extrabold leading-none">
+              {store?.store_name ?? "Bebidas Guariba"}
+            </p>
             <button
               type="button"
               onClick={() => navigate({ to: user ? "/enderecos" : "/auth" })}
@@ -97,10 +111,18 @@ function Home() {
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/conta" aria-label="Minha conta" className="grid h-10 w-10 place-items-center rounded-full bg-white/15">
+            <Link
+              to="/conta"
+              aria-label="Minha conta"
+              className="grid h-10 w-10 place-items-center rounded-full bg-white/15"
+            >
               <User className="h-5 w-5" />
             </Link>
-            <Link to="/carrinho" aria-label="Carrinho" className="relative grid h-10 w-10 place-items-center rounded-full bg-white/15">
+            <Link
+              to="/carrinho"
+              aria-label="Carrinho"
+              className="relative grid h-10 w-10 place-items-center rounded-full bg-white/15"
+            >
               <ShoppingBag className="h-5 w-5" />
               {cart.count > 0 && (
                 <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
@@ -126,15 +148,17 @@ function Home() {
             <Clock className="h-3.5 w-3.5" /> {store?.avg_delivery_minutes ?? 35} min
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1">
-            <Store className="h-3.5 w-3.5" /> {store?.is_open === false ? "Loja fechada" : "Loja aberta"}
+            <Store className="h-3.5 w-3.5" />{" "}
+            {store?.is_open === false ? "Loja fechada" : "Loja aberta"}
           </span>
         </div>
       </header>
 
       {store?.is_open === false && (
         <p className="mx-4 mt-3 rounded-xl bg-warning/15 p-3 text-xs font-medium text-warning-foreground">
-          Estamos fechados no momento. Horário de funcionamento: {store.opening_hours ?? "consulte a loja"}. Você pode
-          montar seu carrinho e finalizar quando abrirmos.
+          Estamos fechados no momento. Horário de funcionamento:{" "}
+          {store.opening_hours ?? "consulte a loja"}. Você pode montar seu carrinho e finalizar
+          quando abrirmos.
         </p>
       )}
 
@@ -182,12 +206,17 @@ function Home() {
           )}
 
           <Section title="Todos os produtos">
-            <ProductGrid products={list} loading={isLoading} empty="Nenhum produto cadastrado ainda." />
+            <ProductGrid
+              products={list}
+              loading={isLoading}
+              empty="Nenhum produto cadastrado ainda."
+            />
           </Section>
         </>
       )}
       <p className="px-4 pb-4 pt-2 text-center text-[11px] text-muted-foreground">
-        Olá{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Entregamos em Guariba/SP.
+        Olá{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}! Entregamos em
+        Guariba/SP.
       </p>
     </AppShell>
   );
@@ -220,7 +249,8 @@ export function ProductGrid({
       </div>
     );
   }
-  if (!products.length) return <p className="py-6 text-center text-sm text-muted-foreground">{empty}</p>;
+  if (!products.length)
+    return <p className="py-6 text-center text-sm text-muted-foreground">{empty}</p>;
   return (
     <div className="grid grid-cols-2 gap-3">
       {products.map((p) => (

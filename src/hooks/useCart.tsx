@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { lineTotal, unitPriceFor, type PriceTier } from "@/lib/pricing";
 
 export type CartItem = {
@@ -54,7 +62,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id ? { ...i, ...item, quantity: Math.min(i.quantity + quantity, Math.max(item.stock, 1)) } : i,
+          i.id === item.id
+            ? { ...i, ...item, quantity: Math.min(i.quantity + quantity, Math.max(item.stock, 1)) }
+            : i,
         );
       }
       return [...prev, { ...item, quantity }];
@@ -63,23 +73,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const setQuantity = useCallback((id: string, quantity: number) => {
     setItems((prev) =>
-      quantity <= 0 ? prev.filter((i) => i.id !== id) : prev.map((i) => (i.id === id ? { ...i, quantity } : i)),
+      quantity <= 0
+        ? prev.filter((i) => i.id !== id)
+        : prev.map((i) => (i.id === id ? { ...i, quantity } : i)),
     );
   }, []);
 
   const increment = useCallback((id: string) => {
     setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, quantity: Math.min(i.quantity + 1, Math.max(i.stock, 1)) } : i)),
+      prev.map((i) =>
+        i.id === id ? { ...i, quantity: Math.min(i.quantity + 1, Math.max(i.stock, 1)) } : i,
+      ),
     );
   }, []);
 
   const decrement = useCallback((id: string) => {
     setItems((prev) =>
-      prev.flatMap((i) => (i.id === id ? (i.quantity <= 1 ? [] : [{ ...i, quantity: i.quantity - 1 }]) : [i])),
+      prev.flatMap((i) =>
+        i.id === id ? (i.quantity <= 1 ? [] : [{ ...i, quantity: i.quantity - 1 }]) : [i],
+      ),
     );
   }, []);
 
-  const remove = useCallback((id: string) => setItems((prev) => prev.filter((i) => i.id !== id)), []);
+  const remove = useCallback(
+    (id: string) => setItems((prev) => prev.filter((i) => i.id !== id)),
+    [],
+  );
   const clear = useCallback(() => setItems([]), []);
 
   const value = useMemo<CartContextValue>(() => {

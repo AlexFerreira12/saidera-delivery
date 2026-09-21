@@ -12,7 +12,10 @@ export const Route = createFileRoute("/pedidos")({
   head: () => ({
     meta: [
       { title: "Meus pedidos — Bebidas Guariba" },
-      { name: "description", content: "Histórico de pedidos e status das suas entregas em Guariba/SP." },
+      {
+        name: "description",
+        content: "Histórico de pedidos e status das suas entregas em Guariba/SP.",
+      },
       { property: "og:title", content: "Meus pedidos — Bebidas Guariba" },
       { property: "og:description", content: "Acompanhe seu histórico de pedidos." },
     ],
@@ -47,7 +50,9 @@ function OrdersPage() {
       <PageHeader title="Meus pedidos" />
       <div className="space-y-3 p-4">
         {orders?.length === 0 && (
-          <p className="py-16 text-center text-sm text-muted-foreground">Você ainda não fez nenhum pedido.</p>
+          <p className="py-16 text-center text-sm text-muted-foreground">
+            Você ainda não fez nenhum pedido.
+          </p>
         )}
         {(orders ?? []).map((o) => (
           <Link
@@ -59,7 +64,9 @@ function OrdersPage() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">Pedido #{o.order_number}</p>
               <p className="text-xs text-muted-foreground">{dateTimeBR(o.created_at)}</p>
-              <p className="mt-1 text-xs font-semibold text-primary">{STATUS_LABEL[o.status] ?? o.status}</p>
+              <p className="mt-1 text-xs font-semibold text-primary">
+                {STATUS_LABEL[o.status] ?? o.status}
+              </p>
             </div>
             <span className="font-display text-sm font-bold">{brl(o.total)}</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
