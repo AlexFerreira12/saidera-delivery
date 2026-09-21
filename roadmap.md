@@ -26,6 +26,6 @@
 - [x] Busca por GTIN no Open Food Facts (server-side, dígito verificador, correspondência exata)
 - [x] Importação protegida p/ bucket catalogo (HTTPS + hosts permitidos, 3 MB, magic bytes) + proveniência (tabela product_image_provenance)
 - [x] Admin > Produtos: busca individual com confirmação, lote só p/ produtos sem imagem, campo código de barras no cadastro
-- [x] Diagnóstico do erro de download: causa é a rede deste ambiente (sandbox/preview), que bloqueia images.openfoodfacts.org; código correto — funciona no site publicado. Resumo do lote agora mostra nome do produto + motivo amigável por erro
-- [ ] Validar uma aplicação real de imagem (download → storage) após publicar, em ambiente com acesso liberado ao provedor
-- [ ] Sandbox não alcança images.openfoodfacts.org — validar 1 aplicação real após publicar
+- [x] Diagnóstico do erro de download: rede do sandbox bloqueia images.openfoodfacts.org; código correto. Resumo do lote mostra produto + motivo amigável
+- [x] Fallback oficial: cadeia .org → espelho images.openfoodfacts.net → foto original por imgid; estado "imagem inalcançável" quando nenhum caminho responde; validado ponta a ponta no preview (download → storage → proveniência)
+- [ ] Validar 1 aplicação real após publicar (imagem frontal atual só existe no host primário, bloqueado no sandbox)

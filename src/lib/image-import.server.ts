@@ -32,7 +32,11 @@ export function isAllowedImageUrl(raw: string): boolean {
 
 type DownloadedImage = { bytes: Uint8Array; ext: "jpg" | "png" | "webp"; contentType: string };
 
-/** Baixa uma imagem remota com todas as proteções. Lança Error com código sanitizado. */
+/**
+ * Baixa uma imagem remota com todas as proteções. Lança Error com código sanitizado.
+ * Falha de rede/timeout vira PROVEDOR_IMAGEM_INALCANCAVEL (estado específico de
+ * "provider_image_unreachable"), distinto de erro HTTP ou de validação de arquivo.
+ */
 export async function downloadImageGuarded(url: string): Promise<DownloadedImage> {
   if (!isAllowedImageUrl(url)) throw new Error("URL_NAO_PERMITIDA");
 
@@ -44,10 +48,11 @@ export async function downloadImageGuarded(url: string): Promise<DownloadedImage
       redirect: "follow",
     });
   } catch {
-    throw new Error("DOWNLOAD_FALHOU");
+    throw new Error("PROVEDOR_IMAGEM_INALCANCAVEL");
   }
   // Revalida o host final após redirects — um redirect não pode sair da allowlist.
-  if (!res.ok || !isAllowedImageUrl(res.url || url)) throw new Error("DOWNLOAD_FALHOU");
+  if (!isAllowedImageUrl(res.url || url)) throw new Error("DOWNLOAD_FALHOU");
+  if (!res.ok) throw new Error("DOWNLOAD_FALHOU");
 
   const declaredLength = Number(res.headers.get("content-length") ?? 0);
   if (declaredLength > MAX_IMAGE_BYTES) throw new Error("ARQUIVO_GRANDE");
@@ -62,6 +67,33 @@ export async function downloadImageGuarded(url: string): Promise<DownloadedImage
   const ext = sniffImageType(bytes);
   if (!ext) throw new Error("TIPO_INVALIDO");
   return { bytes, ext, contentType: IMAGE_MIME_BY_EXT[ext] };
+}
+
+/**
+ * Erros em que faz sentido tentar a próxima URL oficial da cadeia.
+ * Erros de validação (MIME, assinatura, tamanho, URL) abortam a cadeia:
+ * o arquivo foi alcançado e é inválido — tentar outro caminho não ajudaria.
+ */
+const CHAIN_RETRYABLE = new Set(["PROVEDOR_IMAGEM_INALCANCAVEL", "DOWNLOAD_FALHOU"]);
+
+/**
+ * Tenta baixar a imagem pelas URLs oficiais em ordem (primária → espelhos).
+ * Se nenhuma funcionar, relata PROVEDOR_IMAGEM_INALCANCAVEL quando houve
+ * falha de rede/timeout; caso contrário, o último erro de download.
+ */
+export async function downloadFirstReachableImage(urls: string[]): Promise<DownloadedImage> {
+  const unique = [...new Set(urls.filter((u) => typeof u === "string" && u.length > 0))];
+  let sawUnreachable = false;
+  for (const url of unique) {
+    try {
+      return await downloadImageGuarded(url);
+    } catch (err) {
+      const code = err instanceof Error ? err.message : "DOWNLOAD_FALHOU";
+      if (!CHAIN_RETRYABLE.has(code)) throw err;
+      if (code === "PROVEDOR_IMAGEM_INALCANCAVEL") sawUnreachable = true;
+    }
+  }
+  throw new Error(sawUnreachable ? "PROVEDOR_IMAGEM_INALCANCAVEL" : "DOWNLOAD_FALHOU");
 }
 
 async function getAdminClient() {
@@ -123,7 +155,11 @@ export async function applyProductImageById(
 
   let image: DownloadedImage;
   try {
-    image = await downloadImageGuarded(candidate.imageUrl ?? "");
+    // Cadeia oficial: URL primária → espelho oficial → foto original (imgid) no espelho.
+    image = await downloadFirstReachableImage([
+      candidate.imageUrl ?? "",
+      ...(candidate.fallbackImageUrls ?? []),
+    ]);
   } catch (err) {
     return { status: "error", message: err instanceof Error ? err.message : "DOWNLOAD_FALHOU" };
   }

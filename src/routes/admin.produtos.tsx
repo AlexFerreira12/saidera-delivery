@@ -692,6 +692,16 @@ function ImageSearchDialog({
             <img
               src={result.candidate.imageUrl ?? ""}
               alt={result.candidate.name ?? "Imagem encontrada"}
+              onError={(e) => {
+                // Pré-visualização: tenta as URLs oficiais alternativas (espelho OFF).
+                const fallbacks = result.candidate.fallbackImageUrls ?? [];
+                const img = e.currentTarget;
+                const next = Number(img.dataset["fbIndex"] ?? 0);
+                if (next < fallbacks.length) {
+                  img.dataset["fbIndex"] = String(next + 1);
+                  img.src = fallbacks[next] ?? "";
+                }
+              }}
               className="mx-auto h-32 w-32 rounded-xl border border-border bg-card object-contain"
             />
             <p className="text-center text-xs text-muted-foreground">

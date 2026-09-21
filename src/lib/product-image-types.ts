@@ -8,6 +8,12 @@ export type ImageCandidate = {
   name: string | null;
   brand: string | null;
   imageUrl: string | null;
+  /**
+   * URLs oficiais alternativas (somente domínios do Open Food Facts), tentadas
+   * em ordem quando imageUrl falha: mesmo caminho no espelho oficial e a foto
+   * original (imgid) que gerou a imagem frontal selecionada.
+   */
+  fallbackImageUrls?: string[] | undefined;
   match: "exact";
 };
 
