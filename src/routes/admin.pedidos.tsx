@@ -83,6 +83,49 @@ function AdminOrders() {
     }
   };
 
+  const { data: driversData } = useQuery({
+    queryKey: ["admin", "drivers"],
+    queryFn: fetchAdminDrivers,
+  });
+  const drivers = (driversData?.drivers ?? []).filter((d) => d.is_active);
+  const driverName = (id: string | null) =>
+    id ? (driversData?.drivers ?? []).find((d) => d.id === id)?.name : null;
+
+  const runDelivery = async (fn: () => Promise<void>, success: string) => {
+    try {
+      await fn();
+      toast.success(success);
+      void qc.invalidateQueries({ queryKey: ["admin", "orders"] });
+    } catch (e) {
+      toast.error(deliveryErrorMessage(e));
+    }
+  };
+
+  const assign = (id: string) => {
+    if (drivers.length === 0) {
+      toast.error("Nenhum entregador ativo cadastrado.");
+      return;
+    }
+    const options = drivers.map((d, i) => `${i + 1} - ${d.name}`).join("\n");
+    const pick = prompt(`Atribuir a qual entregador?\n${options}`);
+    const index = Number(pick) - 1;
+    const chosen = drivers[index];
+    if (!chosen) return;
+    void runDelivery(() => adminAssignDriver(id, chosen.id), `Atribuído a ${chosen.name}.`);
+  };
+
+  const unassign = (id: string) => {
+    const reason = prompt("Motivo para remover a atribuição:");
+    if (!reason?.trim()) return;
+    void runDelivery(() => adminUnassignDriver(id, reason), "Atribuição removida.");
+  };
+
+  const forceDeliver = (id: string) => {
+    const reason = prompt("Motivo para marcar como entregue sem o código do cliente:");
+    if (!reason?.trim()) return;
+    void runDelivery(() => adminForceDeliver(id, reason), "Pedido marcado como entregue.");
+  };
+
   const list = (orders ?? []).filter((o) =>
     filter === "ativos" ? !["entregue", "cancelado"].includes(o.status) : o.status === filter,
   );
