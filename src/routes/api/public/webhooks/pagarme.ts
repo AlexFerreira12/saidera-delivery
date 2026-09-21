@@ -19,21 +19,22 @@ export const Route = createFileRoute("/api/public/webhooks/pagarme")({
           }
         }
 
-        let payload: any = null;
+        let payload: Record<string, unknown> | null = null;
         try {
           payload = await request.json();
         } catch {
           return new Response("Bad Request", { status: 400 });
         }
 
-        const eventId: string | null = payload?.id ?? null;
-        const eventType: string = payload?.type ?? "desconhecido";
-        const obj = payload?.data ?? {};
+        const eventId = (payload?.["id"] as string | undefined) ?? null;
+        const eventType = (payload?.["type"] as string | undefined) ?? "desconhecido";
+        const obj = (payload?.["data"] ?? {}) as Record<string, unknown>;
+        const charges = obj["charges"] as Array<Record<string, unknown>> | undefined;
         const chargeId: string | null =
-          obj?.object === "charge" || String(obj?.id ?? "").startsWith("ch_")
-            ? String(obj.id)
-            : Array.isArray(obj?.charges) && obj.charges[0]?.id
-              ? String(obj.charges[0].id)
+          obj["object"] === "charge" || String(obj["id"] ?? "").startsWith("ch_")
+            ? String(obj["id"])
+            : Array.isArray(charges) && charges[0]?.["id"]
+              ? String(charges[0]["id"])
               : null;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

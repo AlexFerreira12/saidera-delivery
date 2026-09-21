@@ -17,13 +17,30 @@ async function admin() {
   return supabaseAdmin;
 }
 
-async function prepare(db: any, orderId: string, userId: string | null) {
+type AdminDb = Awaited<ReturnType<typeof admin>>;
+
+type PrepareInfo = {
+  payment_id: string;
+  order_number: number;
+  status: string;
+  amount: number;
+  currency: string;
+  provider_charge_id: string | null;
+  expires_at: string | null;
+  qr_code: string | null;
+  copy_paste: string | null;
+  customer_name: string | null;
+  customer_phone: string | null;
+  live: boolean;
+};
+
+async function prepare(db: AdminDb, orderId: string, userId: string) {
   const { data, error } = await db.rpc("payment_prepare_charge", {
     p_order_id: orderId,
     p_user_id: userId,
   });
   if (error) throw new Error(error.message);
-  return data as any;
+  return data as unknown as PrepareInfo;
 }
 
 async function applyFromProvider(
@@ -137,7 +154,14 @@ export const syncPixPayment = createServerFn({ method: "POST" })
     return { status };
   });
 
-async function assertAdmin(context: any) {
+type AuthContext = {
+  userId: string;
+  supabase: {
+    rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
+  };
+};
+
+async function assertAdmin(context: AuthContext) {
   const { data, error } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",

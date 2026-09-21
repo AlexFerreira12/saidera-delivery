@@ -44,7 +44,7 @@ async function call(
     console.error("pagarme_error", res.status, path);
     throw new Error(`PAGARME_ERRO_${res.status}`);
   }
-  return json as Record<string, any>;
+  return (json ?? {}) as Record<string, unknown>;
 }
 
 export type PixCharge = {
@@ -98,16 +98,17 @@ export async function createPixOrder(input: {
     idempotencyKey: input.idempotencyKey,
   });
 
-  const charge = Array.isArray(data?.["charges"]) ? data["charges"][0] : null;
-  if (!charge?.id) throw new Error("PAGARME_SEM_COBRANCA");
-  const tx = charge.last_transaction ?? {};
+  const charges = data["charges"] as Array<Record<string, unknown>> | undefined;
+  const charge = Array.isArray(charges) ? charges[0] : undefined;
+  if (!charge?.["id"]) throw new Error("PAGARME_SEM_COBRANCA");
+  const tx = (charge["last_transaction"] ?? {}) as Record<string, unknown>;
   return {
     providerOrderId: String(data["id"] ?? ""),
-    providerChargeId: String(charge.id),
-    qrCode: tx.qr_code_url ?? null,
-    copyPaste: tx.qr_code ?? null,
-    expiresAt: tx.expires_at ?? null,
-    status: String(charge.status ?? "pending"),
+    providerChargeId: String(charge["id"]),
+    qrCode: (tx["qr_code_url"] as string | undefined) ?? null,
+    copyPaste: (tx["qr_code"] as string | undefined) ?? null,
+    expiresAt: (tx["expires_at"] as string | undefined) ?? null,
+    status: String(charge["status"] ?? "pending"),
   };
 }
 
