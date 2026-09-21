@@ -96,24 +96,20 @@ function Home() {
 
   return (
     <AppShell>
-      <header className="brand-gradient safe-top px-4 pb-5 pt-5 text-primary-foreground">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            {/* Logo oficial: usa /branding/saidera-logo.png quando o asset existir;
-                até lá, BrandLogo exibe o wordmark temporário automaticamente. */}
-            <BrandLogo size="md" variant="on-dark" withTagline />
-            <button
-              type="button"
-              onClick={() => navigate({ to: user ? "/enderecos" : "/auth" })}
-              className="mt-2 flex max-w-[220px] items-center gap-1 text-xs text-primary-foreground/70"
-            >
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" />
-              <span className="truncate">
-                {address ? `${address.street}, ${address.number}` : "Escolher endereço de entrega"}
-              </span>
-            </button>
-          </div>
-          <div className="flex items-center gap-2">
+      <header className="safe-top">
+        {/* Barra superior compacta: localização à esquerda, ações/carrinho à direita */}
+        <div className="brand-gradient flex items-center justify-between gap-3 px-4 py-3 text-primary-foreground">
+          <button
+            type="button"
+            onClick={() => navigate({ to: user ? "/enderecos" : "/auth" })}
+            className="flex min-w-0 max-w-[220px] items-center gap-1 text-xs text-primary-foreground/70"
+          >
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" />
+            <span className="truncate">
+              {address ? `${address.street}, ${address.number}` : "Escolher endereço de entrega"}
+            </span>
+          </button>
+          <div className="flex shrink-0 items-center gap-2">
             <Link
               to="/conta"
               aria-label="Minha conta"
@@ -136,14 +132,27 @@ function Home() {
           </div>
         </div>
 
-        <div className="shadow-card mt-4 flex h-12 items-center gap-2 rounded-xl bg-card px-4 text-foreground">
-          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar produtos"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        {/* Logo centralizado com respiro, entre a barra superior e a busca */}
+        <div className="flex justify-center px-4 py-7">
+          <BrandLogo
+            size="lg"
+            variant="on-light"
+            withTagline
+            className="h-auto w-[84%] max-w-[380px]"
           />
+        </div>
+
+        {/* Busca */}
+        <div className="px-4 pb-4">
+          <div className="shadow-card flex h-12 items-center gap-2 rounded-xl bg-card px-4 text-foreground">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar produtos"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
         </div>
       </header>
 
