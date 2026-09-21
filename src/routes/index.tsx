@@ -97,53 +97,56 @@ function Home() {
   return (
     <AppShell>
       <header className="safe-top">
-        {/* Barra superior compacta: localização à esquerda, ações/carrinho à direita */}
-        <div className="brand-gradient flex items-center justify-between gap-3 px-4 py-3 text-primary-foreground">
-          <button
-            type="button"
-            onClick={() => navigate({ to: user ? "/enderecos" : "/auth" })}
-            className="flex min-w-0 max-w-[220px] items-center gap-1 text-xs text-primary-foreground/70"
-          >
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" />
-            <span className="truncate">
-              {address ? `${address.street}, ${address.number}` : "Escolher endereço de entrega"}
-            </span>
-          </button>
-          <div className="flex shrink-0 items-center gap-2">
-            <Link
-              to="/conta"
-              aria-label="Minha conta"
-              className="grid h-10 w-10 place-items-center rounded-full border border-primary-foreground/20 bg-primary-foreground/5 text-primary-foreground"
+        {/* Cabeçalho escuro contínuo: barra superior + faixa do logo (fundo sólido, sem gradiente) */}
+        <div className="rounded-b-2xl bg-primary text-primary-foreground">
+          {/* Barra superior compacta: localização à esquerda, ações/carrinho à direita */}
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
+            <button
+              type="button"
+              onClick={() => navigate({ to: user ? "/enderecos" : "/auth" })}
+              className="flex min-w-0 max-w-[220px] items-center gap-1 text-xs text-primary-foreground/70"
             >
-              <User className="h-5 w-5" />
-            </Link>
-            <Link
-              to="/carrinho"
-              aria-label="Carrinho"
-              className="relative grid h-10 w-10 place-items-center rounded-full border border-primary-foreground/20 bg-primary-foreground/5 text-primary-foreground"
-            >
-              <ShoppingBag className="h-5 w-5" />
-              {cart.count > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
-                  {cart.count}
-                </span>
-              )}
-            </Link>
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-accent" />
+              <span className="truncate">
+                {address ? `${address.street}, ${address.number}` : "Escolher endereço de entrega"}
+              </span>
+            </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <Link
+                to="/conta"
+                aria-label="Minha conta"
+                className="grid h-10 w-10 place-items-center rounded-full border border-primary-foreground/20 bg-primary-foreground/5 text-primary-foreground"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+              <Link
+                to="/carrinho"
+                aria-label="Carrinho"
+                className="relative grid h-10 w-10 place-items-center rounded-full border border-primary-foreground/20 bg-primary-foreground/5 text-primary-foreground"
+              >
+                <ShoppingBag className="h-5 w-5" />
+                {cart.count > 0 && (
+                  <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground">
+                    {cart.count}
+                  </span>
+                )}
+              </Link>
+            </div>
+          </div>
+
+          {/* Logo centralizado com respiro, sobre o fundo grafite */}
+          <div className="flex justify-center px-4 pb-7 pt-2">
+            <BrandLogo
+              size="lg"
+              variant="on-dark"
+              withTagline
+              className="h-auto w-[84%] max-w-[380px]"
+            />
           </div>
         </div>
 
-        {/* Logo centralizado com respiro, entre a barra superior e a busca */}
-        <div className="flex justify-center px-4 py-7">
-          <BrandLogo
-            size="lg"
-            variant="on-light"
-            withTagline
-            className="h-auto w-[84%] max-w-[380px]"
-          />
-        </div>
-
-        {/* Busca */}
-        <div className="px-4 pb-4">
+        {/* Busca — transição para o conteúdo claro */}
+        <div className="px-4 pt-4">
           <div className="shadow-card flex h-12 items-center gap-2 rounded-xl bg-card px-4 text-foreground">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
