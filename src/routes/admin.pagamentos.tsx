@@ -17,7 +17,6 @@ import {
   Card,
   GhostButton,
   StateBlock,
-  StatusPill,
   inputClass,
 } from "@/components/admin/ui";
 
@@ -125,10 +124,17 @@ function AdminPayments() {
                   </p>
                 )}
               </div>
-              <StatusPill
-                label={PAYMENT_STATUS_LABEL[p.status] ?? p.status}
-                tone={p.status === "pago" ? "success" : p.status === "aguardando_pagamento" ? "warning" : "muted"}
-              />
+              <span
+                className={`shrink-0 rounded-lg px-2 py-1 text-[11px] font-bold ${
+                  p.status === "pago"
+                    ? "bg-success/15 text-success"
+                    : p.status === "aguardando_pagamento"
+                      ? "bg-primary/15 text-primary"
+                      : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {PAYMENT_STATUS_LABEL[p.status] ?? p.status}
+              </span>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
