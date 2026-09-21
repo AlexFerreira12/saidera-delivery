@@ -36,6 +36,13 @@
       "when": 1789961079653,
       "tag": "0004_block_c_stock_ledger",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789961467570,
+      "tag": "0005_block_c_stock_integrity",
+      "breakpoints": true
     }
   ]
 }

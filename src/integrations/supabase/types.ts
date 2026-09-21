@@ -1260,6 +1260,23 @@ export type Database = {
         Returns: Json
       }
       admin_unlink_driver: { Args: { p_driver_id: string }; Returns: Json }
+      apply_stock_change: {
+        Args: {
+          p_absolute?: number
+          p_actor?: string
+          p_cost_after?: number
+          p_cost_before?: number
+          p_delta: number
+          p_key?: string
+          p_kind: string
+          p_order_id?: string
+          p_product_id: string
+          p_reason?: string
+          p_source?: string
+          p_unit_cost?: number
+        }
+        Returns: Json
+      }
       can_view_order: { Args: { _order_id: string }; Returns: boolean }
       create_order: {
         Args: {
