@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCategories, fetchAdminProducts, type AdminProduct } from "@/lib/catalog";
 import { brl } from "@/lib/format";
+import { stockEntry, stockErrorMessage } from "@/lib/stock";
 
 export const Route = createFileRoute("/admin/produtos")({
   component: AdminProducts,
@@ -24,10 +25,7 @@ function AdminProducts() {
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin", "products"] });
 
-  const patch = async (
-    id: string,
-    values: { stock?: number; price?: number; is_active?: boolean },
-  ) => {
+  const patch = async (id: string, values: { price?: number; is_active?: boolean }) => {
     const { error } = await supabase.from("products").update(values).eq("id", id);
     if (error) toast.error("Não foi possível salvar.");
     else void refresh();
@@ -39,27 +37,40 @@ function AdminProducts() {
       toast.error("Informe nome e preço.");
       return;
     }
-    const { error } = await supabase.from("products").insert({
-      name: form.name,
-      slug: form.name
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, ""),
-      price: Number(form.price),
-      stock: Number(form.stock || 0),
-      volume: form.volume || null,
-      category_id: form.category_id || null,
-    });
-    if (error) {
+    const initialStock = Number(form.stock || 0);
+    const { data, error } = await supabase
+      .from("products")
+      .insert({
+        name: form.name,
+        slug: form.name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
+        price: Number(form.price),
+        stock: 0,
+        volume: form.volume || null,
+        category_id: form.category_id || null,
+      })
+      .select("id")
+      .single();
+    if (error || !data) {
       toast.error("Não foi possível criar o produto.");
       return;
+    }
+    if (initialStock > 0) {
+      try {
+        await stockEntry(data.id, initialStock, "Estoque inicial do cadastro");
+      } catch (err) {
+        toast.error(stockErrorMessage(err, "Produto criado, mas o estoque inicial falhou."));
+      }
     }
     toast.success("Produto criado!");
     setForm({ name: "", price: "", stock: "", category_id: "", volume: "" });
     setCreating(false);
     void refresh();
+    void qc.invalidateQueries({ queryKey: ["admin", "stock"] });
   };
 
   const list = ((products ?? []) as AdminProduct[]).filter((p) =>
@@ -147,13 +158,14 @@ function AdminProducts() {
                 )}
               </p>
             </div>
-            <input
-              type="number"
-              defaultValue={p.stock}
-              onBlur={(e) => patch(p.id, { stock: Number(e.target.value) })}
-              className="w-16 rounded-lg border border-input bg-card px-2 py-1 text-center text-sm outline-none"
-              aria-label={`Estoque de ${p.name}`}
-            />
+            <Link
+              to="/admin/estoque"
+              className="w-16 rounded-lg border border-input bg-muted px-2 py-1 text-center text-sm font-semibold"
+              aria-label={`Estoque de ${p.name}: ${p.stock}. Abrir tela de estoque`}
+            >
+              {p.stock}
+            </Link>
+
             <input
               type="number"
               step="0.01"
