@@ -16,7 +16,14 @@ function AdminProducts() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", price: "", stock: "", category_id: "", volume: "", image_url: "" });
+  const [form, setForm] = useState({
+    name: "",
+    price: "",
+    stock: "",
+    category_id: "",
+    volume: "",
+    image_url: "",
+  });
 
   const { data: products } = useQuery({
     queryKey: ["admin", "products"],

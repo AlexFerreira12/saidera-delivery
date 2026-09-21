@@ -11,7 +11,12 @@ const ALLOWED: Record<string, string> = {
 
 type AdminCtx = {
   userId: string;
-  supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => Promise<{ data: unknown; error: unknown }> };
+  supabase: {
+    rpc: (
+      fn: "has_role",
+      args: { _user_id: string; _role: "admin" },
+    ) => Promise<{ data: unknown; error: unknown }>;
+  };
 };
 
 async function assertAdmin(context: AdminCtx) {
@@ -25,7 +30,9 @@ async function assertAdmin(context: AdminCtx) {
 /** Envia uma imagem do catálogo. Só administrador; tipo e tamanho validados no servidor. */
 export const uploadCatalogImage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { folder: "produtos" | "banners"; contentType: string; dataBase64: string }) => input)
+  .inputValidator(
+    (input: { folder: "produtos" | "banners"; contentType: string; dataBase64: string }) => input,
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context as unknown as AdminCtx);
 
@@ -57,7 +64,8 @@ export const deleteCatalogImage = createServerFn({ method: "POST" })
     const prefix = "/api/public/imagem/";
     if (!data.url.startsWith(prefix)) return { removed: false };
     const path = data.url.slice(prefix.length);
-    if (!/^(produtos|banners)\/[A-Za-z0-9-]+\.(jpg|png|webp)$/.test(path)) return { removed: false };
+    if (!/^(produtos|banners)\/[A-Za-z0-9-]+\.(jpg|png|webp)$/.test(path))
+      return { removed: false };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.storage.from(BUCKET).remove([path]);
     return { removed: true };
@@ -69,7 +77,8 @@ function hasImageSignature(bytes: Uint8Array, ext: string) {
   if (ext === "png")
     return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
   if (ext === "webp") {
-    const tag = String.fromCharCode(...bytes.slice(0, 4)) + String.fromCharCode(...bytes.slice(8, 12));
+    const tag =
+      String.fromCharCode(...bytes.slice(0, 4)) + String.fromCharCode(...bytes.slice(8, 12));
     return tag === "RIFFWEBP";
   }
   return false;
