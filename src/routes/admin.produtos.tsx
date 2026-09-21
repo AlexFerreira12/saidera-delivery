@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchCategories, fetchProducts, type Product } from "@/lib/catalog";
+import { fetchCategories, fetchAdminProducts, type AdminProduct } from "@/lib/catalog";
 import { brl } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/produtos")({
@@ -18,7 +18,7 @@ function AdminProducts() {
 
   const { data: products } = useQuery({
     queryKey: ["admin", "products"],
-    queryFn: () => fetchProducts(),
+    queryFn: fetchAdminProducts,
   });
   const { data: categories } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
 
@@ -62,7 +62,7 @@ function AdminProducts() {
     void refresh();
   };
 
-  const list = ((products ?? []) as Product[]).filter((p) =>
+  const list = ((products ?? []) as AdminProduct[]).filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()),
   );
 

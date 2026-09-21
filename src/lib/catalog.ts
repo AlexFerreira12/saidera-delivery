@@ -21,9 +21,6 @@ export type Product = {
   is_combo: boolean;
   combo_original_price: number | null;
   category_id: string | null;
-  sku: string | null;
-  barcode: string | null;
-  cost: number | null;
   categories?: { name: string; slug: string } | null;
   promotions?: PriceTier[] | null;
 };
@@ -37,7 +34,10 @@ export type Category = {
   icon: string | null;
 };
 
-const PRODUCT_SELECT = "*, categories(name, slug), promotions(min_quantity, unit_price, label)";
+const PRODUCT_COLUMNS =
+  "id, category_id, name, slug, description, brand, volume, image_url, price, promo_price, stock, min_stock, unit, temperature, is_featured, is_active, is_combo, combo_original_price";
+
+const PRODUCT_SELECT = `${PRODUCT_COLUMNS}, categories(name, slug), promotions(min_quantity, unit_price, label)`;
 
 export const withTiers = (p: Product) => ({ ...p, tiers: (p.promotions ?? []) as PriceTier[] });
 
@@ -117,4 +117,20 @@ export function toCartItem(p: Product): Omit<CartItem, "quantity"> {
     stock: p.stock,
     tiers: (p.promotions ?? []) as PriceTier[],
   };
+}
+
+/** Campos administrativos (custo, SKU, código de barras) só ficam acessíveis ao admin. */
+export type AdminProduct = Product & {
+  sku: string | null;
+  barcode: string | null;
+  cost: number | null;
+};
+
+export async function fetchAdminProducts() {
+  const { data, error } = await supabase
+    .from("products_admin")
+    .select("*, categories(name, slug), promotions(min_quantity, unit_price, label)")
+    .order("name");
+  if (error) throw error;
+  return (data ?? []) as unknown as AdminProduct[];
 }
