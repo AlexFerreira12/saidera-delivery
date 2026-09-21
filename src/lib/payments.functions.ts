@@ -66,7 +66,6 @@ async function applyFromProvider(
       currency: String(charge?.["currency"] ?? ""),
       paid_at: String(charge?.["paid_at"] ?? ""),
     },
-
   });
   if (error) throw new Error(error.message);
   return status;
@@ -157,7 +156,6 @@ export const syncPixPayment = createServerFn({ method: "POST" })
   });
 
 async function assertAdmin(context: { userId: string; supabase: AdminDb }) {
-
   const { data, error } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
