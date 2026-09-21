@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchCategories, fetchAdminProducts, type AdminProduct } from "@/lib/catalog";
 import { brl } from "@/lib/format";
+import { stockEntry, stockErrorMessage } from "@/lib/stock";
 
 export const Route = createFileRoute("/admin/produtos")({
   component: AdminProducts,
