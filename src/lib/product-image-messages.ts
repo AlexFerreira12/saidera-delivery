@@ -23,7 +23,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 /** Traduz um código de erro sanitizado do servidor para texto amigável. */
 export function friendlyImageError(code: string | undefined): string {
   if (code && ERROR_MESSAGES[code]) return ERROR_MESSAGES[code];
-  return ERROR_MESSAGES.FALHA ?? "Erro inesperado ao processar. Tente novamente.";
+  return ERROR_MESSAGES["FALHA"] ?? "Erro inesperado ao processar. Tente novamente.";
 }
 
 /** Mensagem para o resultado da pré-visualização individual. */

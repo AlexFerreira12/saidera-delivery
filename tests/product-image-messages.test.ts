@@ -67,8 +67,8 @@ describe("imageSearchMessage", () => {
     expect(imageSearchMessage({ status: "invalid_gtin" })).toMatch(/código de barras/i);
     expect(imageSearchMessage({ status: "not_found" })).toMatch(/Nenhum produto encontrado/i);
     expect(imageSearchMessage({ status: "gtin_mismatch" })).toMatch(/rejeitada por segurança/i);
-    expect(
-      imageSearchMessage({ status: "no_image", candidate: null as never }),
-    ).toMatch(/sem imagem disponível/i);
+    expect(imageSearchMessage({ status: "no_image", candidate: null as never })).toMatch(
+      /sem imagem disponível/i,
+    );
   });
 });
