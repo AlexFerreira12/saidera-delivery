@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/AppShell";
@@ -30,10 +30,11 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const PAYMENTS = [
-  { id: "pix", label: "PIX", hint: "Indisponível — integração pendente", disabled: true },
+  { id: "pix", label: "PIX", hint: "Pague na hora pelo app", disabled: false },
   { id: "dinheiro", label: "Dinheiro na entrega", hint: "Informe o troco", disabled: false },
   { id: "cartao_entrega", label: "Cartão na entrega", hint: "Débito ou crédito", disabled: false },
 ] as const;
+
 
 function CheckoutPage() {
   const { session, loading } = useAuth();
@@ -47,6 +48,8 @@ function CheckoutPage() {
   const [notes, setNotes] = useState("");
   const [placing, setPlacing] = useState(false);
   const [coupon, setCoupon] = useState<string | null>(null);
+  const requestIdRef = useRef<string | null>(null);
+
 
   useEffect(() => {
     setCoupon(localStorage.getItem(COUPON_STORAGE_KEY));
@@ -86,14 +89,21 @@ function CheckoutPage() {
       toast.error("Seu carrinho está vazio.");
       return;
     }
+    if (placing) return;
     setPlacing(true);
     try {
       const trimmedNotes = notes.trim();
       const trimmedChange = payment === "dinheiro" ? changeFor.trim() : "";
+      let requestId = requestIdRef.current;
+      if (!requestId) {
+        requestId = crypto.randomUUID();
+        requestIdRef.current = requestId;
+      }
       const { data, error } = await supabase.rpc("create_order", {
         p_address_id: address.id,
         p_payment_method: payment,
         p_items: cart.items.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+        p_client_request_id: requestId,
         ...(trimmedNotes ? { p_notes: trimmedNotes } : {}),
         ...(trimmedChange ? { p_change_for: trimmedChange } : {}),
         ...(coupon ? { p_coupon_code: coupon } : {}),
@@ -101,17 +111,27 @@ function CheckoutPage() {
 
       if (error) throw error;
 
-      const result = data as { order_id: string; total: number };
+      const result = data as unknown as {
+        order_id: string;
+        total: number;
+        requires_online_payment?: boolean;
+      };
       cart.clear();
       localStorage.removeItem(COUPON_STORAGE_KEY);
-      toast.success(`Pedido confirmado! Total ${brl(Number(result.total))}`);
-      void navigate({ to: "/pedido/$id", params: { id: result.order_id } });
+      if (result.requires_online_payment) {
+        void navigate({ to: "/pagamento/$id", params: { id: result.order_id } });
+      } else {
+        toast.success(`Pedido confirmado! Total ${brl(Number(result.total))}`);
+        void navigate({ to: "/pedido/$id", params: { id: result.order_id } });
+      }
     } catch (err) {
+      requestIdRef.current = null;
       toast.error(checkoutErrorMessage(err));
     } finally {
       setPlacing(false);
     }
   };
+
 
   return (
     <AppShell hideNav hideCartBar>
