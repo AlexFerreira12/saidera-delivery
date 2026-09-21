@@ -16,3 +16,8 @@
 - Credenciais de TESTE da Pagar.me + usuário/senha do aviso (cofre de segredos)
 - Dados reais da loja, termos/privacidade, domínio, confirmação do backup do plano
 - Decidir o prazo de retenção da auditoria antes de ligar purge_old_audit_data
+
+## Rebrand SAIDERA (em andamento)
+- [x] Tokens globais: grafite/dourado, serif editorial (Playfair Display)
+- [x] Home/vitrine pública na nova identidade
+- [ ] Propagar identidade às demais telas (aguardando avaliação)

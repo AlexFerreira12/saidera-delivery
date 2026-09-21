@@ -28,8 +28,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "SAIDERA — Adega e Distribuidora" },
       {
         property: "og:description",
-        content:
-          "Bebidas geladas, gelo, carvão e petiscos entregues em minutos em Guariba/SP.",
+        content: "Bebidas geladas, gelo, carvão e petiscos entregues em minutos em Guariba/SP.",
       },
     ],
   }),
@@ -172,9 +171,7 @@ function Home() {
             <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-medium">
               <span
                 className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 ${
-                  isOpen
-                    ? "border-success/40 text-success"
-                    : "border-warning/40 text-warning"
+                  isOpen ? "border-success/40 text-success" : "border-warning/40 text-warning"
                 }`}
               >
                 <Store className="h-3.5 w-3.5" />
