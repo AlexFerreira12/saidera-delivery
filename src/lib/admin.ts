@@ -184,10 +184,7 @@ export type AdminZone = {
 };
 
 export async function fetchAdminZones() {
-  const { data, error } = await supabase
-    .from("delivery_zones")
-    .select("*")
-    .order("neighborhood");
+  const { data, error } = await supabase.from("delivery_zones").select("*").order("neighborhood");
   if (error) throw error;
   return (data ?? []) as AdminZone[];
 }

@@ -89,8 +89,8 @@ function AdminDrivers() {
         }
       />
       <p className="text-xs text-muted-foreground">
-        O entregador precisa criar a conta dele no app antes. Aqui você apenas vincula o e-mail
-        dele à equipe — nenhuma senha é criada ou exibida.
+        O entregador precisa criar a conta dele no app antes. Aqui você apenas vincula o e-mail dele
+        à equipe — nenhuma senha é criada ou exibida.
       </p>
 
       {creating && (

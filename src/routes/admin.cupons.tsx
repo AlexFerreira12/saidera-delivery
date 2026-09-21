@@ -233,8 +233,7 @@ function AdminCoupons() {
                       ? `${Number(c.discount_value)}% de desconto`
                       : `${brl(Number(c.discount_value))} de desconto`}{" "}
                   · mín. {brl(Number(c.min_order))} · usado {c.used_count}
-                  {c.max_uses ? `/${c.max_uses}` : ""}x
-                  {c.first_order_only ? " · 1ª compra" : ""}
+                  {c.max_uses ? `/${c.max_uses}` : ""}x{c.first_order_only ? " · 1ª compra" : ""}
                 </p>
               </div>
               <StatusPill

@@ -71,9 +71,7 @@ function AdminCategories() {
   const remove = async (c: AdminCategory) => {
     const linked = await countProductsInCategory(c.id);
     if (linked > 0) {
-      toast.error(
-        `${linked} produto(s) usam esta categoria. Desative-a em vez de excluir.`,
-      );
+      toast.error(`${linked} produto(s) usam esta categoria. Desative-a em vez de excluir.`);
       return;
     }
     if (!confirm(`Excluir a categoria "${c.name}"?`)) return;
@@ -155,7 +153,10 @@ function AdminCategories() {
                 className={inputClass}
                 aria-label={`Nome da categoria ${c.name}`}
               />
-              <StatusPill active={c.is_active} onClick={() => patch(c.id, { is_active: !c.is_active })} />
+              <StatusPill
+                active={c.is_active}
+                onClick={() => patch(c.id, { is_active: !c.is_active })}
+              />
             </div>
             <div className="grid grid-cols-3 gap-2">
               <Field label="Endereço">

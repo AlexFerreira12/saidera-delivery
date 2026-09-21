@@ -3,13 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { fetchAdminCustomers } from "@/lib/admin";
 import { brl, dateTimeBR } from "@/lib/format";
-import {
-  AdminHeading,
-  AdminPage,
-  Card,
-  StateBlock,
-  inputClass,
-} from "@/components/admin/ui";
+import { AdminHeading, AdminPage, Card, StateBlock, inputClass } from "@/components/admin/ui";
 
 export const Route = createFileRoute("/admin/clientes")({
   component: AdminCustomers,
