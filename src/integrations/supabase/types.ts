@@ -943,6 +943,45 @@ export type Database = {
           },
         ]
       }
+      product_image_provenance: {
+        Row: {
+          fetched_at: string
+          gtin: string | null
+          product_id: string
+          provider: string
+          source_url: string | null
+        }
+        Insert: {
+          fetched_at?: string
+          gtin?: string | null
+          product_id: string
+          provider: string
+          source_url?: string | null
+        }
+        Update: {
+          fetched_at?: string
+          gtin?: string | null
+          product_id?: string
+          provider?: string
+          source_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_image_provenance_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_image_provenance_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products_admin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_images: {
         Row: {
           id: string
