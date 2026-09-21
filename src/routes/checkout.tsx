@@ -81,58 +81,30 @@ function CheckoutPage() {
       toast.error("Seu carrinho está vazio.");
       return;
     }
-    if (zone && cart.subtotal < Number(zone.min_order)) {
-      toast.error(`Pedido mínimo de ${brl(Number(zone.min_order))} para ${zone.neighborhood}.`);
-      return;
-    }
     setPlacing(true);
     try {
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: session!.user.id,
-          address_id: address.id,
-          payment_method: payment,
-          subtotal: cart.subtotal,
-          delivery_fee: deliveryFee,
-          discount: 0,
-          total,
-          notes: [notes, payment === "dinheiro" && changeFor ? `Troco para ${changeFor}` : ""]
-            .filter(Boolean)
-            .join(" · ") || null,
-          address_snapshot: JSON.parse(JSON.stringify(address)),
-          customer_name: profile?.full_name ?? null,
-          customer_phone: profile?.phone ?? null,
-          eta_minutes: zone?.eta_minutes ?? 40,
-        })
-        .select("id")
-        .single();
+      const { data, error } = await supabase.rpc("create_order", {
+        p_address_id: address.id,
+        p_payment_method: payment,
+        p_items: cart.items.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+        p_notes: notes.trim() || null,
+        p_change_for: payment === "dinheiro" ? changeFor.trim() || null : null,
+        p_coupon_code: coupon,
+      });
       if (error) throw error;
 
-      const items = cart.items.map((item) => {
-        const unit = unitPriceFor(item, item.quantity);
-        return {
-          order_id: order.id,
-          product_id: item.id,
-          product_name: item.name,
-          image_url: item.image_url,
-          quantity: item.quantity,
-          unit_price: unit,
-          total_price: unit * item.quantity,
-        };
-      });
-      const { error: itemsError } = await supabase.from("order_items").insert(items);
-      if (itemsError) throw itemsError;
-
+      const result = data as { order_id: string; total: number };
       cart.clear();
-      toast.success("Pedido confirmado!");
-      void navigate({ to: "/pedido/$id", params: { id: order.id } });
-    } catch {
-      toast.error("Não foi possível finalizar o pedido.");
+      localStorage.removeItem(COUPON_STORAGE_KEY);
+      toast.success(`Pedido confirmado! Total ${brl(Number(result.total))}`);
+      void navigate({ to: "/pedido/$id", params: { id: result.order_id } });
+    } catch (err) {
+      toast.error(checkoutErrorMessage(err));
     } finally {
       setPlacing(false);
     }
   };
+
 
   return (
     <AppShell hideNav hideCartBar>
