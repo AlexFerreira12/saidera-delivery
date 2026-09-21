@@ -158,6 +158,26 @@ function OrderPage() {
           </ol>
         </section>
 
+        {order.payment_method === "pix" && order.payment_status !== "pago" && !canceled && (
+          <section className="surface-card space-y-2 p-4 text-sm">
+            <p className="font-display text-sm font-bold">Pagamento PIX pendente</p>
+            <p className="text-xs text-muted-foreground">
+              Seu pedido entra em separação assim que o pagamento for confirmado.
+            </p>
+            <Link
+              to="/pagamento/$id"
+              params={{ id: order.id }}
+              className="block rounded-2xl bg-primary py-3 text-center text-sm font-bold text-primary-foreground"
+            >
+              Pagar agora
+            </Link>
+          </section>
+        )}
+
+        {order.payment_method === "pix" && order.payment_status === "pago" && (
+          <section className="surface-card p-4 text-sm text-success">Pagamento PIX confirmado.</section>
+        )}
+
         {order.status === "saiu_para_entrega" && pin && (
           <section className="surface-card p-4 text-center">
             <h2 className="font-display text-sm font-bold">Código de entrega</h2>
@@ -167,6 +187,7 @@ function OrderPage() {
             </p>
           </section>
         )}
+
 
         {order.status === "entregue" && order.delivered_at && (
           <section className="surface-card p-4 text-sm text-muted-foreground">
