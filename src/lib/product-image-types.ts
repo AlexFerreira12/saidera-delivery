@@ -3,7 +3,7 @@
  */
 
 export type ImageCandidate = {
-  provider: "open_food_facts";
+  provider: "open_food_facts" | "upcitemdb";
   gtin: string;
   name: string | null;
   brand: string | null;
@@ -23,6 +23,7 @@ export type ImageSearchResult =
   | { status: "not_found" }
   | { status: "gtin_mismatch" }
   | { status: "invalid_gtin" }
+  | { status: "rate_limited" }
   | { status: "error"; message: string };
 
 export type ImageApplyResult =
@@ -32,4 +33,5 @@ export type ImageApplyResult =
   | { status: "not_found" }
   | { status: "gtin_mismatch" }
   | { status: "invalid_gtin" }
+  | { status: "rate_limited" }
   | { status: "error"; message: string };
