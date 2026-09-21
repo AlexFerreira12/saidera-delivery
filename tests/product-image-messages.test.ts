@@ -55,6 +55,7 @@ describe("imageApplyMessage", () => {
         candidate: null as never,
       }),
     ).toMatch(/sem imagem/i);
+    expect(imageApplyMessage({ status: "rate_limited" })).toMatch(/limite de consultas/i);
     expect(imageApplyMessage({ status: "error", message: "DOWNLOAD_FALHOU" })).toMatch(
       /download falhou/i,
     );
@@ -76,5 +77,6 @@ describe("imageSearchMessage", () => {
     expect(imageSearchMessage({ status: "no_image", candidate: null as never })).toMatch(
       /sem imagem disponível/i,
     );
+    expect(imageSearchMessage({ status: "rate_limited" })).toMatch(/limite de consultas/i);
   });
 });

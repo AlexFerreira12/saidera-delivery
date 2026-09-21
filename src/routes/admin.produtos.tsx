@@ -214,8 +214,9 @@ function AdminProducts() {
           reason: imageApplyMessage({ status: "error", message: "FALHA" }),
         });
       }
-      // Intervalo entre chamadas para não abusar da API pública.
-      if (index < eligible.length - 1) await new Promise((r) => setTimeout(r, 400));
+      // Ritmo do lote: o servidor garante no máximo 1 lookup UPCitemdb a cada
+      // 10s; aqui uma pausa adicional mantém folga também para o fallback (OFF).
+      if (index < eligible.length - 1) await new Promise((r) => setTimeout(r, 1_000));
     }
     setBatch({ running: false, current: eligible.length, total: eligible.length, summary });
     void refresh();
@@ -310,8 +311,9 @@ function AdminProducts() {
 
       {batch.running && (
         <p className="surface-card p-3 text-xs text-muted-foreground" role="status">
-          Buscando imagens automaticamente… {batch.current}/{batch.total}. Produtos sem código de
-          barras válido serão listados no resumo.
+          Buscando imagens automaticamente… {batch.current}/{batch.total}. O ritmo é limitado para
+          respeitar as fontes (UPCitemdb → Open Food Facts). Produtos sem código de barras válido
+          serão listados no resumo.
         </p>
       )}
 
@@ -643,6 +645,10 @@ function candidateLines(candidate: ImageCandidate): string {
   return [candidate.name, candidate.brand].filter(Boolean).join(" · ");
 }
 
+function providerLabel(provider: ImageCandidate["provider"]): string {
+  return provider === "upcitemdb" ? "UPCitemdb" : "Open Food Facts";
+}
+
 function ImageSearchDialog({
   state,
   onCancel,
@@ -684,7 +690,9 @@ function ImageSearchDialog({
         </h2>
 
         {state.phase === "loading" && (
-          <p className="text-xs text-muted-foreground">Buscando imagem no Open Food Facts…</p>
+          <p className="text-xs text-muted-foreground">
+            Buscando imagem por código de barras (UPCitemdb → Open Food Facts)…
+          </p>
         )}
 
         {state.phase !== "loading" && result?.status === "found" && (
@@ -707,7 +715,7 @@ function ImageSearchDialog({
             <p className="text-center text-xs text-muted-foreground">
               {candidateLines(result.candidate) || "Sem nome na fonte"}
               <br />
-              Fonte: Open Food Facts · GTIN {result.candidate.gtin}
+              Fonte: {providerLabel(result.candidate.provider)} · GTIN {result.candidate.gtin}
             </p>
             {state.product.image_url ? (
               <p className="text-center text-[11px] font-semibold text-warning">
