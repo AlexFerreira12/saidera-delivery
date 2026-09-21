@@ -26,7 +26,7 @@ export function ProductImage({
   }
   return (
     <div className={`grid place-items-center bg-secondary ${className}`}>
-      <span className="px-2 text-center font-display text-xs font-semibold text-muted-foreground">
+      <span className="px-2 text-center text-xs font-bold text-muted-foreground">
         {product.brand ?? product.name.split(" ")[0]}
       </span>
     </div>
@@ -64,12 +64,12 @@ export function ProductCard({
           className="absolute right-2 top-2 z-10 grid h-8 w-8 place-items-center rounded-full bg-card/90 shadow-card"
         >
           <Heart
-            className={`h-4 w-4 ${isFavorite ? "fill-primary text-primary" : "text-muted-foreground"}`}
+            className={`h-4 w-4 ${isFavorite ? "fill-accent-strong text-accent-strong" : "text-muted-foreground"}`}
           />
         </button>
       )}
       <Link to="/produto/$slug" params={{ slug: product.slug ?? product.id }} className="block">
-        <ProductImage product={product} className="h-32 w-full" />
+        <ProductImage product={product} className="h-40 w-full" />
         <div className="space-y-1 p-3 pb-1">
           <div className="flex flex-wrap items-center gap-1">
             {product.temperature === "gelado" && (
@@ -78,7 +78,7 @@ export function ProductCard({
               </span>
             )}
             {hasPromo && (
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
                 Oferta
               </span>
             )}
@@ -90,7 +90,7 @@ export function ProductCard({
 
       <div className="mt-auto space-y-2 p-3 pt-1">
         <div className="flex items-baseline gap-2">
-          <span className="font-sans text-lg font-bold tracking-tight text-primary">
+          <span className="font-sans text-lg font-extrabold tracking-tight text-foreground">
             {brl(price)}
           </span>
           {hasPromo && (
