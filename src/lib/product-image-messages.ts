@@ -34,11 +34,13 @@ export function imageSearchMessage(result: ImageSearchResult): string {
     case "invalid_gtin":
       return "Este produto não tem um código de barras (GTIN/EAN) válido cadastrado.";
     case "not_found":
-      return "Nenhum produto encontrado para este código no Open Food Facts.";
+      return "Nenhum produto encontrado para este código nas fontes consultadas (UPCitemdb e Open Food Facts).";
     case "gtin_mismatch":
       return "O código retornado não confere exatamente com o cadastrado. Busca rejeitada por segurança.";
     case "no_image":
-      return "Produto encontrado, mas sem imagem disponível na fonte.";
+      return "Produto encontrado, mas sem imagem disponível nas fontes.";
+    case "rate_limited":
+      return "Limite de consultas das fontes atingido. Aguarde alguns segundos e tente novamente.";
     case "error":
       return friendlyImageError(result.message);
     default:
@@ -56,11 +58,13 @@ export function imageApplyMessage(result: ImageApplyResult): string {
     case "invalid_gtin":
       return "Código de barras (GTIN/EAN) inválido ou ausente.";
     case "not_found":
-      return "Código não encontrado na fonte.";
+      return "Código não encontrado nas fontes consultadas.";
     case "gtin_mismatch":
       return "O código retornado não confere; rejeitado por segurança.";
     case "no_image":
       return "Produto encontrado, mas sem imagem disponível.";
+    case "rate_limited":
+      return "Limite de consultas das fontes atingido; tente novamente em instantes.";
     case "error":
       return friendlyImageError(result.message);
   }
