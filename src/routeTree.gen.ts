@@ -23,6 +23,8 @@ import { Route as PedidosRouteImport } from './routes/pedidos'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 import { Route as AdminCategoriasRouteImport } from './routes/admin.categorias'
+import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
+import { Route as AdminConfiguracoesRouteImport } from './routes/admin.configuracoes'
 import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 import { Route as AdminEntregaRouteImport } from './routes/admin.entrega'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
@@ -102,6 +104,16 @@ const AdminCategoriasRoute = AdminCategoriasRouteImport.update({
   path: '/categorias',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminClientesRoute = AdminClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfiguracoesRoute = AdminConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCuponsRoute = AdminCuponsRouteImport.update({
   id: '/cupons',
   path: '/cupons',
@@ -157,6 +169,8 @@ export interface FileRoutesByFullPath {
   '/pedidos': typeof PedidosRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/entrega': typeof AdminEntregaRoute
   '/admin/pedidos': typeof AdminPedidosRoute
@@ -180,6 +194,8 @@ export interface FileRoutesByTo {
   '/pedidos': typeof PedidosRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/entrega': typeof AdminEntregaRoute
   '/admin/pedidos': typeof AdminPedidosRoute
@@ -205,6 +221,8 @@ export interface FileRoutesById {
   '/pedidos': typeof PedidosRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categorias': typeof AdminCategoriasRoute
+  '/admin/clientes': typeof AdminClientesRoute
+  '/admin/configuracoes': typeof AdminConfiguracoesRoute
   '/admin/cupons': typeof AdminCuponsRoute
   '/admin/entrega': typeof AdminEntregaRoute
   '/admin/pedidos': typeof AdminPedidosRoute
@@ -231,6 +249,8 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/admin/banners'
     | '/admin/categorias'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
     | '/admin/cupons'
     | '/admin/entrega'
     | '/admin/pedidos'
@@ -254,6 +274,8 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/admin/banners'
     | '/admin/categorias'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
     | '/admin/cupons'
     | '/admin/entrega'
     | '/admin/pedidos'
@@ -278,6 +300,8 @@ export interface FileRouteTypes {
     | '/pedidos'
     | '/admin/banners'
     | '/admin/categorias'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
     | '/admin/cupons'
     | '/admin/entrega'
     | '/admin/pedidos'
@@ -406,6 +430,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriasRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/clientes': {
+      id: '/admin/clientes'
+      path: '/clientes'
+      fullPath: '/admin/clientes'
+      preLoaderRoute: typeof AdminClientesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/configuracoes': {
+      id: '/admin/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AdminConfiguracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/cupons': {
       id: '/admin/cupons'
       path: '/cupons'
@@ -468,6 +506,8 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminBannersRoute: typeof AdminBannersRoute
   AdminCategoriasRoute: typeof AdminCategoriasRoute
+  AdminClientesRoute: typeof AdminClientesRoute
+  AdminConfiguracoesRoute: typeof AdminConfiguracoesRoute
   AdminCuponsRoute: typeof AdminCuponsRoute
   AdminEntregaRoute: typeof AdminEntregaRoute
   AdminPedidosRoute: typeof AdminPedidosRoute
@@ -479,6 +519,8 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBannersRoute: AdminBannersRoute,
   AdminCategoriasRoute: AdminCategoriasRoute,
+  AdminClientesRoute: AdminClientesRoute,
+  AdminConfiguracoesRoute: AdminConfiguracoesRoute,
   AdminCuponsRoute: AdminCuponsRoute,
   AdminEntregaRoute: AdminEntregaRoute,
   AdminPedidosRoute: AdminPedidosRoute,
