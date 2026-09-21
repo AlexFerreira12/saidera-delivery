@@ -12,6 +12,7 @@ import { validateCoupon, couponDiscount, type Coupon } from "@/lib/coupons";
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Carrinho — Bebidas Guariba" },
       { name: "description", content: "Revise seus itens, aplique cupom e finalize seu pedido." },
       { property: "og:title", content: "Carrinho — Bebidas Guariba" },
@@ -157,7 +158,7 @@ function CartPage() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card px-4 py-3">
+      <div className="fixed inset-x-0 bottom-0 z-40 safe-bottom border-t border-border bg-card px-4 pt-3">
         <button
           type="button"
           onClick={() => navigate({ to: "/checkout" })}

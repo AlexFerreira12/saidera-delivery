@@ -11,6 +11,7 @@ import { STATUS_LABEL } from "@/lib/orders";
 export const Route = createFileRoute("/pedidos")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Meus pedidos — Bebidas Guariba" },
       {
         name: "description",

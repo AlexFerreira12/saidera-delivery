@@ -10,6 +10,7 @@ import type { Product } from "@/lib/catalog";
 export const Route = createFileRoute("/favoritos")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Favoritos — Bebidas Guariba" },
       {
         name: "description",

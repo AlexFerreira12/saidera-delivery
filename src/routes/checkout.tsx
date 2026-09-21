@@ -14,6 +14,7 @@ import { fetchAddresses, useZones, type Address } from "@/routes/enderecos";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Finalizar pedido — Bebidas Guariba" },
       {
         name: "description",
@@ -239,7 +240,7 @@ function CheckoutPage() {
         </section>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card px-4 py-3">
+      <div className="fixed inset-x-0 bottom-0 z-40 safe-bottom border-t border-border bg-card px-4 pt-3">
         <button
           type="button"
           onClick={placeOrder}

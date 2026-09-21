@@ -15,6 +15,7 @@ import {
   StatusPill,
   inputClass,
 } from "@/components/admin/ui";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 export const Route = createFileRoute("/admin/banners")({
   component: AdminBanners,
@@ -105,13 +106,12 @@ function AdminBanners() {
               onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
             />
           </Field>
-          <Field label="Imagem (URL)">
-            <input
-              className={inputClass}
-              value={form.image_url}
-              onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-            />
-          </Field>
+          <ImageUpload
+            folder="banners"
+            value={form.image_url}
+            onChange={(url) => setForm({ ...form, image_url: url })}
+          />
+
           <div className="grid grid-cols-2 gap-2">
             <Field label="Categoria de destino (endereço curto)">
               <input

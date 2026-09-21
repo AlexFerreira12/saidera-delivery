@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchCategories, fetchAdminProducts, type AdminProduct } from "@/lib/catalog";
 import { brl } from "@/lib/format";
 import { stockEntry, stockErrorMessage } from "@/lib/stock";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 export const Route = createFileRoute("/admin/produtos")({
   component: AdminProducts,
@@ -15,7 +16,14 @@ function AdminProducts() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: "", price: "", stock: "", category_id: "", volume: "" });
+  const [form, setForm] = useState({
+    name: "",
+    price: "",
+    stock: "",
+    category_id: "",
+    volume: "",
+    image_url: "",
+  });
 
   const { data: products } = useQuery({
     queryKey: ["admin", "products"],
@@ -51,6 +59,7 @@ function AdminProducts() {
         price: Number(form.price),
         stock: 0,
         volume: form.volume || null,
+        image_url: form.image_url || null,
         category_id: form.category_id || null,
       })
       .select("id")
@@ -67,7 +76,7 @@ function AdminProducts() {
       }
     }
     toast.success("Produto criado!");
-    setForm({ name: "", price: "", stock: "", category_id: "", volume: "" });
+    setForm({ name: "", price: "", stock: "", category_id: "", volume: "", image_url: "" });
     setCreating(false);
     void refresh();
     void qc.invalidateQueries({ queryKey: ["admin", "stock"] });
@@ -137,6 +146,12 @@ function AdminProducts() {
               </option>
             ))}
           </select>
+          <ImageUpload
+            folder="produtos"
+            value={form.image_url}
+            onChange={(url) => setForm({ ...form, image_url: url })}
+            label="Foto do produto"
+          />
           <button
             type="submit"
             className="w-full rounded-xl bg-primary py-2.5 text-sm font-bold text-primary-foreground"
@@ -149,6 +164,14 @@ function AdminProducts() {
       <div className="space-y-2">
         {list.map((p) => (
           <div key={p.id} className="surface-card flex items-center gap-3 p-3">
+            {p.image_url ? (
+              <img
+                src={p.image_url}
+                alt=""
+                loading="lazy"
+                className="h-10 w-10 shrink-0 rounded-lg border border-border object-cover"
+              />
+            ) : null}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{p.name}</p>
               <p className="text-xs text-muted-foreground">

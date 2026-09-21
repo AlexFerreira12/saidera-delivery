@@ -11,6 +11,7 @@ import { fetchOrderPin } from "@/lib/delivery";
 export const Route = createFileRoute("/pedido/$id")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Acompanhar pedido — Bebidas Guariba" },
       {
         name: "description",

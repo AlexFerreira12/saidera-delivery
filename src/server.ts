@@ -44,12 +44,45 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+/**
+ * Cabeçalhos de segurança aplicados a todas as respostas HTML.
+ * A política de conteúdo entra em modo de observação (Report-Only) para não
+ * quebrar recursos legítimos antes de ser promovida a bloqueio.
+ */
+const CSP_REPORT_ONLY = [
+  "default-src 'self'",
+  "img-src 'self' data: blob: https:",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "connect-src 'self' https: wss:",
+  "form-action 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+].join("; ");
+
+function withSecurityHeaders(response: Response) {
+  const headers = new Headers(response.headers);
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set("permissions-policy", "camera=(), microphone=(), payment=(), geolocation=(self)");
+  headers.set("cross-origin-opener-policy", "same-origin-allow-popups");
+  if ((headers.get("content-type") ?? "").includes("text/html")) {
+    headers.set("content-security-policy-report-only", CSP_REPORT_ONLY);
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return withSecurityHeaders(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

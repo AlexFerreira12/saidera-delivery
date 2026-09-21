@@ -142,7 +142,7 @@ function ProductPage() {
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card px-4 py-3">
+      <div className="fixed inset-x-0 bottom-0 z-40 safe-bottom border-t border-border bg-card px-4 pt-3">
         <div className="mx-auto flex max-w-2xl items-center gap-3">
           <QtyStepper
             quantity={quantity}

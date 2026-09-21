@@ -22,6 +22,7 @@ import {
 export const Route = createFileRoute("/entregador")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Área do entregador — Bebidas Guariba" },
       {
         name: "description",
