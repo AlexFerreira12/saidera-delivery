@@ -64,6 +64,13 @@
       "when": 1789962395498,
       "tag": "0008_block_d_pin_attempts_persist",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789963945101,
+      "tag": "0009_block_e_payments_pix_pagarme",
+      "breakpoints": true
     }
   ]
 }

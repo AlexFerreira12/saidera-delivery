@@ -68,6 +68,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_server_secrets: {
+        Row: {
+          created_at: string
+          key: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           created_at: string
@@ -667,6 +685,7 @@ export type Database = {
           accepted_at: string | null
           address_id: string | null
           address_snapshot: Json | null
+          client_request_id: string | null
           coupon_code: string | null
           created_at: string
           customer_name: string | null
@@ -697,6 +716,7 @@ export type Database = {
           accepted_at?: string | null
           address_id?: string | null
           address_snapshot?: Json | null
+          client_request_id?: string | null
           coupon_code?: string | null
           created_at?: string
           customer_name?: string | null
@@ -727,6 +747,7 @@ export type Database = {
           accepted_at?: string | null
           address_id?: string | null
           address_snapshot?: Json | null
+          client_request_id?: string | null
           coupon_code?: string | null
           created_at?: string
           customer_name?: string | null
@@ -770,41 +791,146 @@ export type Database = {
           },
         ]
       }
+      payment_events: {
+        Row: {
+          amount: number | null
+          applied: boolean
+          created_at: string
+          currency: string | null
+          event_id: string | null
+          event_type: string | null
+          id: string
+          note: string | null
+          order_id: string | null
+          payment_id: string | null
+          provider: string
+          provider_charge_id: string | null
+          resolved_status: string | null
+          summary: Json | null
+        }
+        Insert: {
+          amount?: number | null
+          applied?: boolean
+          created_at?: string
+          currency?: string | null
+          event_id?: string | null
+          event_type?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          payment_id?: string | null
+          provider?: string
+          provider_charge_id?: string | null
+          resolved_status?: string | null
+          summary?: Json | null
+        }
+        Update: {
+          amount?: number | null
+          applied?: boolean
+          created_at?: string
+          currency?: string | null
+          event_id?: string | null
+          event_type?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string | null
+          payment_id?: string | null
+          provider?: string
+          provider_charge_id?: string | null
+          resolved_status?: string | null
+          summary?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_events_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
+          canceled_at: string | null
           created_at: string
+          currency: string
+          expires_at: string | null
           external_id: string | null
+          failed_at: string | null
           id: string
+          idempotency_key: string | null
+          last_event_at: string | null
           method: string
           order_id: string
+          paid_at: string | null
           pix_copy_paste: string | null
           pix_qr_code: string | null
           provider: string
+          provider_charge_id: string | null
+          provider_order_id: string | null
+          reconcile_flag: boolean
+          reconcile_reason: string | null
+          refunded_amount: number | null
+          refunded_at: string | null
           status: string
         }
         Insert: {
           amount?: number
+          canceled_at?: string | null
           created_at?: string
+          currency?: string
+          expires_at?: string | null
           external_id?: string | null
+          failed_at?: string | null
           id?: string
+          idempotency_key?: string | null
+          last_event_at?: string | null
           method?: string
           order_id: string
+          paid_at?: string | null
           pix_copy_paste?: string | null
           pix_qr_code?: string | null
           provider?: string
+          provider_charge_id?: string | null
+          provider_order_id?: string | null
+          reconcile_flag?: boolean
+          reconcile_reason?: string | null
+          refunded_amount?: number | null
+          refunded_at?: string | null
           status?: string
         }
         Update: {
           amount?: number
+          canceled_at?: string | null
           created_at?: string
+          currency?: string
+          expires_at?: string | null
           external_id?: string | null
+          failed_at?: string | null
           id?: string
+          idempotency_key?: string | null
+          last_event_at?: string | null
           method?: string
           order_id?: string
+          paid_at?: string | null
           pix_copy_paste?: string | null
           pix_qr_code?: string | null
           provider?: string
+          provider_charge_id?: string | null
+          provider_order_id?: string | null
+          reconcile_flag?: boolean
+          reconcile_reason?: string | null
+          refunded_amount?: number | null
+          refunded_at?: string | null
           status?: string
         }
         Relationships: [
@@ -1308,6 +1434,38 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_payment_manual_settle: {
+        Args: { p_payment_id: string; p_reason: string }
+        Returns: Json
+      }
+      admin_payments: {
+        Args: {
+          p_from?: string
+          p_limit?: number
+          p_method?: string
+          p_offset?: number
+          p_status?: string
+          p_to?: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          customer_name: string
+          expires_at: string
+          id: string
+          method: string
+          order_id: string
+          order_number: number
+          order_status: string
+          paid_at: string
+          provider: string
+          provider_charge_id: string
+          reconcile_flag: boolean
+          reconcile_reason: string
+          status: string
+        }[]
+      }
       admin_reset_pin_attempts: { Args: { p_order_id: string }; Returns: Json }
       admin_stock_adjust: {
         Args: {
@@ -1383,17 +1541,30 @@ export type Database = {
         Returns: Json
       }
       can_view_order: { Args: { _order_id: string }; Returns: boolean }
-      create_order: {
-        Args: {
-          p_address_id: string
-          p_change_for?: string
-          p_coupon_code?: string
-          p_items: Json
-          p_notes?: string
-          p_payment_method: string
-        }
-        Returns: Json
-      }
+      create_order:
+        | {
+            Args: {
+              p_address_id: string
+              p_change_for?: string
+              p_coupon_code?: string
+              p_items: Json
+              p_notes?: string
+              p_payment_method: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_address_id: string
+              p_change_for?: string
+              p_client_request_id?: string
+              p_coupon_code?: string
+              p_items: Json
+              p_notes?: string
+              p_payment_method: string
+            }
+            Returns: Json
+          }
       driver_available_orders: {
         Args: never
         Returns: {
@@ -1428,8 +1599,43 @@ export type Database = {
         Args: { _order_id: string; _pin: string }
         Returns: string
       }
+      hash_delivery_pin_secure: {
+        Args: { _order_id: string; _pin: string }
+        Returns: string
+      }
       is_admin: { Args: never; Returns: boolean }
       is_order_driver: { Args: { _order_id: string }; Returns: boolean }
+      payment_apply_status: {
+        Args: {
+          p_amount_cents: number
+          p_currency: string
+          p_event_id: string
+          p_event_type: string
+          p_provider_charge_id: string
+          p_status: string
+          p_summary: Json
+        }
+        Returns: Json
+      }
+      payment_attach_charge: {
+        Args: {
+          p_copy: string
+          p_expires_at: string
+          p_idempotency_key: string
+          p_payment_id: string
+          p_provider_charge_id: string
+          p_provider_order_id: string
+          p_qr: string
+        }
+        Returns: Json
+      }
+      payment_expire_due: { Args: never; Returns: Json }
+      payment_prepare_charge: {
+        Args: { p_order_id: string; p_user_id: string }
+        Returns: Json
+      }
+      payment_status_rank: { Args: { _status: string }; Returns: number }
+      pin_secret: { Args: never; Returns: string }
       preview_coupon: {
         Args: { p_code: string; p_subtotal: number }
         Returns: Json
