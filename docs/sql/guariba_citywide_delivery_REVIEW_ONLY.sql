@@ -231,6 +231,7 @@ DECLARE
   v_paystatus text;
 BEGIN
   IF v_user IS NULL THEN RAISE EXCEPTION 'NAO_AUTENTICADO'; END IF;
+  IF v_key IS NOT NULL AND length(v_key) > 100 THEN RAISE EXCEPTION 'REQUISICAO_INVALIDA'; END IF;
   IF p_items IS NULL OR jsonb_typeof(p_items) <> 'array' OR jsonb_array_length(p_items) = 0 THEN
     RAISE EXCEPTION 'CARRINHO_VAZIO';
   END IF;
@@ -273,8 +274,12 @@ BEGIN
   END IF;
 
   FOR v_item IN SELECT * FROM jsonb_array_elements(p_items) LOOP
-    v_pid := (v_item->>'product_id')::uuid;
-    v_qty := COALESCE((v_item->>'quantity')::int, 0);
+    BEGIN
+      v_pid := (v_item->>'product_id')::uuid;
+      v_qty := COALESCE((v_item->>'quantity')::int, 0);
+    EXCEPTION WHEN invalid_text_representation OR numeric_value_out_of_range THEN
+      RAISE EXCEPTION 'QUANTIDADE_INVALIDA';
+    END;
     IF v_qty <= 0 THEN RAISE EXCEPTION 'QUANTIDADE_INVALIDA'; END IF;
 
     SELECT * INTO v_prod FROM public.products WHERE id = v_pid FOR UPDATE;
