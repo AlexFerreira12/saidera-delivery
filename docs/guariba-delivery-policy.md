@@ -57,3 +57,9 @@
 - **Limitação deliberada:** prévia ainda não tem marcador arrastável. O GPS só serve quando cliente está fisicamente no endereço; desenvolver seletor interativo antes do deploy para permitir entregas em outros endereços.
 - Não tratar o ponto declarado pelo cliente como prova de perímetro urbano; validação servidor/polígono ainda pendente.
 - Não executar SQL nem publicar branch antes de testes completos e atualização do RPC `driver_my_orders`.
+
+## Mapa interativo e integridade de aprovação
+- `DeliveryMapPicker` renderiza mosaico OpenStreetMap e permite escolher ponto com toque, zoom e retorno a Guariba. Cadastro oferece GPS opcional e salva o marcador escolhido. A interação precisa ser testada em dispositivos reais e deve respeitar política de uso de tiles OSM.
+- SQL de revisão agora inclui gatilho que invalida uma aprovação anterior caso rua, número, bairro, cidade, UF ou coordenadas sejam alterados.
+- A RPC proposta rejeita coordenadas ausentes/inválidas e exige aprovação administrativa. O polígono urbano server-side continua pendente: não afirmar que a checagem está automatizada.
+- Nenhum SQL desta etapa foi aplicado ao Supabase de produção; manter PR em rascunho.
