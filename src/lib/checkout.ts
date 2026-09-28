@@ -22,7 +22,7 @@ export function checkoutErrorMessage(raw: unknown): string {
       return "Selecione um endereço de entrega válido.";
     case "ENDERECO_PENDENTE": return "Estamos verificando se este endereço fica na área urbana de Guariba. Aguarde a confirmação da loja.";
     case "FORA_DA_AREA":
-      return "Não foi possível validar a entrega neste endereço de Guariba. Entre em contato com a loja.";
+      return "Não foi possível validar a entrega neste bairro/endereço de Guariba. Entre em contato com a loja.";
     case "QUANTIDADE_INVALIDA":
       return "Quantidade inválida em um dos itens.";
     case "PRODUTO_INDISPONIVEL":

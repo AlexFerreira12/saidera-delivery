@@ -4,15 +4,15 @@ const INITIAL:MapLocation={latitude:-21.360,longitude:-48.230};
 const TILE=256;
 function project(p:MapLocation,z:number){const n=2**z;const lat=Math.max(-85.05112878,Math.min(85.05112878,p.latitude))*Math.PI/180;return {x:(p.longitude+180)/360*n,y:(1-Math.asinh(Math.tan(lat))/Math.PI)/2*n};}
 function unproject(x:number,y:number,z:number):MapLocation{const n=2**z;return {longitude:x/n*360-180,latitude:Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI};}
-type Props={value:MapLocation|null;onChange:(p:MapLocation)=>void;polygon?:readonly MapLocation[];mode?:"point"|"polygon"};
+type Props={value:MapLocation|null;onChange:(p:MapLocation)=>void;polygon?:readonly MapLocation[];mode?:"point"|"polygon";recenterOnValueChange?:boolean};
 /** Lightweight OSM selector. Eligibility is always decided again by the server. */
-export function DeliveryMapPicker({value,onChange,polygon=[],mode="point"}:Props){
+export function DeliveryMapPicker({value,onChange,polygon=[],mode="point",recenterOnValueChange=true}:Props){
   const [center,setCenter]=useState<MapLocation>(value??INITIAL);const [zoom,setZoom]=useState(16);
-  useEffect(()=>{if(value)setCenter(value);},[value?.latitude,value?.longitude]);
+  useEffect(()=>{if(recenterOnValueChange&&value)setCenter(value);},[recenterOnValueChange,value]);
   const tile=project(center,zoom),size=2**zoom;
   const tiles=[] as {x:number;y:number;url:string;left:number;top:number}[];
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const x=Math.floor(tile.x)+dx,y=Math.floor(tile.y)+dy;if(y<0||y>=size)continue;tiles.push({x,y,url:`https://tile.openstreetmap.org/${zoom}/${(x+size)%size}/${y}.png`,left:(x-tile.x)*TILE-TILE/2,top:(y-tile.y)*TILE-TILE/2});}
-  const choose=(clientX:number,clientY:number,rect:DOMRect)=>{const x=tile.x+(clientX-rect.left-rect.width/2)/TILE;const y=tile.y+(clientY-rect.top-rect.height/2)/TILE;const p=unproject(x,y,zoom);onChange(p);setCenter(p);};
+  const choose=(clientX:number,clientY:number,rect:DOMRect)=>{const x=tile.x+(clientX-rect.left-rect.width/2)/TILE;const y=tile.y+(clientY-rect.top-rect.height/2)/TILE;const p=unproject(x,y,zoom);onChange(p);if(mode==="point")setCenter(p);};
   const screen=(p:MapLocation)=>{const q=project(p,zoom);return{x:(q.x-tile.x)*TILE,y:(q.y-tile.y)*TILE};};
   const marker=value?screen(value):null;
   const polygonScreen=polygon.map(screen);

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { DeliveryMapPicker, type MapLocation } from "@/components/DeliveryMapPicker";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,10 +19,9 @@ function DeliveryAreaPage(){
     return (data??[]) as DeliveryArea[];
   }});
   const current=areas.data?.[0];
-  useEffect(()=>{ if(current && points===null) setPoints(current.polygon); },[current,points]);
-  const draft=points??[];
-  const add=(point:MapLocation)=>setPoints(currentPoints=>[...(currentPoints??[]),point]);
-  const removeLast=()=>setPoints(currentPoints=>(currentPoints??[]).slice(0,-1));
+  const draft=points??current?.polygon??[];
+  const add=(point:MapLocation)=>setPoints(currentPoints=>[...(currentPoints??current?.polygon??[]),point]);
+  const removeLast=()=>setPoints(currentPoints=>(currentPoints??current?.polygon??[]).slice(0,-1));
   const clear=()=>setPoints([]);
   const save=async()=>{
     if(draft.length<3){toast.error("A área precisa de pelo menos 3 pontos.");return;}
@@ -36,7 +35,7 @@ function DeliveryAreaPage(){
   return <main className="space-y-4 p-4">
     <div><h1 className="text-xl font-bold">Área de entrega</h1><p className="text-sm text-muted-foreground">Monte o contorno da área urbana tocando no mapa em sequência. Não inclua zona rural. Para loteamentos novos, amplie o contorno quando necessário.</p></div>
     {areas.error&&<p className="rounded-xl border border-destructive/30 p-3 text-sm text-destructive">Configuração ainda não disponível no banco. Não execute alterações em produção até a migração ser revisada.</p>}
-    <DeliveryMapPicker value={draft.at(-1)??null} onChange={add} polygon={draft} mode="polygon"/>
+    <DeliveryMapPicker key={current?.updated_at??"new"} value={draft.at(-1)??null} onChange={add} polygon={draft} mode="polygon" recenterOnValueChange={false}/>
     <section className="surface-card space-y-2 p-4"><p className="text-sm font-semibold">Vértices: {draft.length}</p><p className="text-xs text-muted-foreground">{draft.length<3?"Adicione pelo menos 3 pontos para formar a área.":"O último ponto é ligado automaticamente ao primeiro no cálculo do servidor."}</p>
       <div className="flex flex-wrap gap-2"><button type="button" onClick={removeLast} disabled={!draft.length} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Remover último</button><button type="button" onClick={clear} disabled={!draft.length} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Limpar desenho</button><button type="button" onClick={()=>void save()} disabled={saving||draft.length<3} className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50">{saving?"Salvando...":"Salvar área"}</button></div>
     </section>
