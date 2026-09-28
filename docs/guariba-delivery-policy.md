@@ -2,7 +2,7 @@
 
 - Área atendida: toda a área urbana de Guariba/SP, inclusive novos loteamentos e ruas ainda ausentes de bases de CEP/mapas.
 - Não atender outros municípios nem área rural neste momento.
-- Taxa única para todos os endereços elegíveis, configurável pelo administrador. Valor aprovado: **R$ 5,99** para toda a área urbana. O administrador poderá alterar esse valor futuramente.
+- Taxa única para todos os endereços elegíveis, configurável pelo administrador. Valor aprovado: **R$ 5,99** para toda a área urbana. O administrador poderá alterar esse valor futuramente. Frete grátis opcional, **desativado inicialmente** (`free_delivery_above = 0`).
 - Bairro é texto livre; a ausência de cadastro de bairro não impede elegibilidade.
 - A validação deve ocorrer no servidor: não confiar apenas em cidade/CEP informados pelo cliente. Para endereço novo sem geocodificação confiável, oferecer verificação manual de localização antes de confirmar o pedido.
 - O banco deve expor a taxa única da loja e a validação da área urbana na RPC `create_order`; remover a exigência de correspondência exata com `delivery_zones.neighborhood` após a migração.
@@ -26,3 +26,7 @@
 - Índice único parcial `orders_client_request_uidx` em `(user_id, client_request_id)` foi confirmado, ajudando a evitar duplicação concorrente.
 - Checagem apenas de cidade/UF não distingue zona urbana de rural. Exigir validação confiável de perímetro urbano ou revisão manual, sem bloquear automaticamente ruas novas.
 - Nenhuma modificação de produção realizada durante a auditoria.
+
+## Alteração aplicada em produção
+- `store_settings.free_delivery_above` passou de R$ 100,00 para **0** em 27/09/2026, conforme autorização do proprietário. A condição atual da RPC `v_store.free_delivery_above > 0` preserva a possibilidade de reativação futura.
+- Taxas por bairro ainda permanecem ativas na RPC antiga: não considerar a migração de frete fixo concluída.
