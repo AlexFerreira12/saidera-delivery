@@ -2,7 +2,8 @@ import{test,expect}from"@playwright/test";
 for(const device of[{name:"mobile",width:375,height:812},{name:"desktop",width:1280,height:800}]){
  test(`map renders and aligns on ${device.name}`,async({page})=>{
   await page.setViewportSize({width:device.width,height:device.height});
-  await page.route("https://tile.openstreetmap.org/**",route=>route.abort());\n  await page.goto("/",{waitUntil:"domcontentloaded"});
+  await page.route("https://tile.openstreetmap.org/**",route=>route.abort());
+  await page.goto("/",{waitUntil:"domcontentloaded"});
   const point=page.getByLabel("Mapa para escolher o ponto de entrega");
   const polygon=page.getByLabel("Mapa para desenhar a área de entrega");
   await expect(point).toBeVisible();await expect(polygon).toBeVisible();
