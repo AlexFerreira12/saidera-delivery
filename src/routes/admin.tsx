@@ -31,6 +31,7 @@ const TABS: { to: string; label: string; exact?: boolean }[] = [
   { to: "/admin/banners", label: "Banners" },
   { to: "/admin/entrega", label: "Entrega" },
   { to: "/admin/enderecos", label: "Endereços" },
+  { to: "/admin/area-entrega", label: "Área de entrega" },
   { to: "/admin/clientes", label: "Clientes" },
   { to: "/admin/entregadores", label: "Entregadores" },
   { to: "/admin/configuracoes", label: "Configurações" },
