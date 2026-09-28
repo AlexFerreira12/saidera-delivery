@@ -1,6 +1,9 @@
 name: CI audit
 
 on:
+  push:
+    branches:
+      - audit/checkout-security-2026-09
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -14,11 +17,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm test
-      - run: npm run lint
-      - run: npm run build
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Tests
+        run: bun run test
+      - name: Build
+        run: bun run build
+      - name: Lint changed delivery files
+        run: |
+          bunx eslint             src/components/DeliveryMapPicker.tsx             src/lib/checkout.ts             src/lib/delivery-geofence.ts             src/lib/delivery-map.test.ts             src/lib/delivery-policy.test.ts             src/lib/delivery-policy.ts             src/lib/delivery.ts             src/lib/waze.ts             src/routes/admin.area-entrega.tsx             src/routes/admin.enderecos.tsx             src/routes/admin.tsx             src/routes/checkout.tsx             src/routes/enderecos.tsx             src/routes/entregador.tsx
