@@ -116,6 +116,11 @@ BEGIN
   IF lower(btrim(v_addr.city)) <> 'guariba' OR upper(btrim(v_addr.state)) <> 'SP' THEN
     RAISE EXCEPTION 'FORA_DA_AREA';
   END IF;
+  IF v_addr.latitude IS NULL OR v_addr.longitude IS NULL
+     OR v_addr.latitude NOT BETWEEN -90 AND 90
+     OR v_addr.longitude NOT BETWEEN -180 AND 180 THEN
+    RAISE EXCEPTION 'ENDERECO_PENDENTE';
+  END IF;
   -- Explicit admin review prevents rural/out-of-city addresses from passing
   -- simply because a user selected Guariba in the form.
   IF NOT EXISTS (
