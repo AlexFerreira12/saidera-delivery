@@ -44,3 +44,9 @@
 - Entregador: botão **Abrir no Waze** usando `wazeDeliveryUrl`; priorizar coordenadas confirmadas e usar endereço textual somente como alternativa.
 - Função geométrica inicial `src/lib/delivery-geofence.ts` é utilitária para interface e testes; é necessário implementar validação equivalente no Supabase e desenhar o perímetro real antes de habilitar pedidos automáticos.
 - Ainda faltam: provedor de mapas e suas credenciais, UI de marcador, editor administrativo do polígono, armazenamento/validação server-side, integração do botão Waze à tela real do entregador, testes e deploy coordenado. Não publicar esta branch ainda.
+
+## Integração Waze implementada na branch
+- A ação de rota já existente do entregador agora aponta para `wazeDeliveryUrl`, exibida como **Abrir no Waze**.
+- A função prioriza latitude/longitude válidas, com fallback textual.
+- O RPC atual `driver_my_orders` não devolve latitude/longitude. Alteração mínima preservando autorização existente preparada em `docs/sql/driver_waze_coordinates_REVIEW_ONLY.sql`; **não executada em produção**.
+- Só publicar navegação por coordenadas após o cadastro permitir ao cliente confirmar o marcador e o backend preservar essas coordenadas no `address_snapshot`.
