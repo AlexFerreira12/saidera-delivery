@@ -36,3 +36,11 @@
 - Nova tabela `delivery_address_approvals` é proposta com políticas RLS: somente administradores podem escrever; clientes consultam apenas o estado dos próprios endereços.
 - Checkout da branch consulta a aprovação e os campos gerais da loja. **Ainda não publicar**: faltam interface administrativa de aprovação, geração dos tipos Supabase, validação do SQL em ambiente de testes e testes de ponta a ponta.
 - O cadastro de endereços atual usa cidade/UF padrão Guariba/SP; para validar de forma robusta, a revisão humana deve conferir a localização, não apenas o texto informado.
+
+## Mapa do cliente e navegação do entregador (aprovado)
+- Cliente: localizar endereço no mapa, ajustar marcador, confirmar coordenadas; tecnologia de mapas ainda a configurar.
+- Servidor: validar coordenadas contra polígono urbano revisado e aprovado pela loja; **não** confiar no resultado calculado no navegador, no nome da cidade nem apenas na precisão do geocodificador.
+- Ausência de coordenadas, localização duvidosa ou rua nova fora do polígono cadastrado: enviar para revisão, sem tratar automaticamente como zona rural.
+- Entregador: botão **Abrir no Waze** usando `wazeDeliveryUrl`; priorizar coordenadas confirmadas e usar endereço textual somente como alternativa.
+- Função geométrica inicial `src/lib/delivery-geofence.ts` é utilitária para interface e testes; é necessário implementar validação equivalente no Supabase e desenhar o perímetro real antes de habilitar pedidos automáticos.
+- Ainda faltam: provedor de mapas e suas credenciais, UI de marcador, editor administrativo do polígono, armazenamento/validação server-side, integração do botão Waze à tela real do entregador, testes e deploy coordenado. Não publicar esta branch ainda.
