@@ -19,9 +19,11 @@ export function DeliveryMapPicker({value,onChange,polygon=[],mode="point"}:Props
   const linePoints=polygonScreen.map(p=>`${p.x},${p.y}`).join(" ");
   return <div className="space-y-2"><div className="relative h-64 w-full overflow-hidden rounded-xl border bg-secondary" role="application" aria-label={mode==="polygon"?"Mapa para desenhar a área de entrega":"Mapa para escolher o ponto de entrega"} onClick={e=>{const rect=e.currentTarget.getBoundingClientRect();choose(e.clientX,e.clientY,rect);}}>
     {tiles.map(t=><img key={`${zoom}-${t.x}-${t.y}`} src={t.url} alt="" draggable={false} className="pointer-events-none absolute h-64 w-64 max-w-none select-none" style={{left:`calc(50% + ${t.left}px)`,top:`calc(50% + ${t.top}px)`}}/>)}
-    {mode==="polygon"&&polygonScreen.length>0&&<svg className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" viewBox="-128 -128 256 256" preserveAspectRatio="none" aria-hidden="true">
+    {mode==="polygon"&&polygonScreen.length>0&&<svg className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" aria-hidden="true" style={{overflow:"visible"}}>
+      <g transform="translate(50%, 128)">
       {polygonScreen.length>=3?<polygon points={linePoints} fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="2" vectorEffect="non-scaling-stroke"/>:<polyline points={linePoints} fill="none" stroke="currentColor" strokeWidth="2" vectorEffect="non-scaling-stroke"/>}
       {polygonScreen.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r="4" fill="currentColor" stroke="white" strokeWidth="1.5" vectorEffect="non-scaling-stroke"/>)}
+      </g>
     </svg>}
     {mode==="point"&&marker&&Math.abs(marker.x)<1024&&Math.abs(marker.y)<1024&&<span className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full text-3xl drop-shadow" style={{left:`calc(50% + ${marker.x}px)`,top:`calc(50% + ${marker.y}px)`}} aria-label="Ponto escolhido">📍</span>}
     <span className="pointer-events-none absolute bottom-1 right-1 z-20 bg-background/90 px-1 text-[10px]">© OpenStreetMap contributors</span>

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DeliveryMapPicker, type MapLocation } from "@/components/DeliveryMapPicker";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ type DeliveryArea = { id:number; name:string; polygon:MapLocation[]; is_active:b
 
 function DeliveryAreaPage(){
   const qc=useQueryClient();
-  const [points,setPoints]=useState<MapLocation[]>([]);
+  const [points,setPoints]=useState<MapLocation[] | null>(null);
   const [saving,setSaving]=useState(false);
   const areas=useQuery({queryKey:["admin","delivery-areas"],queryFn:async()=>{
     const {data,error}=await supabase.from("delivery_areas" as never).select("id,name,polygon,is_active,updated_at").eq("is_active",true).order("updated_at",{ascending:false});
@@ -19,9 +19,10 @@ function DeliveryAreaPage(){
     return (data??[]) as DeliveryArea[];
   }});
   const current=areas.data?.[0];
-  const draft=points.length?points:(current?.polygon??[]);
-  const add=(point:MapLocation)=>setPoints(currentPoints=>[...(currentPoints.length?currentPoints:(current?.polygon??[])),point]);
-  const removeLast=()=>setPoints(currentPoints=>(currentPoints.length?currentPoints:(current?.polygon??[])).slice(0,-1));
+  useEffect(()=>{ if(current && points===null) setPoints(current.polygon); },[current,points]);
+  const draft=points??[];
+  const add=(point:MapLocation)=>setPoints(currentPoints=>[...(currentPoints??[]),point]);
+  const removeLast=()=>setPoints(currentPoints=>(currentPoints??[]).slice(0,-1));
   const clear=()=>setPoints([]);
   const save=async()=>{
     if(draft.length<3){toast.error("A área precisa de pelo menos 3 pontos.");return;}
@@ -34,7 +35,7 @@ function DeliveryAreaPage(){
       }else{
         const {error}=await supabase.from("delivery_areas" as never).insert({name:"Área urbana de Guariba",polygon:draft,is_active:true,updated_by:user.id} as never);if(error)throw error;
       }
-      setPoints([]);await qc.invalidateQueries({queryKey:["admin","delivery-areas"]});toast.success("Área de cobertura salva.");
+      setPoints(null);await qc.invalidateQueries({queryKey:["admin","delivery-areas"]});toast.success("Área de cobertura salva.");
     }catch{toast.error("Não foi possível salvar. A migração de área de entrega precisa estar implantada.");}finally{setSaving(false);}
   };
   return <main className="space-y-4 p-4">

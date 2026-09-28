@@ -75,6 +75,7 @@ DECLARE v_addr public.addresses%ROWTYPE;
 BEGIN
   SELECT * INTO v_addr FROM public.addresses WHERE id=p_address_id;
   IF v_addr.id IS NULL THEN RETURN 'invalid'; END IF;
+  IF auth.uid() IS NULL OR (v_addr.user_id <> auth.uid() AND NOT public.is_admin()) THEN RETURN 'invalid'; END IF;
   IF lower(btrim(v_addr.city)) <> 'guariba' OR upper(btrim(v_addr.state)) <> 'SP' THEN RETURN 'outside'; END IF;
   IF v_addr.latitude IS NULL OR v_addr.longitude IS NULL
      OR v_addr.latitude NOT BETWEEN -90 AND 90 OR v_addr.longitude NOT BETWEEN -180 AND 180 THEN RETURN 'pending'; END IF;
