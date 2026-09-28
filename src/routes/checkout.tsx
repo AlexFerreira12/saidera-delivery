@@ -76,12 +76,19 @@ function CheckoutPage() {
     [addresses, addressId],
   );
   const zone = zones.data?.find((z) => z.neighborhood === address?.neighborhood);
-  const deliveryFee = zone ? Number(zone.fee) : 0;
-  const total = cart.subtotal + deliveryFee;
+  // Never silently treat an unknown neighborhood as free delivery.
+  // Once the citywide fee is implemented in create_order, this UI must read
+  // the same centrally configured fee instead of matching neighborhoods.
+  const deliveryFee = zone ? Number(zone.fee) : null;
+  const total = deliveryFee === null ? null : cart.subtotal + deliveryFee;
 
   const placeOrder = async () => {
     if (!address) {
       toast.error("Selecione um endereço de entrega.");
+      return;
+    }
+    if (deliveryFee === null) {
+      toast.error("Taxa de entrega indisponível. Estamos atualizando a cobertura de Guariba; tente novamente em breve.");
       return;
     }
     if (cart.items.length === 0) {
@@ -222,7 +229,7 @@ function CheckoutPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Taxa de entrega</span>
-            <span className="font-semibold">{deliveryFee ? brl(deliveryFee) : "—"}</span>
+            <span className="font-semibold">{deliveryFee === null ? "A confirmar" : brl(deliveryFee)}</span>
           </div>
           {coupon && (
             <div className="flex justify-between">
@@ -232,7 +239,7 @@ function CheckoutPage() {
           )}
           <div className="flex justify-between border-t border-border pt-2 font-display text-base font-bold">
             <span>Total estimado</span>
-            <span>{brl(total)}</span>
+            <span>{total === null ? "A confirmar" : brl(total)}</span>
           </div>
           <p className="text-xs text-muted-foreground">
             Os valores finais são calculados e confirmados no momento do pedido.
@@ -244,10 +251,10 @@ function CheckoutPage() {
         <button
           type="button"
           onClick={placeOrder}
-          disabled={placing}
+          disabled={placing || deliveryFee === null}
           className="mx-auto block w-full max-w-2xl rounded-2xl bg-primary py-3 text-sm font-bold text-primary-foreground disabled:opacity-60"
         >
-          {placing ? "Enviando..." : `CONFIRMAR PEDIDO • ${brl(total)}`}
+          {placing ? "Enviando..." : total === null ? "ENTREGA A CONFIRMAR" : `CONFIRMAR PEDIDO • ${brl(total)}`}
         </button>
       </div>
     </AppShell>
