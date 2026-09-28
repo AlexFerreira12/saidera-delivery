@@ -25,6 +25,32 @@ CREATE POLICY delivery_approvals_owner_read ON public.delivery_address_approvals
   );
 
 
+-- Any address change that could move the delivery point requires a fresh review.
+-- SECURITY DEFINER allows this trigger to invalidate approvals without
+-- granting customers direct UPDATE rights to the approval table.
+CREATE OR REPLACE FUNCTION public.invalidate_delivery_address_approval()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $invalidate$
+BEGIN
+  IF (OLD.street, OLD.number, OLD.neighborhood, OLD.city, OLD.state,
+      OLD.latitude, OLD.longitude) IS DISTINCT FROM
+     (NEW.street, NEW.number, NEW.neighborhood, NEW.city, NEW.state,
+      NEW.latitude, NEW.longitude) THEN
+    UPDATE public.delivery_address_approvals
+       SET approved = false, reviewed_by = NULL, reviewed_at = NULL,
+           review_note = 'Endereço alterado; nova validação necessária.'
+     WHERE address_id = NEW.id;
+  END IF;
+  RETURN NEW;
+END;
+$invalidate$;
+REVOKE ALL ON FUNCTION public.invalidate_delivery_address_approval() FROM PUBLIC;
+DROP TRIGGER IF EXISTS trg_invalidate_delivery_address_approval ON public.addresses;
+CREATE TRIGGER trg_invalidate_delivery_address_approval
+AFTER UPDATE OF street, number, neighborhood, city, state, latitude, longitude
+ON public.addresses FOR EACH ROW
+EXECUTE FUNCTION public.invalidate_delivery_address_approval();
+
 CREATE OR REPLACE FUNCTION public.create_order(p_address_id uuid, p_payment_method text, p_items jsonb, p_notes text DEFAULT NULL::text, p_change_for text DEFAULT NULL::text, p_coupon_code text DEFAULT NULL::text, p_client_request_id text DEFAULT NULL::text)
  RETURNS jsonb
  LANGUAGE plpgsql
