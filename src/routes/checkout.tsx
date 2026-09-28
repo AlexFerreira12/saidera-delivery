@@ -8,9 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { brl } from "@/lib/format";
-import { isGuaribaCityAddress } from "@/lib/delivery-policy";
+import { GUARIBA_FLAT_DELIVERY_FEE, isGuaribaCityAddress } from "@/lib/delivery-policy";
+import { fetchStoreSettings } from "@/lib/catalog";
 import { checkoutErrorMessage, COUPON_STORAGE_KEY } from "@/lib/checkout";
-import { fetchAddresses, useZones, type Address } from "@/routes/enderecos";
+import { fetchAddresses, type Address } from "@/routes/enderecos";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -41,7 +42,16 @@ function CheckoutPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
   const cart = useCart();
-  const zones = useZones();
+  const { data: store } = useQuery({ queryKey: ["store-settings"], queryFn: fetchStoreSettings });
+  const { data: approvals } = useQuery({
+    queryKey: ["delivery-approvals", session?.user.id],
+    enabled: !!session,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("delivery_address_approvals" as never).select("address_id,approved");
+      if (error) throw error;
+      return (data ?? []) as { address_id: string; approved: boolean }[];
+    },
+  });
 
   const [addressId, setAddressId] = useState<string | null>(null);
   const [payment, setPayment] = useState<string>("dinheiro");
@@ -76,12 +86,12 @@ function CheckoutPage() {
     () => addresses?.find((a) => a.id === addressId),
     [addresses, addressId],
   );
-  const zone = zones.data?.find((z) => z.neighborhood === address?.neighborhood);
-  // Never silently treat an unknown neighborhood as free delivery.
-  // Once the citywide fee is implemented in create_order, this UI must read
-  // the same centrally configured fee instead of matching neighborhoods.
-  const deliveryFee = zone ? Number(zone.fee) : null;
-  const total = deliveryFee === null ? null : cart.subtotal + deliveryFee;
+  const approved = !!address && approvals?.some((entry) => entry.address_id === address.id && entry.approved);
+  // This branch must only be deployed alongside the reviewed-address backend migration.
+  const deliveryFee = approved && store ? Number(store.default_delivery_fee ?? GUARIBA_FLAT_DELIVERY_FEE) : null;
+  const freeShipping = deliveryFee !== null && Number(store?.free_delivery_above ?? 0) > 0 && cart.subtotal >= Number(store?.free_delivery_above);
+  const effectiveFee = freeShipping ? 0 : deliveryFee;
+  const total = effectiveFee === null ? null : cart.subtotal + effectiveFee;
 
   const placeOrder = async () => {
     if (!address) {
@@ -93,7 +103,7 @@ function CheckoutPage() {
       return;
     }
     if (deliveryFee === null) {
-      toast.error("Taxa de entrega indisponível. Estamos atualizando a cobertura de Guariba; tente novamente em breve.");
+      toast.error("Endereço aguardando validação da área de entrega. Entre em contato com a loja.");
       return;
     }
     if (cart.items.length === 0) {
@@ -180,10 +190,12 @@ function CheckoutPage() {
               + Cadastrar endereço de entrega
             </Link>
           )}
-          {zone && (
+          {address && !approved && (
+            <p className="mt-3 text-xs text-muted-foreground">Endereço aguardando validação da loja para confirmar que está na área urbana.</p>
+          )}
+          {approved && store && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Entrega em ~{zone.eta_minutes} min · taxa {brl(Number(zone.fee))} · mínimo{" "}
-              {brl(Number(zone.min_order))}
+              Entrega em ~{store.avg_delivery_minutes} min · taxa {brl(Number(store.default_delivery_fee))} · pedido mínimo {brl(Number(store.min_order))}
             </p>
           )}
         </section>
@@ -234,7 +246,7 @@ function CheckoutPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Taxa de entrega</span>
-            <span className="font-semibold">{deliveryFee === null ? "A confirmar" : brl(deliveryFee)}</span>
+            <span className="font-semibold">{effectiveFee === null ? "A confirmar" : brl(effectiveFee)}</span>
           </div>
           {coupon && (
             <div className="flex justify-between">
