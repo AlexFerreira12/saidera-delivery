@@ -237,13 +237,21 @@ BEGIN
   END IF;
 
   IF v_key IS NOT NULL THEN
+    -- Serialize retries for the same user/key so concurrent submissions cannot race
+    -- past the existence check and collide only at the unique index.
+    PERFORM pg_advisory_xact_lock(hashtext(v_user::text || ':' || v_key));
     SELECT * INTO v_order FROM public.orders WHERE user_id = v_user AND client_request_id = v_key;
     IF v_order.id IS NOT NULL THEN
       RETURN jsonb_build_object(
         'order_id', v_order.id, 'order_number', v_order.order_number,
         'subtotal', v_order.subtotal, 'delivery_fee', v_order.delivery_fee,
         'discount', v_order.discount, 'total', v_order.total,
-        'free_shipping', false, 'payment_method', v_order.payment_method,
+        'free_shipping', COALESCE((
+          SELECT c.discount_type = 'free_shipping'
+          FROM public.coupons c
+          WHERE c.code = v_order.coupon_code
+          LIMIT 1
+        ), false), 'payment_method', v_order.payment_method,
         'requires_online_payment', v_order.payment_method = 'pix', 'duplicate', true
       );
     END IF;

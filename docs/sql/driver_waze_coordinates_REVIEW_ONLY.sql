@@ -40,3 +40,6 @@ BEGIN
   RETURN v_result;
 END; $function$
 ;
+
+REVOKE ALL ON FUNCTION public.driver_my_orders() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.driver_my_orders() TO authenticated;
