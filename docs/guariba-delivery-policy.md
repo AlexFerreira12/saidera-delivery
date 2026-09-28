@@ -18,3 +18,11 @@
 6. Nenhum endereço sem taxa configurada pode gerar pedido gratuito por engano.
 7. Todo endereço elegível deve receber exatamente R$ 5,99 de frete no cálculo do servidor e no checkout, antes de cupons ou promoções.
 8. Não usar uma correspondência de bairro para determinar elegibilidade ou valor do frete.
+
+## Auditoria do Supabase (consulta somente leitura)
+- `store_settings.default_delivery_fee` já está em R$ 5,99.
+- `store_settings.free_delivery_above` está em R$ 100,00; decidir se a promoção de frete grátis continua antes de migrar a RPC.
+- A RPC atual `create_order` ainda consulta `delivery_zones` por nome do bairro, utiliza `v_zone.fee`, `v_zone.min_order` e `v_zone.eta_minutes`; migrar esses três campos para configurações da loja.
+- Índice único parcial `orders_client_request_uidx` em `(user_id, client_request_id)` foi confirmado, ajudando a evitar duplicação concorrente.
+- Checagem apenas de cidade/UF não distingue zona urbana de rural. Exigir validação confiável de perímetro urbano ou revisão manual, sem bloquear automaticamente ruas novas.
+- Nenhuma modificação de produção realizada durante a auditoria.
