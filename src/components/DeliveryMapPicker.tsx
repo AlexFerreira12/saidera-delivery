@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 export type MapLocation = { latitude:number; longitude:number };
 const INITIAL:MapLocation={latitude:-21.360,longitude:-48.230};
 const TILE=256;
@@ -7,6 +7,9 @@ function unproject(x:number,y:number,z:number):MapLocation{const n=2**z;return {
 /** A lightweight, dependency-free OSM tile selector. Position must still be reviewed server-side. */
 export function DeliveryMapPicker({value,onChange}:{value:MapLocation|null;onChange:(p:MapLocation)=>void}){
   const [center,setCenter]=useState<MapLocation>(value??INITIAL);const [zoom,setZoom]=useState(16);
+  useEffect(() => {
+    if (value) setCenter(value);
+  }, [value?.latitude, value?.longitude]);
   const tile=project(center,zoom),size=2**zoom;
   const tiles=[] as {x:number;y:number;url:string;left:number;top:number}[];
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){

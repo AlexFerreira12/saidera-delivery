@@ -60,6 +60,7 @@ function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [coupon, setCoupon] = useState<string | null>(null);
   const requestIdRef = useRef<string | null>(null);
+  const requestFingerprintRef = useRef<string | null>(null);
 
   useEffect(() => {
     setCoupon(localStorage.getItem(COUPON_STORAGE_KEY));
@@ -115,11 +116,19 @@ function CheckoutPage() {
     try {
       const trimmedNotes = notes.trim();
       const trimmedChange = payment === "dinheiro" ? changeFor.trim() : "";
-      let requestId = requestIdRef.current;
-      if (!requestId) {
-        requestId = crypto.randomUUID();
-        requestIdRef.current = requestId;
+      const requestFingerprint = JSON.stringify({
+        addressId: address.id,
+        payment,
+        items: cart.items.map((item) => [item.id, item.quantity]).sort(([a], [b]) => String(a).localeCompare(String(b))),
+        notes: trimmedNotes,
+        changeFor: trimmedChange,
+        coupon,
+      });
+      if (!requestIdRef.current || requestFingerprintRef.current !== requestFingerprint) {
+        requestIdRef.current = crypto.randomUUID();
+        requestFingerprintRef.current = requestFingerprint;
       }
+      const requestId = requestIdRef.current;
       const { data, error } = await supabase.rpc("create_order", {
         p_address_id: address.id,
         p_payment_method: payment,
@@ -137,6 +146,8 @@ function CheckoutPage() {
         total: number;
         requires_online_payment?: boolean;
       };
+      requestIdRef.current = null;
+      requestFingerprintRef.current = null;
       cart.clear();
       localStorage.removeItem(COUPON_STORAGE_KEY);
       if (result.requires_online_payment) {
@@ -146,7 +157,6 @@ function CheckoutPage() {
         void navigate({ to: "/pedido/$id", params: { id: result.order_id } });
       }
     } catch (err) {
-      requestIdRef.current = null;
       toast.error(checkoutErrorMessage(err));
     } finally {
       setPlacing(false);
