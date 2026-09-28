@@ -12,7 +12,7 @@ function AddressReviews(){
   const addresses=useQuery({queryKey:["admin","review-addresses"],queryFn:async()=>{const {data,error}=await supabase.from("addresses").select("id,street,number,neighborhood,city,state,reference,latitude,longitude,created_at").order("created_at",{ascending:false});if(error)throw error;return data as ReviewAddress[];}});
   const approvals=useQuery({queryKey:["admin","address-approvals"],queryFn:async()=>{const {data,error}=await supabase.from("delivery_address_approvals" as never).select("address_id,approved,reviewed_at,review_note");if(error)throw error;return data as Approval[];}});
   const review=async(address:ReviewAddress,approved:boolean)=>{
-    if(!address.latitude||!address.longitude){toast.error("Endereço sem coordenadas confirmadas. Solicite a localização ao cliente.");return;}
+    if(address.latitude==null||address.longitude==null){toast.error("Endereço sem coordenadas confirmadas. Solicite a localização ao cliente.");return;}
     const note=prompt(approved?"Confirme que o ponto fica na área urbana de Guariba. Observação (opcional):":"Informe o motivo da recusa ou necessidade de correção:");
     if(note===null)return;
     if(!approved&&!note.trim()){toast.error("Informe o motivo.");return;}
