@@ -27,6 +27,10 @@ jobs:
         run: bun run test
       - name: Build
         run: bun run build
+      - name: Install Chromium for map E2E
+        run: bunx playwright install --with-deps chromium
+      - name: Map E2E mobile and desktop
+        run: bunx playwright test -c tests/map-harness/playwright.config.ts
       - name: Lint changed delivery files
         run: |
           bunx eslint             src/components/DeliveryMapPicker.tsx             src/lib/checkout.ts             src/lib/delivery-geofence.ts             src/lib/delivery-map.test.ts             src/lib/delivery-policy.test.ts             src/lib/delivery-policy.ts             src/lib/delivery.ts             src/lib/waze.ts             src/routes/admin.area-entrega.tsx             src/routes/admin.enderecos.tsx             src/routes/admin.tsx             src/routes/checkout.tsx             src/routes/enderecos.tsx             src/routes/entregador.tsx
