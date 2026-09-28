@@ -35,7 +35,6 @@ describe("urban geofence", () => {
   });
 });
 
-
 describe("Guariba delivery perimeter regression", () => {
   const urbanBaseline = [
     { latitude: -21.3653738, longitude: -48.2596604 },
@@ -88,8 +87,8 @@ describe("Guariba delivery perimeter regression", () => {
   });
 
   it("accepts a central point and rejects clearly external points", () => {
-    expect(isInsideDeliveryPolygon({ latitude: -21.36, longitude: -48.23 }, urbanBaseline)).toBe(true);
-    expect(isInsideDeliveryPolygon({ latitude: -21.4, longitude: -48.23 }, urbanBaseline)).toBe(false);
-    expect(isInsideDeliveryPolygon({ latitude: -21.35, longitude: -48.18 }, urbanBaseline)).toBe(false);
+    expect(isInsideDeliveryPolygon({ latitude: -21.36, longitude: -48.23 }, urbanBaseline)).toBe(\n      true,\n    );
+    expect(isInsideDeliveryPolygon({ latitude: -21.4, longitude: -48.23 }, urbanBaseline)).toBe(\n      false,\n    );
+    expect(isInsideDeliveryPolygon({ latitude: -21.35, longitude: -48.18 }, urbanBaseline)).toBe(\n      false,\n    );
   });
 });
