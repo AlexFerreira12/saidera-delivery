@@ -30,7 +30,16 @@ jobs:
       - name: Install Chromium for map E2E
         run: bunx playwright install --with-deps chromium
       - name: Map E2E mobile and desktop
-        run: bunx playwright test -c tests/map-harness/playwright.config.ts
+        run: |
+          bunx vite tests/map-harness --host 127.0.0.1 --port 4174 >/tmp/map-vite.log 2>&1 &
+          VITE_PID=$!
+          trap 'kill $VITE_PID 2>/dev/null || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4174/ >/dev/null
+          bunx playwright test -c tests/map-harness/playwright.config.ts
       - name: Lint changed delivery files
         run: |
           bunx eslint             src/components/DeliveryMapPicker.tsx             src/lib/checkout.ts             src/lib/delivery-geofence.ts             src/lib/delivery-map.test.ts             src/lib/delivery-policy.test.ts             src/lib/delivery-policy.ts             src/lib/delivery.ts             src/lib/waze.ts             src/routes/admin.area-entrega.tsx             src/routes/admin.enderecos.tsx             src/routes/admin.tsx             src/routes/checkout.tsx             src/routes/enderecos.tsx             src/routes/entregador.tsx
