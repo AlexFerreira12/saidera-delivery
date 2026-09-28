@@ -377,7 +377,7 @@ function AssignedCard({
           rel="noreferrer"
           className="rounded-lg border border-border px-3 py-2 text-xs font-bold"
         >
-          Rota
+          Abrir no Waze
         </a>
         <button
           type="button"
