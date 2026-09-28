@@ -30,3 +30,9 @@
 ## Alteração aplicada em produção
 - `store_settings.free_delivery_above` passou de R$ 100,00 para **0** em 27/09/2026, conforme autorização do proprietário. A condição atual da RPC `v_store.free_delivery_above > 0` preserva a possibilidade de reativação futura.
 - Taxas por bairro ainda permanecem ativas na RPC antiga: não considerar a migração de frete fixo concluída.
+
+## Revisão de implementação em andamento
+- SQL de revisão está em `docs/sql/guariba_citywide_delivery_REVIEW_ONLY.sql`, **fora** de `supabase/migrations`, para impedir implantação automática acidental.
+- Nova tabela `delivery_address_approvals` é proposta com políticas RLS: somente administradores podem escrever; clientes consultam apenas o estado dos próprios endereços.
+- Checkout da branch consulta a aprovação e os campos gerais da loja. **Ainda não publicar**: faltam interface administrativa de aprovação, geração dos tipos Supabase, validação do SQL em ambiente de testes e testes de ponta a ponta.
+- O cadastro de endereços atual usa cidade/UF padrão Guariba/SP; para validar de forma robusta, a revisão humana deve conferir a localização, não apenas o texto informado.
