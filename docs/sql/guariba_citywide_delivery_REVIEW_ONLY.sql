@@ -67,6 +67,27 @@ END;
 $point_in_polygon$;
 REVOKE ALL ON FUNCTION public.delivery_point_in_polygon(double precision,double precision,jsonb) FROM PUBLIC;
 
+CREATE TABLE IF NOT EXISTS public.delivery_address_approvals (
+  address_id uuid PRIMARY KEY REFERENCES public.addresses(id) ON DELETE CASCADE,
+  approved boolean NOT NULL DEFAULT false,
+  reviewed_by uuid REFERENCES auth.users(id),
+  reviewed_at timestamptz,
+  review_note text,
+  CONSTRAINT approval_requires_reviewer CHECK (NOT approved OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL))
+);
+ALTER TABLE public.delivery_address_approvals ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.delivery_address_approvals FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.delivery_address_approvals TO authenticated;
+DROP POLICY IF EXISTS delivery_approvals_admin_only ON public.delivery_address_approvals;
+CREATE POLICY delivery_approvals_admin_only ON public.delivery_address_approvals
+  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+DROP POLICY IF EXISTS delivery_approvals_owner_read ON public.delivery_address_approvals;
+CREATE POLICY delivery_approvals_owner_read ON public.delivery_address_approvals
+  FOR SELECT TO authenticated USING (
+    EXISTS (SELECT 1 FROM public.addresses a WHERE a.id = address_id AND a.user_id = auth.uid())
+  );
+
+
 CREATE OR REPLACE FUNCTION public.delivery_address_eligibility(p_address_id uuid)
 RETURNS text
 LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
@@ -87,25 +108,6 @@ $eligibility$;
 REVOKE ALL ON FUNCTION public.delivery_address_eligibility(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.delivery_address_eligibility(uuid) TO authenticated;
 
-CREATE TABLE IF NOT EXISTS public.delivery_address_approvals (
-  address_id uuid PRIMARY KEY REFERENCES public.addresses(id) ON DELETE CASCADE,
-  approved boolean NOT NULL DEFAULT false,
-  reviewed_by uuid REFERENCES auth.users(id),
-  reviewed_at timestamptz,
-  review_note text,
-  CONSTRAINT approval_requires_reviewer CHECK (NOT approved OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL))
-);
-ALTER TABLE public.delivery_address_approvals ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.delivery_address_approvals FROM anon, authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.delivery_address_approvals TO authenticated;
-DROP POLICY IF EXISTS delivery_approvals_admin_only ON public.delivery_address_approvals;
-CREATE POLICY delivery_approvals_admin_only ON public.delivery_address_approvals
-  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-DROP POLICY IF EXISTS delivery_approvals_owner_read ON public.delivery_address_approvals;
-CREATE POLICY delivery_approvals_owner_read ON public.delivery_address_approvals
-  FOR SELECT TO authenticated USING (
-    EXISTS (SELECT 1 FROM public.addresses a WHERE a.id = address_id AND a.user_id = auth.uid())
-  );
 
 
 -- Any address change that could move the delivery point requires a fresh review.
