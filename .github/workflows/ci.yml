@@ -1,4 +1,5 @@
 name: CI audit
+# Validates the audited delivery branch without deploying.
 
 on:
   push:
