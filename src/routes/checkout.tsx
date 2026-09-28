@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { brl } from "@/lib/format";
+import { isGuaribaCityAddress } from "@/lib/delivery-policy";
 import { checkoutErrorMessage, COUPON_STORAGE_KEY } from "@/lib/checkout";
 import { fetchAddresses, useZones, type Address } from "@/routes/enderecos";
 
@@ -85,6 +86,10 @@ function CheckoutPage() {
   const placeOrder = async () => {
     if (!address) {
       toast.error("Selecione um endereço de entrega.");
+      return;
+    }
+    if (!isGuaribaCityAddress(address)) {
+      toast.error("Por enquanto, entregamos apenas em Guariba/SP.");
       return;
     }
     if (deliveryFee === null) {
