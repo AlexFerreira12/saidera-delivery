@@ -27,8 +27,8 @@ BEGIN
         'neighborhood', o.address_snapshot->>'neighborhood',
         'city', o.address_snapshot->>'city',
         'reference', o.address_snapshot->>'reference',
-        'latitude', o.address_snapshot->'latitude',
-        'longitude', o.address_snapshot->'longitude'
+        'latitude', CASE WHEN jsonb_typeof(o.address_snapshot->'latitude') = 'number' THEN (o.address_snapshot->>'latitude')::double precision END,
+        'longitude', CASE WHEN jsonb_typeof(o.address_snapshot->'longitude') = 'number' THEN (o.address_snapshot->>'longitude')::double precision END
       ),
       'items', (SELECT COALESCE(jsonb_agg(jsonb_build_object('id', oi.id, 'name', oi.product_name, 'quantity', oi.quantity) ORDER BY oi.product_name), '[]'::jsonb)
                   FROM public.order_items oi WHERE oi.order_id = o.id)

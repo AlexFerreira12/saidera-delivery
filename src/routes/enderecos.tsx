@@ -109,6 +109,10 @@ function AddressesPage() {
       toast.error("Confirme sua localização antes de salvar.");
       return;
     }
+    if (!Number.isFinite(form.latitude) || !Number.isFinite(form.longitude) || form.latitude < -90 || form.latitude > 90 || form.longitude < -180 || form.longitude > 180) {
+      toast.error("A localização selecionada é inválida. Marque novamente no mapa.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("addresses").insert({
       user_id: session!.user.id,
