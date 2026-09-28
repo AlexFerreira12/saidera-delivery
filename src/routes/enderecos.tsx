@@ -19,6 +19,8 @@ export type Address = {
   reference: string | null;
   zipcode: string | null;
   is_default: boolean;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export const Route = createFileRoute("/enderecos")({
@@ -73,6 +75,8 @@ const empty = {
   neighborhood: "",
   reference: "",
   zipcode: "",
+  latitude: null as number | null,
+  longitude: null as number | null,
 };
 
 function AddressesPage() {
@@ -82,6 +86,7 @@ function AddressesPage() {
   const [form, setForm] = useState(empty);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
@@ -99,6 +104,10 @@ function AddressesPage() {
       toast.error("Preencha rua, número e bairro.");
       return;
     }
+    if (form.latitude === null || form.longitude === null) {
+      toast.error("Confirme sua localização antes de salvar.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("addresses").insert({
       user_id: session!.user.id,
@@ -109,6 +118,8 @@ function AddressesPage() {
       neighborhood: form.neighborhood,
       reference: form.reference || null,
       zipcode: form.zipcode || null,
+      latitude: form.latitude,
+      longitude: form.longitude,
       is_default: !addresses || addresses.length === 0,
     });
     setSaving(false);
@@ -208,6 +219,24 @@ function AddressesPage() {
               Atendemos toda a área urbana de Guariba, inclusive loteamentos novos.
               Informe o bairro mesmo que ainda não apareça nos mapas.
             </p>
+            <section className="space-y-2 rounded-xl border border-border p-3">
+              <p className="text-sm font-semibold">Localização da entrega</p>
+              <p className="text-xs text-muted-foreground">Com sua autorização, utilizaremos o GPS do celular. Confira a posição no mapa: ela será usada na rota do entregador. Se o GPS indicar o lugar errado, solicite ajuda à loja antes de salvar.</p>
+              <button type="button" disabled={locating} onClick={() => {
+                if (!navigator.geolocation) { toast.error("Seu navegador não oferece localização."); return; }
+                setLocating(true);
+                navigator.geolocation.getCurrentPosition(
+                  ({coords}) => { setForm(current => ({...current,latitude:coords.latitude,longitude:coords.longitude})); setLocating(false); },
+                  () => { toast.error("Não foi possível obter a localização. Verifique a permissão do navegador."); setLocating(false); },
+                  {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+                );
+              }} className="w-full rounded-xl border border-primary px-3 py-2 text-sm font-semibold text-primary disabled:opacity-50">{locating?"Localizando...":"Usar localização atual"}</button>
+              {form.latitude !== null && form.longitude !== null && <>
+                <iframe title="Prévia da localização da entrega" loading="lazy" className="h-52 w-full rounded-xl border" referrerPolicy="no-referrer" src={`https://www.openstreetmap.org/export/embed.html?bbox=${form.longitude-0.004}%2C${form.latitude-0.003}%2C${form.longitude+0.004}%2C${form.latitude+0.003}&layer=mapnik&marker=${form.latitude}%2C${form.longitude}`}/>
+                <p className="text-xs text-muted-foreground">Confira o marcador. Esta versão ainda não permite arrastá-lo; use o GPS apenas se estiver no endereço de entrega.</p>
+                <button type="button" className="text-xs font-semibold underline" onClick={()=>setForm(current=>({...current,latitude:null,longitude:null}))}>Limpar localização</button>
+              </>}
+            </section>
             <Input
               label="Ponto de referência"
               value={form.reference}
