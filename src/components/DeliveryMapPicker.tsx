@@ -33,10 +33,21 @@ export function DeliveryMapPicker({
   recenterOnValueChange = true,
 }: Props) {
   const [center, setCenter] = useState<MapLocation>(value ?? INITIAL);
-  const [zoom, setZoom] = useState(16);\n  const mapRef = useRef<HTMLDivElement>(null);\n  const [viewportWidth, setViewportWidth] = useState(0);
+  const [zoom, setZoom] = useState(16);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [viewportWidth, setViewportWidth] = useState(0);
   useEffect(() => {
     if (recenterOnValueChange && value) setCenter(value);
   }, [recenterOnValueChange, value]);
+  useEffect(() => {
+    const node = mapRef.current;
+    if (!node) return;
+    const update = () => setViewportWidth(node.getBoundingClientRect().width);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
   const tile = project(center, zoom),
     size = 2 ** zoom;
   const tiles = [] as { x: number; y: number; url: string; left: number; top: number }[];
@@ -70,7 +81,8 @@ export function DeliveryMapPicker({
   return (
     <div className="space-y-2">
       <div
-        ref={mapRef}\n        className="relative h-64 w-full overflow-hidden rounded-xl border bg-secondary"
+        ref={mapRef}
+        className="relative h-64 w-full overflow-hidden rounded-xl border bg-secondary"
         role="application"
         aria-label={
           mode === "polygon"
