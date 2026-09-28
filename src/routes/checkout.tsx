@@ -43,16 +43,6 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const cart = useCart();
   const { data: store } = useQuery({ queryKey: ["store-settings"], queryFn: fetchStoreSettings });
-  const { data: approvals } = useQuery({
-    queryKey: ["delivery-approvals", session?.user.id],
-    enabled: !!session,
-    queryFn: async () => {
-      const { data, error } = await supabase.from("delivery_address_approvals" as never).select("address_id,approved");
-      if (error) throw error;
-      return (data ?? []) as { address_id: string; approved: boolean }[];
-    },
-  });
-
   const [addressId, setAddressId] = useState<string | null>(null);
   const [payment, setPayment] = useState<string>("dinheiro");
   const [changeFor, setChangeFor] = useState("");
@@ -87,9 +77,18 @@ function CheckoutPage() {
     () => addresses?.find((a) => a.id === addressId),
     [addresses, addressId],
   );
-  const approved = !!address && approvals?.some((entry) => entry.address_id === address.id && entry.approved);
-  // This branch must only be deployed alongside the reviewed-address backend migration.
-  const deliveryFee = approved && store ? Number(store.default_delivery_fee ?? GUARIBA_FLAT_DELIVERY_FEE) : null;
+  const eligibility = useQuery({
+    queryKey: ["delivery-eligibility", address?.id],
+    enabled: !!address?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("delivery_address_eligibility" as never, { p_address_id: address!.id } as never);
+      if (error) throw error;
+      return data as unknown as "inside" | "override" | "pending" | "outside" | "invalid";
+    },
+  });
+  const deliveryEligible = eligibility.data === "inside" || eligibility.data === "override";
+  // This branch must only be deployed together with the delivery eligibility backend migration.
+  const deliveryFee = deliveryEligible && store ? Number(store.default_delivery_fee ?? GUARIBA_FLAT_DELIVERY_FEE) : null;
   const freeShipping = deliveryFee !== null && Number(store?.free_delivery_above ?? 0) > 0 && cart.subtotal >= Number(store?.free_delivery_above);
   const effectiveFee = freeShipping ? 0 : deliveryFee;
   const total = effectiveFee === null ? null : cart.subtotal + effectiveFee;
@@ -200,10 +199,12 @@ function CheckoutPage() {
               + Cadastrar endereço de entrega
             </Link>
           )}
-          {address && !approved && (
-            <p className="mt-3 text-xs text-muted-foreground">Endereço aguardando validação da loja para confirmar que está na área urbana.</p>
-          )}
-          {approved && store && (
+          {address && eligibility.isLoading && <p className="mt-3 text-xs text-muted-foreground">Verificando área de entrega...</p>}
+          {address && eligibility.data === "pending" && <p className="mt-3 text-xs text-muted-foreground">Localização em análise. A loja pode aprovar manualmente loteamentos novos.</p>}
+          {address && eligibility.data === "outside" && <p className="mt-3 text-xs text-destructive">Este endereço está fora de Guariba/SP.</p>}
+          {address && eligibility.data === "invalid" && <p className="mt-3 text-xs text-destructive">Endereço inválido. Revise o cadastro.</p>}
+          {address && eligibility.isError && <p className="mt-3 text-xs text-destructive">Não foi possível verificar a área de entrega.</p>}
+          {deliveryEligible && store && (
             <p className="mt-3 text-xs text-muted-foreground">
               Entrega em ~{store.avg_delivery_minutes} min · taxa {brl(Number(store.default_delivery_fee))} · pedido mínimo {brl(Number(store.min_order))}
             </p>
