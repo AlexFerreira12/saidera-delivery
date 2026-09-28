@@ -1,2 +1,2 @@
 import{defineConfig}from"@playwright/test";
-export default defineConfig({testDir:".",testMatch:"map.spec.ts",use:{baseURL:"http://127.0.0.1:4174"},webServer:{command:"bunx vite tests/map-harness --host 127.0.0.1 --port 4174",url:"http://127.0.0.1:4174",reuseExistingServer:false,timeout:120000},reporter:"line"});
+export default defineConfig({timeout:30000,testDir:".",testMatch:"map.spec.ts",use:{baseURL:"http://127.0.0.1:4174"},webServer:{command:"bunx vite tests/map-harness --host 127.0.0.1 --port 4174",url:"http://127.0.0.1:4174",reuseExistingServer:false,timeout:120000},reporter:"line"});
