@@ -40,7 +40,7 @@ function DeliveryAreaPage(){
   return <main className="space-y-4 p-4">
     <div><h1 className="text-xl font-bold">Área de entrega</h1><p className="text-sm text-muted-foreground">Monte o contorno da área urbana tocando no mapa em sequência. Não inclua zona rural. Para loteamentos novos, amplie o contorno quando necessário.</p></div>
     {areas.error&&<p className="rounded-xl border border-destructive/30 p-3 text-sm text-destructive">Configuração ainda não disponível no banco. Não execute alterações em produção até a migração ser revisada.</p>}
-    <DeliveryMapPicker value={draft.at(-1)??null} onChange={add}/>
+    <DeliveryMapPicker value={draft.at(-1)??null} onChange={add} polygon={draft} mode="polygon"/>
     <section className="surface-card space-y-2 p-4"><p className="text-sm font-semibold">Vértices: {draft.length}</p><p className="text-xs text-muted-foreground">{draft.length<3?"Adicione pelo menos 3 pontos para formar a área.":"O último ponto é ligado automaticamente ao primeiro no cálculo do servidor."}</p>
       <div className="flex flex-wrap gap-2"><button type="button" onClick={removeLast} disabled={!draft.length} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Remover último</button><button type="button" onClick={clear} disabled={!draft.length} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Limpar desenho</button><button type="button" onClick={()=>void save()} disabled={saving||draft.length<3} className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50">{saving?"Salvando...":"Salvar área"}</button></div>
     </section>
