@@ -7,66 +7,7 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import { DeliveryMapPicker } from "@/components/DeliveryMapPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-
-export type Address = {
-  id: string;
-  label: string;
-  street: string;
-  number: string;
-  complement: string | null;
-  neighborhood: string;
-  city: string;
-  state: string;
-  reference: string | null;
-  zipcode: string | null;
-  is_default: boolean;
-  latitude: number | null;
-  longitude: number | null;
-};
-
-export const Route = createFileRoute("/enderecos")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Meus endereços — Bebidas Guariba" },
-      { name: "description", content: "Cadastre e gerencie endereços de entrega em Guariba/SP." },
-      { property: "og:title", content: "Meus endereços — Bebidas Guariba" },
-      { property: "og:description", content: "Gerencie seus endereços de entrega." },
-    ],
-  }),
-  component: AddressesPage,
-});
-
-export async function fetchAddresses() {
-  const { data, error } = await supabase
-    .from("addresses")
-    .select("*")
-    .order("is_default", { ascending: false })
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as Address[];
-}
-
-export function useZones() {
-  return useQuery({
-    queryKey: ["zones"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("delivery_zones")
-        .select("*")
-        .eq("is_active", true)
-        .order("neighborhood");
-      if (error) throw error;
-      return (data ?? []) as {
-        id: string;
-        neighborhood: string;
-        fee: number;
-        min_order: number;
-        eta_minutes: number;
-      }[];
-    },
-  });
-}
+import { fetchAddresses } from "@/lib/addresses";
 
 const empty = {
   label: "Casa",

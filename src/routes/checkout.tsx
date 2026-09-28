@@ -11,7 +11,7 @@ import { brl } from "@/lib/format";
 import { GUARIBA_FLAT_DELIVERY_FEE, isGuaribaCityAddress } from "@/lib/delivery-policy";
 import { fetchStoreSettings } from "@/lib/catalog";
 import { checkoutErrorMessage, COUPON_STORAGE_KEY } from "@/lib/checkout";
-import { fetchAddresses, type Address } from "@/routes/enderecos";
+import { fetchAddresses, type Address } from "@/lib/addresses";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
