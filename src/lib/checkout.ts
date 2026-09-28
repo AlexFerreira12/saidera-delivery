@@ -21,7 +21,7 @@ export function checkoutErrorMessage(raw: unknown): string {
     case "ENDERECO_INVALIDO":
       return "Selecione um endereço de entrega válido.";
     case "FORA_DA_AREA":
-      return "Ainda não entregamos nesse bairro.";
+      return "Não foi possível validar a entrega neste endereço de Guariba. Entre em contato com a loja.";
     case "QUANTIDADE_INVALIDA":
       return "Quantidade inválida em um dos itens.";
     case "PRODUTO_INDISPONIVEL":
