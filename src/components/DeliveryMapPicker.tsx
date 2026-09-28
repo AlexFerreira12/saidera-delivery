@@ -12,7 +12,7 @@ export function DeliveryMapPicker({value,onChange}:{value:MapLocation|null;onCha
   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
     const x=Math.floor(tile.x)+dx,y=Math.floor(tile.y)+dy;
     if(y<0||y>=size)continue;
-    tiles.push({x,y,url:`https://tile.openstreetmap.org/${zoom}/${(x+size)%size}/${y}.png`,left:(x-tile.x)*TILE+TILE/2,top:(y-tile.y)*TILE+TILE/2});
+    tiles.push({x,y,url:`https://tile.openstreetmap.org/${zoom}/${(x+size)%size}/${y}.png`,left:(x-tile.x)*TILE-TILE/2,top:(y-tile.y)*TILE-TILE/2});
   }
   const choose=(clientX:number,clientY:number,rect:DOMRect)=>{
     const x=tile.x+(clientX-rect.left-rect.width/2)/TILE;
@@ -23,7 +23,7 @@ export function DeliveryMapPicker({value,onChange}:{value:MapLocation|null;onCha
   const markerX=marker?(marker.x-tile.x)*TILE+TILE/2:null;
   const markerY=marker?(marker.y-tile.y)*TILE+TILE/2:null;
   return <div className="space-y-2"><div className="relative h-64 w-full overflow-hidden rounded-xl border bg-secondary" role="application" aria-label="Mapa para escolher o ponto de entrega" onClick={e=>{const rect=e.currentTarget.getBoundingClientRect();choose(e.clientX,e.clientY,rect);}}>
-    {tiles.map(t=><img key={`${zoom}-${t.x}-${t.y}`} src={t.url} alt="" draggable={false} className="pointer-events-none absolute h-64 w-64 max-w-none select-none" style={{left:`calc(50% + ${t.left-128}px)`,top:`calc(50% + ${t.top-128}px)`}}/>)}
+    {tiles.map(t=><img key={`${zoom}-${t.x}-${t.y}`} src={t.url} alt="" draggable={false} className="pointer-events-none absolute h-64 w-64 max-w-none select-none" style={{left:`calc(50% + ${t.left}px)`,top:`calc(50% + ${t.top}px)`}}/>)}
     {markerX!==null&&markerY!==null&&Math.abs(markerX)<1024&&Math.abs(markerY!)<1024&&<span className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full text-3xl drop-shadow" style={{left:`calc(50% + ${markerX-128}px)`,top:`calc(50% + ${markerY!-128}px)`}} aria-label="Ponto escolhido">📍</span>}
     <span className="pointer-events-none absolute bottom-1 right-1 bg-background/90 px-1 text-[10px]">© OpenStreetMap contributors</span>
   </div><div className="flex items-center gap-2"><button type="button" className="rounded-lg border px-3 py-2 text-sm" onClick={()=>setZoom(z=>Math.min(19,z+1))}>+ Zoom</button><button type="button" className="rounded-lg border px-3 py-2 text-sm" onClick={()=>setZoom(z=>Math.max(12,z-1))}>− Zoom</button><button type="button" className="rounded-lg border px-3 py-2 text-sm" onClick={()=>{setCenter(INITIAL);setZoom(16);}}>Guariba</button></div><p className="text-xs text-muted-foreground">Toque no mapa para escolher o ponto exato. Para deslocar a visualização, escolha outro ponto e ajuste o zoom. Confirme rua e número separadamente.</p></div>;
