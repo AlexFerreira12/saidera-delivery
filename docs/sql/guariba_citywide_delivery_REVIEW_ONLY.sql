@@ -105,7 +105,7 @@ BEGIN
   RETURN 'pending';
 END;
 $eligibility$;
-REVOKE ALL ON FUNCTION public.delivery_address_eligibility(uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.delivery_address_eligibility(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.delivery_address_eligibility(uuid) TO authenticated;
 
 
@@ -143,7 +143,7 @@ BEGIN
   RETURN v_id;
 END;
 $admin_area$;
-REVOKE ALL ON FUNCTION public.admin_save_delivery_area(bigint,text,jsonb) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.admin_save_delivery_area(bigint,text,jsonb) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_save_delivery_area(bigint,text,jsonb) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.admin_review_delivery_address(p_address_id uuid, p_approved boolean, p_note text DEFAULT NULL)
@@ -166,7 +166,7 @@ BEGIN
   ON CONFLICT (address_id) DO UPDATE SET approved=EXCLUDED.approved,reviewed_by=EXCLUDED.reviewed_by,reviewed_at=EXCLUDED.reviewed_at,review_note=EXCLUDED.review_note;
 END;
 $admin_review$;
-REVOKE ALL ON FUNCTION public.admin_review_delivery_address(uuid,boolean,text) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.admin_review_delivery_address(uuid,boolean,text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_review_delivery_address(uuid,boolean,text) TO authenticated;
 
 
@@ -189,7 +189,7 @@ BEGIN
   RETURN NEW;
 END;
 $invalidate$;
-REVOKE ALL ON FUNCTION public.invalidate_delivery_address_approval() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.invalidate_delivery_address_approval() FROM PUBLIC, anon;
 DROP TRIGGER IF EXISTS trg_invalidate_delivery_address_approval ON public.addresses;
 CREATE TRIGGER trg_invalidate_delivery_address_approval
 AFTER UPDATE OF street, number, neighborhood, city, state, latitude, longitude
@@ -403,3 +403,5 @@ BEGIN
   );
 END; $function$
 ;
+REVOKE ALL ON FUNCTION public.create_order(uuid,text,jsonb,text,text,text,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.create_order(uuid,text,jsonb,text,text,text,text) TO authenticated;
