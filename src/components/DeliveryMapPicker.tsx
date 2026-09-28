@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 export type MapLocation = { latitude: number; longitude: number };
 const INITIAL: MapLocation = { latitude: -21.36, longitude: -48.23 };
 const TILE = 256;
@@ -33,7 +33,7 @@ export function DeliveryMapPicker({
   recenterOnValueChange = true,
 }: Props) {
   const [center, setCenter] = useState<MapLocation>(value ?? INITIAL);
-  const [zoom, setZoom] = useState(16);
+  const [zoom, setZoom] = useState(16);\n  const mapRef = useRef<HTMLDivElement>(null);\n  const [viewportWidth, setViewportWidth] = useState(0);
   useEffect(() => {
     if (recenterOnValueChange && value) setCenter(value);
   }, [recenterOnValueChange, value]);
@@ -70,7 +70,7 @@ export function DeliveryMapPicker({
   return (
     <div className="space-y-2">
       <div
-        className="relative h-64 w-full overflow-hidden rounded-xl border bg-secondary"
+        ref={mapRef}\n        className="relative h-64 w-full overflow-hidden rounded-xl border bg-secondary"
         role="application"
         aria-label={
           mode === "polygon"
@@ -98,7 +98,7 @@ export function DeliveryMapPicker({
             aria-hidden="true"
             style={{ overflow: "visible" }}
           >
-            <g transform="translate(50%, 128)">
+            <g transform={`translate(${viewportWidth / 2}, 128)`}>
               {polygonScreen.length >= 3 ? (
                 <polygon
                   points={linePoints}
