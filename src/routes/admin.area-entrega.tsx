@@ -29,12 +29,7 @@ function DeliveryAreaPage(){
     if(!confirm("Salvar esta área de cobertura? Endereços dentro dela poderão ser liberados automaticamente."))return;
     setSaving(true);
     try{
-      const {data:{user},error:authError}=await supabase.auth.getUser();if(authError||!user)throw authError??new Error("Sessão inválida");
-      if(current){
-        const {error}=await supabase.from("delivery_areas" as never).update({polygon:draft,updated_by:user.id,updated_at:new Date().toISOString()} as never).eq("id",current.id);if(error)throw error;
-      }else{
-        const {error}=await supabase.from("delivery_areas" as never).insert({name:"Área urbana de Guariba",polygon:draft,is_active:true,updated_by:user.id} as never);if(error)throw error;
-      }
+      const {error}=await supabase.rpc("admin_save_delivery_area" as never,{p_id:current?.id??null,p_name:current?.name??"Área urbana de Guariba",p_polygon:draft} as never);if(error)throw error;
       setPoints(null);await qc.invalidateQueries({queryKey:["admin","delivery-areas"]});toast.success("Área de cobertura salva.");
     }catch{toast.error("Não foi possível salvar. A migração de área de entrega precisa estar implantada.");}finally{setSaving(false);}
   };

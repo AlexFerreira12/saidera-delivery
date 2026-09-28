@@ -18,8 +18,7 @@ function AddressReviews(){
     if(!approved&&!note.trim()){toast.error("Informe o motivo.");return;}
     setBusy(address.id);
     try{
-      const {data:{user},error:authError}=await supabase.auth.getUser();if(authError||!user)throw authError??new Error("Faça login novamente.");
-      const {error}=await supabase.from("delivery_address_approvals" as never).upsert({address_id:address.id,approved,reviewed_by:user.id,reviewed_at:new Date().toISOString(),review_note:note.trim()||null} as never,{onConflict:"address_id"});if(error)throw error;
+      const {error}=await supabase.rpc("admin_review_delivery_address" as never,{p_address_id:address.id,p_approved:approved,p_note:note.trim()||null} as never);if(error)throw error;
       toast.success(approved?"Endereço aprovado.":"Endereço sinalizado para correção.");await qc.invalidateQueries({queryKey:["admin","address-approvals"]});
     }catch{toast.error("Não foi possível registrar a revisão.");}finally{setBusy(null);}
   };

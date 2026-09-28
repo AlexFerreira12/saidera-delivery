@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.delivery_areas (
 );
 ALTER TABLE public.delivery_areas ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.delivery_areas FROM anon, authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.delivery_areas TO authenticated;
+GRANT SELECT ON public.delivery_areas TO authenticated;
 DROP POLICY IF EXISTS delivery_areas_admin_all ON public.delivery_areas;
 CREATE POLICY delivery_areas_admin_all ON public.delivery_areas
   FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS public.delivery_address_approvals (
 );
 ALTER TABLE public.delivery_address_approvals ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.delivery_address_approvals FROM anon, authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.delivery_address_approvals TO authenticated;
+GRANT SELECT ON public.delivery_address_approvals TO authenticated;
 DROP POLICY IF EXISTS delivery_approvals_admin_only ON public.delivery_address_approvals;
 CREATE POLICY delivery_approvals_admin_only ON public.delivery_address_approvals
   FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
@@ -108,6 +108,66 @@ $eligibility$;
 REVOKE ALL ON FUNCTION public.delivery_address_eligibility(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.delivery_address_eligibility(uuid) TO authenticated;
 
+
+
+-- Administrative writes go through narrow RPCs instead of broad table DML grants.
+CREATE OR REPLACE FUNCTION public.admin_save_delivery_area(p_id bigint, p_name text, p_polygon jsonb)
+RETURNS bigint
+LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $admin_area$
+DECLARE v_id bigint;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.is_admin() THEN RAISE EXCEPTION 'SEM_PERMISSAO'; END IF;
+  IF p_polygon IS NULL OR jsonb_typeof(p_polygon) <> 'array' OR jsonb_array_length(p_polygon) < 3 THEN
+    RAISE EXCEPTION 'POLIGONO_INVALIDO';
+  END IF;
+  -- Reuse the parser/range checks for every vertex. A malformed vertex makes the polygon invalid.
+  IF EXISTS (
+    SELECT 1 FROM jsonb_array_elements(p_polygon) p
+    WHERE jsonb_typeof(p) <> 'object'
+       OR NOT (p ? 'latitude') OR NOT (p ? 'longitude')
+       OR CASE WHEN jsonb_typeof(p->'latitude') = 'number' AND jsonb_typeof(p->'longitude') = 'number'
+               THEN ((p->>'latitude')::double precision NOT BETWEEN -90 AND 90
+                  OR (p->>'longitude')::double precision NOT BETWEEN -180 AND 180)
+               ELSE true END
+  ) THEN RAISE EXCEPTION 'POLIGONO_INVALIDO'; END IF;
+  IF p_id IS NULL THEN
+    INSERT INTO public.delivery_areas(name,polygon,is_active,updated_by,updated_at)
+    VALUES (COALESCE(NULLIF(btrim(p_name),''),'Área urbana de Guariba'),p_polygon,true,auth.uid(),now())
+    RETURNING id INTO v_id;
+  ELSE
+    UPDATE public.delivery_areas SET name=COALESCE(NULLIF(btrim(p_name),''),name),polygon=p_polygon,updated_by=auth.uid(),updated_at=now()
+    WHERE id=p_id RETURNING id INTO v_id;
+    IF v_id IS NULL THEN RAISE EXCEPTION 'AREA_NAO_ENCONTRADA'; END IF;
+  END IF;
+  RETURN v_id;
+END;
+$admin_area$;
+REVOKE ALL ON FUNCTION public.admin_save_delivery_area(bigint,text,jsonb) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_save_delivery_area(bigint,text,jsonb) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_review_delivery_address(p_address_id uuid, p_approved boolean, p_note text DEFAULT NULL)
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
+AS $admin_review$
+DECLARE v_addr public.addresses%ROWTYPE;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.is_admin() THEN RAISE EXCEPTION 'SEM_PERMISSAO'; END IF;
+  SELECT * INTO v_addr FROM public.addresses WHERE id=p_address_id;
+  IF v_addr.id IS NULL THEN RAISE EXCEPTION 'ENDERECO_INVALIDO'; END IF;
+  IF p_approved AND (v_addr.latitude IS NULL OR v_addr.longitude IS NULL
+      OR v_addr.latitude NOT BETWEEN -90 AND 90 OR v_addr.longitude NOT BETWEEN -180 AND 180
+      OR lower(btrim(v_addr.city)) <> 'guariba' OR upper(btrim(v_addr.state)) <> 'SP') THEN
+    RAISE EXCEPTION 'ENDERECO_INVALIDO';
+  END IF;
+  IF NOT p_approved AND NULLIF(btrim(COALESCE(p_note,'')),'') IS NULL THEN RAISE EXCEPTION 'MOTIVO_OBRIGATORIO'; END IF;
+  INSERT INTO public.delivery_address_approvals(address_id,approved,reviewed_by,reviewed_at,review_note)
+  VALUES (v_addr.id,p_approved,auth.uid(),now(),NULLIF(btrim(COALESCE(p_note,'')),''))
+  ON CONFLICT (address_id) DO UPDATE SET approved=EXCLUDED.approved,reviewed_by=EXCLUDED.reviewed_by,reviewed_at=EXCLUDED.reviewed_at,review_note=EXCLUDED.review_note;
+END;
+$admin_review$;
+REVOKE ALL ON FUNCTION public.admin_review_delivery_address(uuid,boolean,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_review_delivery_address(uuid,boolean,text) TO authenticated;
 
 
 -- Any address change that could move the delivery point requires a fresh review.
