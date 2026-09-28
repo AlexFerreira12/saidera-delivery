@@ -1,7 +1,7 @@
--- DRAFT ONLY. DO NOT APPLY UNTIL URBAN-AREA APPROVAL IS IMPLEMENTED.
+-- DRAFT ONLY. DEPLOY TO STAGING FIRST; DO NOT RUN ON PRODUCTION UNTIL REVIEW WORKFLOW AND CLIENT ARE READY.
 -- Generated from current production pg_get_functiondef and reviewed targeted substitutions.
 -- Existing stock, coupon, payment, idempotency and order PIN logic retained.
--- Requires a verified urban-area eligibility mechanism before production deployment.
+-- Adds explicit admin-reviewed eligibility, so unknown streets/loteamentos are not automatically rejected.\n-- This SQL intentionally does not claim to geocode or verify municipal boundaries.\n\nCREATE TABLE IF NOT EXISTS public.delivery_address_approvals (\n  address_id uuid PRIMARY KEY REFERENCES public.addresses(id) ON DELETE CASCADE,\n  approved boolean NOT NULL DEFAULT false,\n  reviewed_by uuid REFERENCES auth.users(id),\n  reviewed_at timestamptz,\n  review_note text,\n  CONSTRAINT approval_requires_reviewer CHECK (NOT approved OR (reviewed_by IS NOT NULL AND reviewed_at IS NOT NULL))\n);\nALTER TABLE public.delivery_address_approvals ENABLE ROW LEVEL SECURITY;\nREVOKE ALL ON public.delivery_address_approvals FROM anon, authenticated;\nGRANT SELECT, INSERT, UPDATE, DELETE ON public.delivery_address_approvals TO authenticated;\nDROP POLICY IF EXISTS delivery_approvals_admin_only ON public.delivery_address_approvals;\nCREATE POLICY delivery_approvals_admin_only ON public.delivery_address_approvals\n  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());\n
 
 CREATE OR REPLACE FUNCTION public.create_order(p_address_id uuid, p_payment_method text, p_items jsonb, p_notes text DEFAULT NULL::text, p_change_for text DEFAULT NULL::text, p_coupon_code text DEFAULT NULL::text, p_client_request_id text DEFAULT NULL::text)
  RETURNS jsonb
@@ -68,8 +68,14 @@ BEGIN
   IF lower(btrim(v_addr.city)) <> 'guariba' OR upper(btrim(v_addr.state)) <> 'SP' THEN
     RAISE EXCEPTION 'FORA_DA_AREA';
   END IF;
-  -- An urban-area approval workflow must be implemented before deployment.
-  -- This city/state check alone DOES NOT distinguish rural addresses.
+  -- Explicit admin review prevents rural/out-of-city addresses from passing
+  -- simply because a user selected Guariba in the form.
+  IF NOT EXISTS (
+    SELECT 1 FROM public.delivery_address_approvals approval
+    WHERE approval.address_id = v_addr.id AND approval.approved = true
+  ) THEN
+    RAISE EXCEPTION 'ENDERECO_PENDENTE';
+  END IF;
 
   FOR v_item IN SELECT * FROM jsonb_array_elements(p_items) LOOP
     v_pid := (v_item->>'product_id')::uuid;
