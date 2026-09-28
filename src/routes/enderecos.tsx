@@ -82,7 +82,6 @@ function AddressesPage() {
   const [form, setForm] = useState(empty);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const zones = useZones();
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
@@ -200,21 +199,15 @@ function AddressesPage() {
                 onChange={(v) => setForm({ ...form, complement: v })}
               />
             </div>
-            <label className="block">
-              <span className="mb-1 block text-xs font-semibold text-muted-foreground">Bairro</span>
-              <select
-                value={form.neighborhood}
-                onChange={(e) => setForm({ ...form, neighborhood: e.target.value })}
-                className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
-              >
-                <option value="">Selecione o bairro</option>
-                {(zones.data ?? []).map((z) => (
-                  <option key={z.id} value={z.neighborhood}>
-                    {z.neighborhood}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Input
+              label="Bairro ou loteamento"
+              value={form.neighborhood}
+              onChange={(v) => setForm({ ...form, neighborhood: v })}
+            />
+            <p className="text-xs text-muted-foreground">
+              Atendemos toda a área urbana de Guariba, inclusive loteamentos novos.
+              Informe o bairro mesmo que ainda não apareça nos mapas.
+            </p>
             <Input
               label="Ponto de referência"
               value={form.reference}
