@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MapPin, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { DeliveryMapPicker } from "@/components/DeliveryMapPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -221,7 +222,7 @@ function AddressesPage() {
             </p>
             <section className="space-y-2 rounded-xl border border-border p-3">
               <p className="text-sm font-semibold">Localização da entrega</p>
-              <p className="text-xs text-muted-foreground">Com sua autorização, utilizaremos o GPS do celular. Confira a posição no mapa: ela será usada na rota do entregador. Se o GPS indicar o lugar errado, solicite ajuda à loja antes de salvar.</p>
+              <p className="text-xs text-muted-foreground">Com sua autorização, utilizaremos o GPS do celular. Confira a posição no mapa e toque no ponto correto, mesmo que esteja cadastrando outro endereço. A posição confirmada será usada na rota do entregador.</p>
               <button type="button" disabled={locating} onClick={() => {
                 if (!navigator.geolocation) { toast.error("Seu navegador não oferece localização."); return; }
                 setLocating(true);
@@ -231,11 +232,9 @@ function AddressesPage() {
                   {enableHighAccuracy:true,timeout:15000,maximumAge:0}
                 );
               }} className="w-full rounded-xl border border-primary px-3 py-2 text-sm font-semibold text-primary disabled:opacity-50">{locating?"Localizando...":"Usar localização atual"}</button>
-              {form.latitude !== null && form.longitude !== null && <>
-                <iframe title="Prévia da localização da entrega" loading="lazy" className="h-52 w-full rounded-xl border" referrerPolicy="no-referrer" src={`https://www.openstreetmap.org/export/embed.html?bbox=${form.longitude-0.004}%2C${form.latitude-0.003}%2C${form.longitude+0.004}%2C${form.latitude+0.003}&layer=mapnik&marker=${form.latitude}%2C${form.longitude}`}/>
-                <p className="text-xs text-muted-foreground">Confira o marcador. Esta versão ainda não permite arrastá-lo; use o GPS apenas se estiver no endereço de entrega.</p>
-                <button type="button" className="text-xs font-semibold underline" onClick={()=>setForm(current=>({...current,latitude:null,longitude:null}))}>Limpar localização</button>
-              </>}
+              <DeliveryMapPicker value={form.latitude === null || form.longitude === null ? null : {latitude:form.latitude,longitude:form.longitude}} onChange={point=>setForm(current=>({...current,...point}))}/>
+              {form.latitude !== null && form.longitude !== null && <p className="text-xs text-muted-foreground">Marcador: {form.latitude.toFixed(6)}, {form.longitude.toFixed(6)}</p>}
+              <button type="button" className="text-xs font-semibold underline" onClick={()=>setForm(current=>({...current,latitude:null,longitude:null}))}>Limpar localização</button>
             </section>
             <Input
               label="Ponto de referência"
