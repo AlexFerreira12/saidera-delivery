@@ -50,3 +50,10 @@
 - A função prioriza latitude/longitude válidas, com fallback textual.
 - O RPC atual `driver_my_orders` não devolve latitude/longitude. Alteração mínima preservando autorização existente preparada em `docs/sql/driver_waze_coordinates_REVIEW_ONLY.sql`; **não executada em produção**.
 - Só publicar navegação por coordenadas após o cadastro permitir ao cliente confirmar o marcador e o backend preservar essas coordenadas no `address_snapshot`.
+
+## Implementado nesta etapa (somente branch)
+- Painel `admin.enderecos.tsx` com revisão humana e acesso ao ponto OpenStreetMap; necessita tabela `delivery_address_approvals` implantada com RLS e verificação de permissões de leitura de endereços.
+- Cadastro permite captura voluntária de GPS, mostra prévia do marcador via OpenStreetMap e persiste latitude/longitude.
+- **Limitação deliberada:** prévia ainda não tem marcador arrastável. O GPS só serve quando cliente está fisicamente no endereço; desenvolver seletor interativo antes do deploy para permitir entregas em outros endereços.
+- Não tratar o ponto declarado pelo cliente como prova de perímetro urbano; validação servidor/polígono ainda pendente.
+- Não executar SQL nem publicar branch antes de testes completos e atualização do RPC `driver_my_orders`.
