@@ -109,7 +109,14 @@ function AddressesPage() {
       toast.error("Confirme sua localização antes de salvar.");
       return;
     }
-    if (!Number.isFinite(form.latitude) || !Number.isFinite(form.longitude) || form.latitude < -90 || form.latitude > 90 || form.longitude < -180 || form.longitude > 180) {
+    if (
+      !Number.isFinite(form.latitude) ||
+      !Number.isFinite(form.longitude) ||
+      form.latitude < -90 ||
+      form.latitude > 90 ||
+      form.longitude < -180 ||
+      form.longitude > 180
+    ) {
       toast.error("A localização selecionada é inválida. Marque novamente no mapa.");
       return;
     }
@@ -221,24 +228,69 @@ function AddressesPage() {
               onChange={(v) => setForm({ ...form, neighborhood: v })}
             />
             <p className="text-xs text-muted-foreground">
-              Atendemos toda a área urbana de Guariba, inclusive loteamentos novos.
-              Informe o bairro mesmo que ainda não apareça nos mapas.
+              Atendemos toda a área urbana de Guariba, inclusive loteamentos novos. Informe o bairro
+              mesmo que ainda não apareça nos mapas.
             </p>
             <section className="space-y-2 rounded-xl border border-border p-3">
               <p className="text-sm font-semibold">Localização da entrega</p>
-              <p className="text-xs text-muted-foreground">Com sua autorização, utilizaremos o GPS do celular. Confira a posição no mapa e toque no ponto correto, mesmo que esteja cadastrando outro endereço. A posição confirmada será usada na rota do entregador.</p>
-              <button type="button" disabled={locating} onClick={() => {
-                if (!navigator.geolocation) { toast.error("Seu navegador não oferece localização."); return; }
-                setLocating(true);
-                navigator.geolocation.getCurrentPosition(
-                  ({coords}) => { setForm(current => ({...current,latitude:coords.latitude,longitude:coords.longitude})); setLocating(false); },
-                  () => { toast.error("Não foi possível obter a localização. Verifique a permissão do navegador."); setLocating(false); },
-                  {enableHighAccuracy:true,timeout:15000,maximumAge:0}
-                );
-              }} className="w-full rounded-xl border border-primary px-3 py-2 text-sm font-semibold text-primary disabled:opacity-50">{locating?"Localizando...":"Usar localização atual"}</button>
-              <DeliveryMapPicker value={form.latitude === null || form.longitude === null ? null : {latitude:form.latitude,longitude:form.longitude}} onChange={point=>setForm(current=>({...current,...point}))}/>
-              {form.latitude !== null && form.longitude !== null && <p className="text-xs text-muted-foreground">Marcador: {form.latitude.toFixed(6)}, {form.longitude.toFixed(6)}</p>}
-              <button type="button" className="text-xs font-semibold underline" onClick={()=>setForm(current=>({...current,latitude:null,longitude:null}))}>Limpar localização</button>
+              <p className="text-xs text-muted-foreground">
+                Com sua autorização, utilizaremos o GPS do celular. Confira a posição no mapa e
+                toque no ponto correto, mesmo que esteja cadastrando outro endereço. A posição
+                confirmada será usada na rota do entregador.
+              </p>
+              <button
+                type="button"
+                disabled={locating}
+                onClick={() => {
+                  if (!navigator.geolocation) {
+                    toast.error("Seu navegador não oferece localização.");
+                    return;
+                  }
+                  setLocating(true);
+                  navigator.geolocation.getCurrentPosition(
+                    ({ coords }) => {
+                      setForm((current) => ({
+                        ...current,
+                        latitude: coords.latitude,
+                        longitude: coords.longitude,
+                      }));
+                      setLocating(false);
+                    },
+                    () => {
+                      toast.error(
+                        "Não foi possível obter a localização. Verifique a permissão do navegador.",
+                      );
+                      setLocating(false);
+                    },
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+                  );
+                }}
+                className="w-full rounded-xl border border-primary px-3 py-2 text-sm font-semibold text-primary disabled:opacity-50"
+              >
+                {locating ? "Localizando..." : "Usar localização atual"}
+              </button>
+              <DeliveryMapPicker
+                value={
+                  form.latitude === null || form.longitude === null
+                    ? null
+                    : { latitude: form.latitude, longitude: form.longitude }
+                }
+                onChange={(point) => setForm((current) => ({ ...current, ...point }))}
+              />
+              {form.latitude !== null && form.longitude !== null && (
+                <p className="text-xs text-muted-foreground">
+                  Marcador: {form.latitude.toFixed(6)}, {form.longitude.toFixed(6)}
+                </p>
+              )}
+              <button
+                type="button"
+                className="text-xs font-semibold underline"
+                onClick={() =>
+                  setForm((current) => ({ ...current, latitude: null, longitude: null }))
+                }
+              >
+                Limpar localização
+              </button>
             </section>
             <Input
               label="Ponto de referência"

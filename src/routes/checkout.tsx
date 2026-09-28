@@ -81,15 +81,24 @@ function CheckoutPage() {
     queryKey: ["delivery-eligibility", address?.id],
     enabled: !!address?.id,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("delivery_address_eligibility" as never, { p_address_id: address!.id } as never);
+      const { data, error } = await supabase.rpc(
+        "delivery_address_eligibility" as never,
+        { p_address_id: address!.id } as never,
+      );
       if (error) throw error;
       return data as unknown as "inside" | "override" | "pending" | "outside" | "invalid";
     },
   });
   const deliveryEligible = eligibility.data === "inside" || eligibility.data === "override";
   // This branch must only be deployed together with the delivery eligibility backend migration.
-  const deliveryFee = deliveryEligible && store ? Number(store.default_delivery_fee ?? GUARIBA_FLAT_DELIVERY_FEE) : null;
-  const freeShipping = deliveryFee !== null && Number(store?.free_delivery_above ?? 0) > 0 && cart.subtotal >= Number(store?.free_delivery_above);
+  const deliveryFee =
+    deliveryEligible && store
+      ? Number(store.default_delivery_fee ?? GUARIBA_FLAT_DELIVERY_FEE)
+      : null;
+  const freeShipping =
+    deliveryFee !== null &&
+    Number(store?.free_delivery_above ?? 0) > 0 &&
+    cart.subtotal >= Number(store?.free_delivery_above);
   const effectiveFee = freeShipping ? 0 : deliveryFee;
   const total = effectiveFee === null ? null : cart.subtotal + effectiveFee;
 
@@ -118,7 +127,9 @@ function CheckoutPage() {
       const requestFingerprint = JSON.stringify({
         addressId: address.id,
         payment,
-        items: cart.items.map((item) => [item.id, item.quantity]).sort(([a], [b]) => String(a).localeCompare(String(b))),
+        items: cart.items
+          .map((item) => [item.id, item.quantity])
+          .sort(([a], [b]) => String(a).localeCompare(String(b))),
         notes: trimmedNotes,
         changeFor: trimmedChange,
         coupon,
@@ -199,14 +210,30 @@ function CheckoutPage() {
               + Cadastrar endereço de entrega
             </Link>
           )}
-          {address && eligibility.isLoading && <p className="mt-3 text-xs text-muted-foreground">Verificando área de entrega...</p>}
-          {address && eligibility.data === "pending" && <p className="mt-3 text-xs text-muted-foreground">Localização em análise. A loja pode aprovar manualmente loteamentos novos.</p>}
-          {address && eligibility.data === "outside" && <p className="mt-3 text-xs text-destructive">Este endereço está fora de Guariba/SP.</p>}
-          {address && eligibility.data === "invalid" && <p className="mt-3 text-xs text-destructive">Endereço inválido. Revise o cadastro.</p>}
-          {address && eligibility.isError && <p className="mt-3 text-xs text-destructive">Não foi possível verificar a área de entrega.</p>}
+          {address && eligibility.isLoading && (
+            <p className="mt-3 text-xs text-muted-foreground">Verificando área de entrega...</p>
+          )}
+          {address && eligibility.data === "pending" && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Localização em análise. A loja pode aprovar manualmente loteamentos novos.
+            </p>
+          )}
+          {address && eligibility.data === "outside" && (
+            <p className="mt-3 text-xs text-destructive">Este endereço está fora de Guariba/SP.</p>
+          )}
+          {address && eligibility.data === "invalid" && (
+            <p className="mt-3 text-xs text-destructive">Endereço inválido. Revise o cadastro.</p>
+          )}
+          {address && eligibility.isError && (
+            <p className="mt-3 text-xs text-destructive">
+              Não foi possível verificar a área de entrega.
+            </p>
+          )}
           {deliveryEligible && store && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Entrega em ~{store.avg_delivery_minutes} min · taxa {brl(Number(store.default_delivery_fee))} · pedido mínimo {brl(Number(store.min_order))}
+              Entrega em ~{store.avg_delivery_minutes} min · taxa{" "}
+              {brl(Number(store.default_delivery_fee))} · pedido mínimo{" "}
+              {brl(Number(store.min_order))}
             </p>
           )}
         </section>
@@ -257,7 +284,9 @@ function CheckoutPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Taxa de entrega</span>
-            <span className="font-semibold">{effectiveFee === null ? "A confirmar" : brl(effectiveFee)}</span>
+            <span className="font-semibold">
+              {effectiveFee === null ? "A confirmar" : brl(effectiveFee)}
+            </span>
           </div>
           {coupon && (
             <div className="flex justify-between">
@@ -282,7 +311,11 @@ function CheckoutPage() {
           disabled={placing || deliveryFee === null}
           className="mx-auto block w-full max-w-2xl rounded-2xl bg-primary py-3 text-sm font-bold text-primary-foreground disabled:opacity-60"
         >
-          {placing ? "Enviando..." : total === null ? "ENTREGA A CONFIRMAR" : `CONFIRMAR PEDIDO • ${brl(total)}`}
+          {placing
+            ? "Enviando..."
+            : total === null
+              ? "ENTREGA A CONFIRMAR"
+              : `CONFIRMAR PEDIDO • ${brl(total)}`}
         </button>
       </div>
     </AppShell>

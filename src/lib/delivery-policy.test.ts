@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DELIVERY_POLICY, GUARIBA_FLAT_DELIVERY_FEE, isGuaribaCityAddress } from "./delivery-policy";
+import {
+  DELIVERY_POLICY,
+  GUARIBA_FLAT_DELIVERY_FEE,
+  isGuaribaCityAddress,
+} from "./delivery-policy";
 
 describe("Guariba delivery policy", () => {
   it("sets the approved flat fee to R$ 5,99", () => {

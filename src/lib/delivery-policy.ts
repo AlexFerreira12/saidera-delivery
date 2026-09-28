@@ -7,9 +7,16 @@ export const DELIVERY_POLICY = {
 } as const;
 
 /** Only a preliminary city/state check; not proof of urban-area eligibility. */
-export function isGuaribaCityAddress(address: { city?: string | null; state?: string | null }): boolean {
+export function isGuaribaCityAddress(address: {
+  city?: string | null;
+  state?: string | null;
+}): boolean {
   const normalize = (value: string | null | undefined) =>
-    (value ?? "").normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").trim().toLowerCase();
+    (value ?? "")
+      .normalize("NFD")
+      .replace(/[\\u0300-\\u036f]/g, "")
+      .trim()
+      .toLowerCase();
   return normalize(address.city) === "guariba" && normalize(address.state) === "sp";
 }
 

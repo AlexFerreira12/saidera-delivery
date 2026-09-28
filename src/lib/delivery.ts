@@ -152,9 +152,13 @@ export async function adminForceDeliver(orderId: string, reason: string) {
 /** Kept as an alias for existing courier UI; opens Waze, not Google Maps. */
 export function mapsUrl(address: Partial<DriverOrderAddress>) {
   return wazeDeliveryUrl({
-    street: address.street ?? "", number: address.number ?? "",
-    neighborhood: address.neighborhood ?? "", city: address.city ?? "Guariba",
-    state: "SP", latitude: address.latitude, longitude: address.longitude,
+    street: address.street ?? "",
+    number: address.number ?? "",
+    neighborhood: address.neighborhood ?? "",
+    city: address.city ?? "Guariba",
+    state: "SP",
+    latitude: address.latitude,
+    longitude: address.longitude,
   });
 }
 

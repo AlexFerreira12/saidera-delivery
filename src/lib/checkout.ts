@@ -20,7 +20,8 @@ export function checkoutErrorMessage(raw: unknown): string {
       return "Forma de pagamento inválida.";
     case "ENDERECO_INVALIDO":
       return "Selecione um endereço de entrega válido.";
-    case "ENDERECO_PENDENTE": return "Estamos verificando se este endereço fica na área urbana de Guariba. Aguarde a confirmação da loja.";
+    case "ENDERECO_PENDENTE":
+      return "Estamos verificando se este endereço fica na área urbana de Guariba. Aguarde a confirmação da loja.";
     case "FORA_DA_AREA":
       return "Não foi possível validar a entrega neste bairro/endereço de Guariba. Entre em contato com a loja.";
     case "QUANTIDADE_INVALIDA":
