@@ -9,6 +9,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { fetchAddresses } from "@/lib/addresses";
 
+export const Route = createFileRoute("/enderecos")({
+  head: () => ({
+    meta: [
+      { name: "robots", content: "noindex, nofollow" },
+      { title: "Meus endereços — SAIDERA" },
+    ],
+  }),
+  component: AddressesPage,
+});
+
 const empty = {
   label: "Casa",
   street: "",
