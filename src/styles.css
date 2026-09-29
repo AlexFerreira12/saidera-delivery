@@ -166,5 +166,5 @@
 
 
 /* Cupom térmico PDV — largura padrão 80 mm; área útil compatível com impressoras 58/80 mm. */
-.receipt { width: 80mm; max-width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-@media print { @page { size: 80mm auto; margin: 0; } body { background: #fff !important; } .receipt { width: 72mm; max-width: 72mm; box-shadow: none !important; } }
+.receipt { max-width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.receipt-80 { width: 80mm; }\n.receipt-58 { width: 58mm; }\n@media print { @page { margin: 0; } body { background: #fff !important; } .receipt { box-shadow: none !important; } .receipt-80 { width: 72mm; max-width: 72mm; } .receipt-58 { width: 54mm; max-width: 54mm; padding: 2mm !important; } }
