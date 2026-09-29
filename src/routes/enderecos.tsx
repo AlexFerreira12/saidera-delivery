@@ -48,7 +48,7 @@ function AddressesPage() {
     enabled: !!session,
   });
 
-  const searchAddress = async () => {
+  const lookupAddress = async () => {
     if (!form.street.trim() || !form.number.trim() || !form.neighborhood.trim()) {
       toast.error("Preencha rua, número e bairro antes de buscar.");
       return;
@@ -222,7 +222,7 @@ function AddressesPage() {
             <button
               type="button"
               disabled={searchingAddress}
-              onClick={searchAddress}
+              onClick={lookupAddress}
               className="w-full rounded-xl border border-primary px-3 py-2.5 text-sm font-semibold text-primary disabled:opacity-50"
             >
               {searchingAddress ? "Buscando endereço..." : "Buscar endereço no mapa"}
