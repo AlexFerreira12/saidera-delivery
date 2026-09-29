@@ -36,6 +36,7 @@ function AddressesPage() {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [searchingAddress, setSearchingAddress] = useState(false);
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
@@ -46,6 +47,45 @@ function AddressesPage() {
     queryFn: fetchAddresses,
     enabled: !!session,
   });
+
+  const lookupAddress = async () => {
+    if (!form.street.trim() || !form.number.trim() || !form.neighborhood.trim()) {
+      toast.error("Preencha rua, número e bairro antes de buscar.");
+      return;
+    }
+    setSearchingAddress(true);
+    try {
+      const query = [form.street, form.number, form.neighborhood, "Guariba", "SP", "Brasil"]
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .join(", ");
+      const params = new URLSearchParams({
+        q: query,
+        format: "jsonv2",
+        countrycodes: "br",
+        limit: "1",
+      });
+      const searchUrl = "https://nominatim.openstreetmap.org/search?" + params.toString();
+      const response = await fetch(searchUrl, { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error("search failed");
+      const results = (await response.json()) as Array<{ lat: string; lon: string }>;
+      const result = results[0];
+      if (!result) {
+        toast.error("Endereço não encontrado no mapa. Marque o local manualmente.");
+        return;
+      }
+      const latitude = Number(result.lat);
+      const longitude = Number(result.lon);
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude))
+        throw new Error("invalid coordinates");
+      setForm((current) => ({ ...current, latitude, longitude }));
+      toast.success("Endereço localizado. Confira e ajuste o ponto exato no mapa.");
+    } catch {
+      toast.error("Não foi possível buscar agora. Marque o local manualmente no mapa.");
+    } finally {
+      setSearchingAddress(false);
+    }
+  };
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,6 +218,17 @@ function AddressesPage() {
             <p className="text-xs text-muted-foreground">
               Atendemos toda a área urbana de Guariba, inclusive loteamentos novos. Informe o bairro
               mesmo que ainda não apareça nos mapas.
+            </p>
+            <button
+              type="button"
+              disabled={searchingAddress}
+              onClick={lookupAddress}
+              className="w-full rounded-xl border border-primary px-3 py-2.5 text-sm font-semibold text-primary disabled:opacity-50"
+            >
+              {searchingAddress ? "Buscando endereço..." : "Buscar endereço no mapa"}
+            </button>
+            <p className="text-[11px] text-muted-foreground">
+              Busca: © OpenStreetMap contributors. Depois, confirme o ponto exato no mapa.
             </p>
             <section className="space-y-2 rounded-xl border border-border p-3">
               <p className="text-sm font-semibold">Localização da entrega</p>
