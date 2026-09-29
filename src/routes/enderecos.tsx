@@ -35,7 +35,8 @@ function AddressesPage() {
   const [form, setForm] = useState(empty);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [locating, setLocating] = useState(false);\n  const [searchingAddress, setSearchingAddress] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [searchingAddress, setSearchingAddress] = useState(false);
   const [searchingAddress, setSearchingAddress] = useState(false);
 
   useEffect(() => {
