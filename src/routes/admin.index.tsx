@@ -9,6 +9,8 @@ export const Route = createFileRoute("/admin/")({
 });
 
 const SHORTCUTS: { to: string; label: string }[] = [
+  { to: "/admin/pdv", label: "Abrir PDV" },
+  { to: "/admin/delivery", label: "Central Delivery" },
   { to: "/admin/pedidos", label: "Pedidos" },
   { to: "/admin/produtos", label: "Produtos" },
   { to: "/admin/categorias", label: "Categorias" },
