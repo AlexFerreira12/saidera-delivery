@@ -115,7 +115,7 @@ export function DeliveryMapPicker({
           if (!drag || drag.pointerId !== e.pointerId) return;
           const moved = drag.moved;
           dragRef.current = null;
-          if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+          if (e.currentTarget.hasPointerCapture(e.pointerId))\n            e.currentTarget.releasePointerCapture(e.pointerId);
           if (!moved) choose(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect());
         }}
         onPointerCancel={(e) => {
