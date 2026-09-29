@@ -65,9 +65,8 @@ function AddressesPage() {
         countrycodes: "br",
         limit: "1",
       });
-      const response = await fetch("https://nominatim.openstreetmap.org/search?" + params.toString(), {
-        headers: { Accept: "application/json" },
-      });
+      const searchUrl = "https://nominatim.openstreetmap.org/search?" + params.toString();
+      const response = await fetch(searchUrl, { headers: { Accept: "application/json" } });
       if (!response.ok) throw new Error("search failed");
       const results = (await response.json()) as Array<{ lat: string; lon: string }>;
       const result = results[0];
