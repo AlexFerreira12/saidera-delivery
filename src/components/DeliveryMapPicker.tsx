@@ -34,7 +34,7 @@ export function DeliveryMapPicker({
 }: Props) {
   const [center, setCenter] = useState<MapLocation>(value ?? INITIAL);
   const [zoom, setZoom] = useState(16);
-  const mapRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);\n  const dragRef = useRef<{ pointerId: number; x: number; y: number; moved: boolean } | null>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   useEffect(() => {
     if (recenterOnValueChange && value) setCenter(value);
@@ -71,6 +71,10 @@ export function DeliveryMapPicker({
     onChange(p);
     if (mode === "point") setCenter(p);
   };
+  const panByPixels = (dx: number, dy: number) => {
+    const current = project(center, zoom);
+    setCenter(unproject(current.x - dx / TILE, current.y - dy / TILE, zoom));
+  };
   const screen = (p: MapLocation) => {
     const q = project(p, zoom);
     return { x: (q.x - tile.x) * TILE, y: (q.y - tile.y) * TILE };
@@ -82,16 +86,39 @@ export function DeliveryMapPicker({
     <div className="space-y-2">
       <div
         ref={mapRef}
-        className="relative h-64 w-full overflow-hidden rounded-xl border bg-secondary"
+        className="relative h-64 w-full touch-none overflow-hidden rounded-xl border bg-secondary cursor-grab active:cursor-grabbing"
         role="application"
         aria-label={
           mode === "polygon"
             ? "Mapa para desenhar a área de entrega"
             : "Mapa para escolher o ponto de entrega"
         }
-        onClick={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          choose(e.clientX, e.clientY, rect);
+        onPointerDown={(e) => {
+          dragRef.current = { pointerId: e.pointerId, x: e.clientX, y: e.clientY, moved: false };
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          const drag = dragRef.current;
+          if (!drag || drag.pointerId !== e.pointerId) return;
+          const dx = e.clientX - drag.x;
+          const dy = e.clientY - drag.y;
+          if (Math.abs(dx) + Math.abs(dy) >= 3) drag.moved = true;
+          if (dx !== 0 || dy !== 0) {
+            panByPixels(dx, dy);
+            drag.x = e.clientX;
+            drag.y = e.clientY;
+          }
+        }}
+        onPointerUp={(e) => {
+          const drag = dragRef.current;
+          if (!drag || drag.pointerId !== e.pointerId) return;
+          const moved = drag.moved;
+          dragRef.current = null;
+          if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+          if (!moved) choose(e.clientX, e.clientY, e.currentTarget.getBoundingClientRect());
+        }}
+        onPointerCancel={(e) => {
+          if (dragRef.current?.pointerId === e.pointerId) dragRef.current = null;
         }}
       >
         {tiles.map((t) => (
@@ -186,7 +213,7 @@ export function DeliveryMapPicker({
       <p className="text-xs text-muted-foreground">
         {mode === "polygon"
           ? "Toque no mapa para adicionar os vértices do contorno em sequência."
-          : "Toque no mapa para escolher o ponto exato. Confirme rua e número separadamente."}
+          : "Arraste o mapa para navegar e toque no ponto exato da entrega. Confirme rua e número separadamente."}
       </p>
     </div>
   );
