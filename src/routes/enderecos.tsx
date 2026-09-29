@@ -11,10 +11,7 @@ import { fetchAddresses } from "@/lib/addresses";
 
 export const Route = createFileRoute("/enderecos")({
   head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Meus endereços — SAIDERA" },
-    ],
+    meta: [{ name: "robots", content: "noindex, nofollow" }, { title: "Meus endereços — SAIDERA" }],
   }),
   component: AddressesPage,
 });
