@@ -385,7 +385,7 @@ function AdminProducts() {
 
       <div className="space-y-2">
         {list.map((p) => (
-          <div key={p.id} className="surface-card flex items-center gap-3 p-3">
+          <div key={p.id} className="surface-card grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-3 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto_auto]">
             {p.image_url ? (
               <ProductImage
                 product={p}
