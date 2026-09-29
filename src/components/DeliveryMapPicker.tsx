@@ -34,7 +34,8 @@ export function DeliveryMapPicker({
 }: Props) {
   const [center, setCenter] = useState<MapLocation>(value ?? INITIAL);
   const [zoom, setZoom] = useState(16);
-  const mapRef = useRef<HTMLDivElement>(null);\n  const dragRef = useRef<{ pointerId: number; x: number; y: number; moved: boolean } | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ pointerId: number; x: number; y: number; moved: boolean } | null>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   useEffect(() => {
     if (recenterOnValueChange && value) setCenter(value);
