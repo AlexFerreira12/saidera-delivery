@@ -59,7 +59,12 @@ function AddressesPage() {
         .map((part) => part.trim())
         .filter(Boolean)
         .join(", ");
-      const params = new URLSearchParams({\n        q: query,\n        format: "jsonv2",\n        countrycodes: "br",\n        limit: "1",\n      });
+      const params = new URLSearchParams({
+        q: query,
+        format: "jsonv2",
+        countrycodes: "br",
+        limit: "1",
+      });
       const response = await fetch("https://nominatim.openstreetmap.org/search?" + params.toString(), {
         headers: { Accept: "application/json" },
       });
@@ -72,7 +77,8 @@ function AddressesPage() {
       }
       const latitude = Number(result.lat);
       const longitude = Number(result.lon);
-      if (!Number.isFinite(latitude) || !Number.isFinite(longitude))\n        throw new Error("invalid coordinates");
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude))
+        throw new Error("invalid coordinates");
       setForm((current) => ({ ...current, latitude, longitude }));
       toast.success("Endereço localizado. Confira e ajuste o ponto exato no mapa.");
     } catch {
@@ -214,10 +220,17 @@ function AddressesPage() {
               Atendemos toda a área urbana de Guariba, inclusive loteamentos novos. Informe o bairro
               mesmo que ainda não apareça nos mapas.
             </p>
-            <button\n              type="button"\n              disabled={searchingAddress}\n              onClick={searchAddress}\n              className="w-full rounded-xl border border-primary px-3 py-2.5 text-sm font-semibold text-primary disabled:opacity-50"\n            >
+            <button
+              type="button"
+              disabled={searchingAddress}
+              onClick={searchAddress}
+              className="w-full rounded-xl border border-primary px-3 py-2.5 text-sm font-semibold text-primary disabled:opacity-50"
+            >
               {searchingAddress ? "Buscando endereço..." : "Buscar endereço no mapa"}
             </button>
-            <p className="text-[11px] text-muted-foreground">\n              Busca: © OpenStreetMap contributors. Depois, confirme o ponto exato no mapa.\n            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Busca: © OpenStreetMap contributors. Depois, confirme o ponto exato no mapa.
+            </p>
             <section className="space-y-2 rounded-xl border border-border p-3">
               <p className="text-sm font-semibold">Localização da entrega</p>
               <p className="text-xs text-muted-foreground">
