@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchAdminProducts, fetchCategories, type AdminProduct } from "@/lib/catalog";
 import { ProductImage } from "@/components/ProductImage";
 import { brl } from "@/lib/format";
-import { AdminPage } from "@/components/admin/ui";\nimport { loadPosSettings } from "@/lib/pos-terminal";
+import { AdminPage } from "@/components/admin/ui";
+import { loadPosSettings } from "@/lib/pos-terminal";
 export const Route=createFileRoute("/admin/pdv")({component:PosPage});
 type CartLine={product:AdminProduct;quantity:number};
 function PosPage(){
