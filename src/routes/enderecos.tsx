@@ -4,66 +4,10 @@ import { useEffect, useState } from "react";
 import { MapPin, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { DeliveryMapPicker } from "@/components/DeliveryMapPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-
-export type Address = {
-  id: string;
-  label: string;
-  street: string;
-  number: string;
-  complement: string | null;
-  neighborhood: string;
-  city: string;
-  state: string;
-  reference: string | null;
-  zipcode: string | null;
-  is_default: boolean;
-};
-
-export const Route = createFileRoute("/enderecos")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Meus endereços — Bebidas Guariba" },
-      { name: "description", content: "Cadastre e gerencie endereços de entrega em Guariba/SP." },
-      { property: "og:title", content: "Meus endereços — Bebidas Guariba" },
-      { property: "og:description", content: "Gerencie seus endereços de entrega." },
-    ],
-  }),
-  component: AddressesPage,
-});
-
-export async function fetchAddresses() {
-  const { data, error } = await supabase
-    .from("addresses")
-    .select("*")
-    .order("is_default", { ascending: false })
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as Address[];
-}
-
-export function useZones() {
-  return useQuery({
-    queryKey: ["zones"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("delivery_zones")
-        .select("*")
-        .eq("is_active", true)
-        .order("neighborhood");
-      if (error) throw error;
-      return (data ?? []) as {
-        id: string;
-        neighborhood: string;
-        fee: number;
-        min_order: number;
-        eta_minutes: number;
-      }[];
-    },
-  });
-}
+import { fetchAddresses } from "@/lib/addresses";
 
 const empty = {
   label: "Casa",
@@ -73,6 +17,8 @@ const empty = {
   neighborhood: "",
   reference: "",
   zipcode: "",
+  latitude: null as number | null,
+  longitude: null as number | null,
 };
 
 function AddressesPage() {
@@ -82,7 +28,7 @@ function AddressesPage() {
   const [form, setForm] = useState(empty);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const zones = useZones();
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
@@ -100,6 +46,21 @@ function AddressesPage() {
       toast.error("Preencha rua, número e bairro.");
       return;
     }
+    if (form.latitude === null || form.longitude === null) {
+      toast.error("Confirme sua localização antes de salvar.");
+      return;
+    }
+    if (
+      !Number.isFinite(form.latitude) ||
+      !Number.isFinite(form.longitude) ||
+      form.latitude < -90 ||
+      form.latitude > 90 ||
+      form.longitude < -180 ||
+      form.longitude > 180
+    ) {
+      toast.error("A localização selecionada é inválida. Marque novamente no mapa.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("addresses").insert({
       user_id: session!.user.id,
@@ -110,6 +71,8 @@ function AddressesPage() {
       neighborhood: form.neighborhood,
       reference: form.reference || null,
       zipcode: form.zipcode || null,
+      latitude: form.latitude,
+      longitude: form.longitude,
       is_default: !addresses || addresses.length === 0,
     });
     setSaving(false);
@@ -200,21 +163,76 @@ function AddressesPage() {
                 onChange={(v) => setForm({ ...form, complement: v })}
               />
             </div>
-            <label className="block">
-              <span className="mb-1 block text-xs font-semibold text-muted-foreground">Bairro</span>
-              <select
-                value={form.neighborhood}
-                onChange={(e) => setForm({ ...form, neighborhood: e.target.value })}
-                className="w-full rounded-xl border border-input bg-card px-3 py-2.5 text-sm outline-none"
+            <Input
+              label="Bairro ou loteamento"
+              value={form.neighborhood}
+              onChange={(v) => setForm({ ...form, neighborhood: v })}
+            />
+            <p className="text-xs text-muted-foreground">
+              Atendemos toda a área urbana de Guariba, inclusive loteamentos novos. Informe o bairro
+              mesmo que ainda não apareça nos mapas.
+            </p>
+            <section className="space-y-2 rounded-xl border border-border p-3">
+              <p className="text-sm font-semibold">Localização da entrega</p>
+              <p className="text-xs text-muted-foreground">
+                Com sua autorização, utilizaremos o GPS do celular. Confira a posição no mapa e
+                toque no ponto correto, mesmo que esteja cadastrando outro endereço. A posição
+                confirmada será usada na rota do entregador.
+              </p>
+              <button
+                type="button"
+                disabled={locating}
+                onClick={() => {
+                  if (!navigator.geolocation) {
+                    toast.error("Seu navegador não oferece localização.");
+                    return;
+                  }
+                  setLocating(true);
+                  navigator.geolocation.getCurrentPosition(
+                    ({ coords }) => {
+                      setForm((current) => ({
+                        ...current,
+                        latitude: coords.latitude,
+                        longitude: coords.longitude,
+                      }));
+                      setLocating(false);
+                    },
+                    () => {
+                      toast.error(
+                        "Não foi possível obter a localização. Verifique a permissão do navegador.",
+                      );
+                      setLocating(false);
+                    },
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+                  );
+                }}
+                className="w-full rounded-xl border border-primary px-3 py-2 text-sm font-semibold text-primary disabled:opacity-50"
               >
-                <option value="">Selecione o bairro</option>
-                {(zones.data ?? []).map((z) => (
-                  <option key={z.id} value={z.neighborhood}>
-                    {z.neighborhood}
-                  </option>
-                ))}
-              </select>
-            </label>
+                {locating ? "Localizando..." : "Usar localização atual"}
+              </button>
+              <DeliveryMapPicker
+                value={
+                  form.latitude === null || form.longitude === null
+                    ? null
+                    : { latitude: form.latitude, longitude: form.longitude }
+                }
+                onChange={(point) => setForm((current) => ({ ...current, ...point }))}
+              />
+              {form.latitude !== null && form.longitude !== null && (
+                <p className="text-xs text-muted-foreground">
+                  Marcador: {form.latitude.toFixed(6)}, {form.longitude.toFixed(6)}
+                </p>
+              )}
+              <button
+                type="button"
+                className="text-xs font-semibold underline"
+                onClick={() =>
+                  setForm((current) => ({ ...current, latitude: null, longitude: null }))
+                }
+              >
+                Limpar localização
+              </button>
+            </section>
             <Input
               label="Ponto de referência"
               value={form.reference}

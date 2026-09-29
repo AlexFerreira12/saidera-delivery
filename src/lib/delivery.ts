@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { wazeDeliveryUrl } from "@/lib/waze";
 
 export type AvailableOrder = {
   id: string;
@@ -19,6 +20,8 @@ export type DriverOrderAddress = {
   neighborhood: string | null;
   city: string | null;
   reference: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 export type DriverOrder = {
@@ -146,17 +149,17 @@ export async function adminForceDeliver(orderId: string, reason: string) {
   if (error) throw error;
 }
 
+/** Kept as an alias for existing courier UI; opens Waze, not Google Maps. */
 export function mapsUrl(address: Partial<DriverOrderAddress>) {
-  const query = [
-    address.street,
-    address.number,
-    address.neighborhood,
-    address.city ?? "Guariba",
-    "SP",
-  ]
-    .filter(Boolean)
-    .join(", ");
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  return wazeDeliveryUrl({
+    street: address.street ?? "",
+    number: address.number ?? "",
+    neighborhood: address.neighborhood ?? "",
+    city: address.city ?? "Guariba",
+    state: "SP",
+    latitude: address.latitude,
+    longitude: address.longitude,
+  });
 }
 
 export function addressText(address: Partial<DriverOrderAddress>) {

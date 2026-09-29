@@ -8,8 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { brl } from "@/lib/format";
+import { GUARIBA_FLAT_DELIVERY_FEE, isGuaribaCityAddress } from "@/lib/delivery-policy";
+import { fetchStoreSettings } from "@/lib/catalog";
 import { checkoutErrorMessage, COUPON_STORAGE_KEY } from "@/lib/checkout";
-import { fetchAddresses, useZones, type Address } from "@/routes/enderecos";
+import { fetchAddresses, type Address } from "@/lib/addresses";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -40,8 +42,7 @@ function CheckoutPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
   const cart = useCart();
-  const zones = useZones();
-
+  const { data: store } = useQuery({ queryKey: ["store-settings"], queryFn: fetchStoreSettings });
   const [addressId, setAddressId] = useState<string | null>(null);
   const [payment, setPayment] = useState<string>("dinheiro");
   const [changeFor, setChangeFor] = useState("");
@@ -49,6 +50,7 @@ function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [coupon, setCoupon] = useState<string | null>(null);
   const requestIdRef = useRef<string | null>(null);
+  const requestFingerprintRef = useRef<string | null>(null);
 
   useEffect(() => {
     setCoupon(localStorage.getItem(COUPON_STORAGE_KEY));
@@ -75,13 +77,42 @@ function CheckoutPage() {
     () => addresses?.find((a) => a.id === addressId),
     [addresses, addressId],
   );
-  const zone = zones.data?.find((z) => z.neighborhood === address?.neighborhood);
-  const deliveryFee = zone ? Number(zone.fee) : 0;
-  const total = cart.subtotal + deliveryFee;
+  const eligibility = useQuery({
+    queryKey: ["delivery-eligibility", address?.id],
+    enabled: !!address?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc(
+        "delivery_address_eligibility" as never,
+        { p_address_id: address!.id } as never,
+      );
+      if (error) throw error;
+      return data as unknown as "inside" | "override" | "pending" | "outside" | "invalid";
+    },
+  });
+  const deliveryEligible = eligibility.data === "inside" || eligibility.data === "override";
+  // This branch must only be deployed together with the delivery eligibility backend migration.
+  const deliveryFee =
+    deliveryEligible && store
+      ? Number(store.default_delivery_fee ?? GUARIBA_FLAT_DELIVERY_FEE)
+      : null;
+  const freeShipping =
+    deliveryFee !== null &&
+    Number(store?.free_delivery_above ?? 0) > 0 &&
+    cart.subtotal >= Number(store?.free_delivery_above);
+  const effectiveFee = freeShipping ? 0 : deliveryFee;
+  const total = effectiveFee === null ? null : cart.subtotal + effectiveFee;
 
   const placeOrder = async () => {
     if (!address) {
       toast.error("Selecione um endereço de entrega.");
+      return;
+    }
+    if (!isGuaribaCityAddress(address)) {
+      toast.error("Por enquanto, entregamos apenas em Guariba/SP.");
+      return;
+    }
+    if (deliveryFee === null) {
+      toast.error("Endereço aguardando validação da área de entrega. Entre em contato com a loja.");
       return;
     }
     if (cart.items.length === 0) {
@@ -93,11 +124,21 @@ function CheckoutPage() {
     try {
       const trimmedNotes = notes.trim();
       const trimmedChange = payment === "dinheiro" ? changeFor.trim() : "";
-      let requestId = requestIdRef.current;
-      if (!requestId) {
-        requestId = crypto.randomUUID();
-        requestIdRef.current = requestId;
+      const requestFingerprint = JSON.stringify({
+        addressId: address.id,
+        payment,
+        items: cart.items
+          .map((item) => [item.id, item.quantity])
+          .sort(([a], [b]) => String(a).localeCompare(String(b))),
+        notes: trimmedNotes,
+        changeFor: trimmedChange,
+        coupon,
+      });
+      if (!requestIdRef.current || requestFingerprintRef.current !== requestFingerprint) {
+        requestIdRef.current = crypto.randomUUID();
+        requestFingerprintRef.current = requestFingerprint;
       }
+      const requestId = requestIdRef.current;
       const { data, error } = await supabase.rpc("create_order", {
         p_address_id: address.id,
         p_payment_method: payment,
@@ -115,6 +156,8 @@ function CheckoutPage() {
         total: number;
         requires_online_payment?: boolean;
       };
+      requestIdRef.current = null;
+      requestFingerprintRef.current = null;
       cart.clear();
       localStorage.removeItem(COUPON_STORAGE_KEY);
       if (result.requires_online_payment) {
@@ -124,7 +167,6 @@ function CheckoutPage() {
         void navigate({ to: "/pedido/$id", params: { id: result.order_id } });
       }
     } catch (err) {
-      requestIdRef.current = null;
       toast.error(checkoutErrorMessage(err));
     } finally {
       setPlacing(false);
@@ -168,10 +210,30 @@ function CheckoutPage() {
               + Cadastrar endereço de entrega
             </Link>
           )}
-          {zone && (
+          {address && eligibility.isLoading && (
+            <p className="mt-3 text-xs text-muted-foreground">Verificando área de entrega...</p>
+          )}
+          {address && eligibility.data === "pending" && (
             <p className="mt-3 text-xs text-muted-foreground">
-              Entrega em ~{zone.eta_minutes} min · taxa {brl(Number(zone.fee))} · mínimo{" "}
-              {brl(Number(zone.min_order))}
+              Localização em análise. A loja pode aprovar manualmente loteamentos novos.
+            </p>
+          )}
+          {address && eligibility.data === "outside" && (
+            <p className="mt-3 text-xs text-destructive">Este endereço está fora de Guariba/SP.</p>
+          )}
+          {address && eligibility.data === "invalid" && (
+            <p className="mt-3 text-xs text-destructive">Endereço inválido. Revise o cadastro.</p>
+          )}
+          {address && eligibility.isError && (
+            <p className="mt-3 text-xs text-destructive">
+              Não foi possível verificar a área de entrega.
+            </p>
+          )}
+          {deliveryEligible && store && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Entrega em ~{store.avg_delivery_minutes} min · taxa{" "}
+              {brl(Number(store.default_delivery_fee))} · pedido mínimo{" "}
+              {brl(Number(store.min_order))}
             </p>
           )}
         </section>
@@ -222,7 +284,9 @@ function CheckoutPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Taxa de entrega</span>
-            <span className="font-semibold">{deliveryFee ? brl(deliveryFee) : "—"}</span>
+            <span className="font-semibold">
+              {effectiveFee === null ? "A confirmar" : brl(effectiveFee)}
+            </span>
           </div>
           {coupon && (
             <div className="flex justify-between">
@@ -232,7 +296,7 @@ function CheckoutPage() {
           )}
           <div className="flex justify-between border-t border-border pt-2 font-display text-base font-bold">
             <span>Total estimado</span>
-            <span>{brl(total)}</span>
+            <span>{total === null ? "A confirmar" : brl(total)}</span>
           </div>
           <p className="text-xs text-muted-foreground">
             Os valores finais são calculados e confirmados no momento do pedido.
@@ -244,10 +308,14 @@ function CheckoutPage() {
         <button
           type="button"
           onClick={placeOrder}
-          disabled={placing}
+          disabled={placing || deliveryFee === null}
           className="mx-auto block w-full max-w-2xl rounded-2xl bg-primary py-3 text-sm font-bold text-primary-foreground disabled:opacity-60"
         >
-          {placing ? "Enviando..." : `CONFIRMAR PEDIDO • ${brl(total)}`}
+          {placing
+            ? "Enviando..."
+            : total === null
+              ? "ENTREGA A CONFIRMAR"
+              : `CONFIRMAR PEDIDO • ${brl(total)}`}
         </button>
       </div>
     </AppShell>
