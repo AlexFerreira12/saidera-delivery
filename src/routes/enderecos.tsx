@@ -37,7 +37,6 @@ function AddressesPage() {
   const [saving, setSaving] = useState(false);
   const [locating, setLocating] = useState(false);
   const [searchingAddress, setSearchingAddress] = useState(false);
-  const [searchingAddress, setSearchingAddress] = useState(false);
 
   useEffect(() => {
     if (!loading && !session) void navigate({ to: "/auth" });
